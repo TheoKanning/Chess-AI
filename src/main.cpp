@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <iostream>
+#include "globals.h"
 
 using namespace std;
 
@@ -7,6 +8,6 @@ using namespace std;
 
 int main()
 {
-	cout << "Gains" << endl;
+	ASSERT(1 == 2);
 	system("PAUSE");
 }
