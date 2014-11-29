@@ -81,7 +81,7 @@ void Init_Board(BOARD_STRUCT *board)
 		board->board_array120[SQUARE_64_TO_120(index)] = board->board_array64[index];
 	}
 
-	board->ep = -1; //ep always off board
+	board->ep = NO_SQUARE; //ep uses 120 indexing
 
 	//Set each to 1
 	board->castle_rights = 15;
@@ -262,5 +262,6 @@ void Print_Board(BOARD_STRUCT *board)
 	//EP
 	cout << "EP: " << board->ep<< endl;
 
-
+	//Hash
+	cout << "Hashkey: " << board->hash_key << endl;
 }

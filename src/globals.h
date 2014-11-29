@@ -3,7 +3,7 @@
 * Contains all global definitions of functions, macros, and data types
 */
 #include "math.h"
-
+#include <iostream>
 
 /***** Global Macros *****/
 
@@ -11,7 +11,7 @@
 
 #define PROGRAM_NAME "Chess-AI"
 #define AUTHOR	"Theo Kanning"
-#define VERSION_NO	0.1
+#define VERSION_NO	0.2
 
 #ifndef DEBUG
         #define ASSERT(x)
@@ -19,9 +19,9 @@
 #define ASSERT(x) \
                if (! (x)) \
                { \
-                  cout << "ERROR!! Assert " << #x << " failed\n"; \
-                  cout << " on line " << __LINE__  << "\n"; \
-                  cout << " in file " << __FILE__ << "\n";  \
+                  std::cout << "ERROR!! Assert " << #x << " failed\n"; \
+                  std::cout << " on line " << __LINE__  << "\n"; \
+                  std::cout << " in file " << __FILE__ << "\n";  \
 				  system("PAUSE"); \
 			   }
 #endif
@@ -69,7 +69,7 @@ enum SPACE_ENUM //Space indices using 10x12 board
 	A5 = 61, B5, C5, D5, E5, F5, G5, H5,
 	A6 = 71, B6, C6, D6, E6, F6, G6, H6,
 	A7 = 81, B7, C7, D7, E7, F7, G7, H7,
-	A8 = 91, B8, C8, D8, E8, F8, G8, H8, OFF_BOARD
+	A8 = 91, B8, C8, D8, E8, F8, G8, H8, OFF_BOARD,NO_SQUARE
 };
 
 enum RANK_ENUM
