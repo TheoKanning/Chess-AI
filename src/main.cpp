@@ -3,11 +3,12 @@
 #include "globals.h"
 
 using namespace std;
-
+BOARD_STRUCT board;
 
 
 int main()
 {
-	ASSERT(1 == 2);
+	Init_Board(&board);
+	Print_Board(&board);
 	system("PAUSE");
 }
