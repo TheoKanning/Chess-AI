@@ -89,18 +89,24 @@ enum CASTLE_ENUM
 
 typedef struct
 {
+	int move; //32 bit move stores all necessary data 
+	int score;
+}MOVE_STRUCT;
+
+typedef struct
+{
 	int board_array120[120];
 	int board_array64[64]; 
 
-	int ep; 
+	int ep; //120 index
 	int side;
 	int castle_rights;
 
 	int hply; //total moves taken so far
 	int move_counter; //100 move counter
 
-	int piece_num[12]; //Stores the number of each type of piece
-	int piece_list120[12][10]; //[Piece][instance] contains index of pieces on board, empty cells are 0, which is off the 120 board
+	int piece_num[13]; //Stores the number of each type of piece
+	int piece_list120[13][10]; //[Piece][instance] contains index of pieces on board, empty cells are 0, which is off the 120 board
 
 	U64 pawn_bitboards[3]; //One for white, black, and both
 
@@ -112,8 +118,11 @@ typedef struct
 /***** Global Functions *****/
 //board
 extern void Init_Board(BOARD_STRUCT *board);
-extern void Parse_Fen(BOARD_STRUCT *board);
+extern void Update_Piece_Lists(BOARD_STRUCT *board);
+extern void Update_Bitboards(BOARD_STRUCT *board);
+extern void Parse_Fen(char *fen, BOARD_STRUCT *board);
 extern void Print_Board(BOARD_STRUCT *board);
+extern void Print_Bitboards(BOARD_STRUCT *board);
 
 //hashkeys
 extern void Init_Hashkeys(void);

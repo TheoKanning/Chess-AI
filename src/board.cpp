@@ -93,68 +93,10 @@ void Init_Board(BOARD_STRUCT *board)
 	board->move_counter = 0;
 
 	//Pawn bitboards
-	for (file = FILE_A; file <= FILE_H; file++)
-	{
-		//White
-		SET_BIT(board->pawn_bitboards[WHITE], RANK_FILE_TO_SQUARE_64(file, RANK_2));
-		//Black
-		SET_BIT(board->pawn_bitboards[BLACK], RANK_FILE_TO_SQUARE_64(file, RANK_7));
-		//Both
-		SET_BIT(board->pawn_bitboards[BOTH], RANK_FILE_TO_SQUARE_64(file, RANK_2));
-		SET_BIT(board->pawn_bitboards[BOTH], RANK_FILE_TO_SQUARE_64(file, RANK_7));
-	}
+	Update_Bitboards(board);
 
-	//board->piece_list
-	board->piece_list120[wR][0] = A1;
-	board->piece_list120[wN][0] = B1;
-	board->piece_list120[wB][0] = C1;
-	board->piece_list120[wQ][0] = D1;
-	board->piece_list120[wK][0] = E1;
-	board->piece_list120[wB][1] = F1;
-	board->piece_list120[wN][1] = G1;
-	board->piece_list120[wR][1] = H1;
-
-	board->piece_list120[wP][0] = A2;
-	board->piece_list120[wP][1] = B2;
-	board->piece_list120[wP][2] = C2;
-	board->piece_list120[wP][3] = D2;
-	board->piece_list120[wP][4] = E2;
-	board->piece_list120[wP][5] = F2;
-	board->piece_list120[wP][6] = G2;
-	board->piece_list120[wP][7] = H2;
-
-	board->piece_list120[bP][0] = A7;
-	board->piece_list120[bP][1] = B7;
-	board->piece_list120[bP][2] = C7;
-	board->piece_list120[bP][3] = D7;
-	board->piece_list120[bP][4] = E7;
-	board->piece_list120[bP][5] = F7;
-	board->piece_list120[bP][6] = G7;
-	board->piece_list120[bP][7] = H7;
-
-	board->piece_list120[bR][0] = A8;
-	board->piece_list120[bN][0] = B8;
-	board->piece_list120[bB][0] = C8;
-	board->piece_list120[bQ][0] = D8;
-	board->piece_list120[bK][0] = E8;
-	board->piece_list120[bB][1] = F8;
-	board->piece_list120[bN][1] = G8;
-	board->piece_list120[bR][1] = H8;
-
-	//Piece-num list
-	board->piece_num[wP] = 8;
-	board->piece_num[wN] = 2;
-	board->piece_num[wB] = 2;
-	board->piece_num[wR] = 2;
-	board->piece_num[wQ] = 1;
-	board->piece_num[wK] = 1;
-
-	board->piece_num[bP] = 8;
-	board->piece_num[bN] = 2;
-	board->piece_num[bB] = 2;
-	board->piece_num[bR] = 2;
-	board->piece_num[bQ] = 1;
-	board->piece_num[bK] = 1;
+	//Piece lists
+	Update_Piece_Lists(board);
 
 	Compute_Hash(board);
 }
@@ -162,6 +104,198 @@ void Init_Board(BOARD_STRUCT *board)
 //Sets a board to a fen position and fills all fields
 void Parse_Fen(char *fen, BOARD_STRUCT *board)
 {
+	int index, rank, file;
+	int square = 1; //Square being parsed
+
+	//Empty board_array64
+	for (index = 0; index < 64; index++)
+	{
+		board->board_array64[index] = EMPTY;
+	}
+
+	//Read piece data
+	while (square <= 64)
+	{
+		file = FILE_A + ((square - 1) % 8);
+		rank = RANK_8 - ((square - 1) / 8);
+		index = RANK_FILE_TO_SQUARE_64(rank, file);
+		ASSERT(index >= 0 && index < 64);
+
+		switch (*fen)//Read current character
+		{
+		//White pieces
+		case 'P': board->board_array64[index] = wP; break;
+		case 'N': board->board_array64[index] = wN; break;
+		case 'B': board->board_array64[index] = wB; break;
+		case 'R': board->board_array64[index] = wR; break;
+		case 'Q': board->board_array64[index] = wQ; break;
+		case 'K': board->board_array64[index] = wK; break;
+
+		//Black pieces
+		case 'p': board->board_array64[index] = bP; break;
+		case 'n': board->board_array64[index] = bN; break;
+		case 'b': board->board_array64[index] = bB; break;
+		case 'r': board->board_array64[index] = bR; break;
+		case 'q': board->board_array64[index] = bQ; break;
+		case 'k': board->board_array64[index] = bK; break;
+
+		//Spaces
+		case '/': square--; break;
+		case '1': break;
+		case '2': square++; break;
+		case '3': square+=2; break;
+		case '4': square+=3; break;
+		case '5': square+=4; break;
+		case '6': square+=5; break;
+		case '7': square+=6; break;
+		case '8': square+=7; break;
+		
+		}
+		square++;
+		fen++;
+	}
+	
+	//Next character should  be a space
+	ASSERT(*fen == ' ');
+
+	//Side
+	fen++;
+	if (*fen == 'w')
+		board->side = WHITE;
+	else
+	{
+		board->side = BLACK;
+	}
+
+	//Next character should  be a space
+	fen++;
+	ASSERT(*fen == ' ');
+	
+	//Castling rights
+	fen++;
+	board->side = 0;
+	while (*fen != ' ') //Continue until space is read
+	{
+		switch (*fen)
+		{
+		case 'K': board->castle_rights |= WK_CASTLE; break;
+		case 'Q': board->castle_rights |= WQ_CASTLE; break;
+		case 'k': board->castle_rights |= BK_CASTLE; break;
+		case 'q': board->castle_rights |= BQ_CASTLE; break;
+		case '-':  break;
+		}
+		fen++;
+	}
+	
+	//Next character should  be a space
+	ASSERT(*fen == ' ');
+
+	//Ep
+	board->ep = NO_SQUARE;
+	fen++;
+	if (*fen != '-') //If there is an ep square
+	{
+		file = (int)fen[0] - 96;
+		rank = (int)fen[1] - 48;
+		board->ep = SQUARE_64_TO_120(RANK_FILE_TO_SQUARE_64(rank, file));
+		fen ++; //Skip one extra space
+	}
+	fen++;
+
+	//Next character should  be a space
+	ASSERT(*fen == ' ');
+
+	//50 move counter
+	index = 0;
+	board->move_counter = 0;
+	fen++; //increment to start of counter
+	if (fen[1] != ' ')
+	{
+		board->move_counter += (int)fen[1] - 48; //Add second digit, if any
+		board->move_counter += 10*((int)fen[0] - 48); //First digit * 10
+		fen += 2;
+	}
+	else
+	{
+		board->move_counter += (int)fen[0] - 48; //First digit
+		fen++;
+	}
+	
+	//Next character should  be a space
+	ASSERT(*fen == ' ');
+
+	//50 move counter
+	index = 0;
+	board->hply = 0;
+	fen++; //increment to start of counter
+	if (fen[1] != '\0')
+	{
+		board->hply += (int)fen[1] - 48; //Add second digit, if any
+		board->hply += 10 * ((int)fen[0] - 48); //First digit * 10
+		fen += 2;
+	}
+	else
+	{
+		board->hply += (int)fen[0] - 48; //First digit
+		fen++;
+	}
+
+	board->hply *= 2; //Each move is 2 ply
+	if (board->side == WHITE) board->hply--;
+
+	Update_Bitboards(board);
+
+	Update_Piece_Lists(board);
+
+	Compute_Hash(board);
+
+
+}
+
+//Updates piecelist120 and piecenum using data in board_array64
+void Update_Piece_Lists(BOARD_STRUCT *board)
+{
+	int index,piece;
+	//Set all values to zero
+	for (piece = 0; piece <= bK; piece++)
+	{
+		for (index = 0; index < 10; index++)
+		{
+			board->piece_list120[piece][index] = 0;	
+		}
+		board->piece_num[piece] = 0;
+	}
+
+	//Index through all 64 squares and adjust piece list and num accordingly
+	for (index = 0; index < 64; index++)
+	{
+		piece = board->board_array64[index];
+		if (piece != EMPTY)
+		{
+			board->piece_list120[piece][board->piece_num[piece]] = SQUARE_64_TO_120(index); //Store 10x12 index in list
+			board->piece_num[piece]++; //Increment piece count
+		}
+	}
+}
+
+
+//Fills pawn bitboards using board_array64
+void Update_Bitboards(BOARD_STRUCT *board)
+{
+	int index;
+	for (index = 0; index < 64; index++)
+	{
+		if (board->board_array64[index] == wP) //White pawn
+		{
+			SET_BIT(board->pawn_bitboards[WHITE], index); //Update bitboard
+			SET_BIT(board->pawn_bitboards[BOTH], index); //Update bitboard
+		}
+		else if (board->board_array64[index] == bP) //White pawn
+		{
+			SET_BIT(board->pawn_bitboards[BLACK], index); //Update bitboard
+			SET_BIT(board->pawn_bitboards[BOTH], index); //Update bitboard
+		}
+	}
 
 }
 
@@ -264,4 +398,44 @@ void Print_Board(BOARD_STRUCT *board)
 
 	//Hash
 	cout << "Hashkey: " << board->hash_key << endl;
+
+	//50 move counter
+	cout << "50 Move Count: " << board->move_counter << endl;
+
+	//Ply
+	cout << "Hply: " << board->hply << endl;
+}
+
+//Prints all three pawn bitboards using the same format as the Print_Board function
+void Print_Bitboards(BOARD_STRUCT *board)
+{
+	int rank, file, color;
+	char* names[3] = { "White", "Black", "Both" };
+	//Print board
+	for (color = WHITE; color <= BOTH; color++)
+	{
+		cout << names[color] << endl;
+		cout << endl << "    A B C D E F G H" << endl;
+		for (rank = RANK_8; rank >= RANK_1; rank--)
+		{
+			cout << "   -----------------" << endl; //17 Underscores
+			cout << " " << rank + 1 << " ";
+			for (file = FILE_A; file <= FILE_H; file++)
+			{
+				cout << (char)179; //Bar
+
+				if (GET_BIT(board->pawn_bitboards[color], RANK_FILE_TO_SQUARE_64(rank, file)))
+				{
+					cout << 1;
+				}
+				else
+				{
+					cout << " ";
+				}
+
+			}
+			cout << (char)179 << endl; //Bar
+		}
+		cout << "   -----------------" << endl << endl; //End box
+	}
 }
