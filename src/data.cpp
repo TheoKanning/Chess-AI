@@ -5,4 +5,4 @@
 
 char* file_names = "abcdefgh";
 char* rank_names = "12345678";
-char* piece_names[13] = { " ", "P", "N", "B", "R", "Q", "K", "P", "N", "B", "R", "Q", "K" };
+char* piece_names = " PNBRQKPNBRQK";

@@ -132,9 +132,15 @@ extern void Parse_Fen(char *fen, BOARD_STRUCT *board);
 extern void Print_Board(BOARD_STRUCT *board);
 extern void Print_Bitboards(BOARD_STRUCT *board);
 
+//data
+extern char* file_names;
+extern char* rank_names;
+extern char* piece_names;
+
 //hashkeys
 extern void Init_Hashkeys(void);
 extern void Compute_Hash(BOARD_STRUCT *board);
 
 //makemove
 extern void Add_Move(MOVE_LIST_STRUCT *move_list, int from, int to, int piece, int capture, int special, int score);
+extern void Print_Movelist(MOVE_LIST_STRUCT *movelist);
