@@ -7,7 +7,7 @@ using namespace std;
 #define START_FEN		"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 
 BOARD_STRUCT board;
-
+MOVE_LIST_STRUCT move_list;
 
 int main()
 {

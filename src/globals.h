@@ -30,6 +30,8 @@
 
 #define MAX_PLY						1028 //Maximum depth for searching
 #define MAX_SEARCH_DEPTH			64   //Max search depth, arbitrary
+#define MAX_MOVE_LIST_LENGTH		218 //Maximum moves in any position
+
 
 #define ON_BOARD_120(x)				((21 <= x && x <= 28) || (31 <= x && x <= 38) || (41 <= x && x <= 48) || (51 <= x && x <= 58) || \
 									 (61 <= x && x <= 68) || (71 <= x && x <= 78) || (81 <= x && x <= 88) || (91 <= x && x <= 98))
@@ -95,6 +97,12 @@ typedef struct
 
 typedef struct
 {
+	MOVE_STRUCT list[MAX_MOVE_LIST_LENGTH];
+	int num;
+}MOVE_LIST_STRUCT;
+
+typedef struct
+{
 	int board_array120[120];
 	int board_array64[64]; 
 
@@ -127,3 +135,6 @@ extern void Print_Bitboards(BOARD_STRUCT *board);
 //hashkeys
 extern void Init_Hashkeys(void);
 extern void Compute_Hash(BOARD_STRUCT *board);
+
+//makemove
+extern void Add_Move(MOVE_LIST_STRUCT *move_list, int from, int to, int piece, int capture, int special, int score);
