@@ -7,6 +7,9 @@
 
 using namespace std;
 
+//Private functions
+void Update_Board_Array_120(BOARD_STRUCT *board);
+
 //Sets a board to the start position and fills all fields
 void Init_Board(BOARD_STRUCT *board)
 {
@@ -195,8 +198,9 @@ void Parse_Fen(char *fen, BOARD_STRUCT *board)
 	fen++;
 	if (*fen != '-') //If there is an ep square
 	{
-		file = (int)fen[0] - 96;
-		rank = (int)fen[1] - 48;
+		file = (int)fen[0] - 97;
+		rank = (int)fen[1] - 49;
+		ASSERT(ON_BOARD_120(SQUARE_64_TO_120(RANK_FILE_TO_SQUARE_64(rank, file))));
 		board->ep = SQUARE_64_TO_120(RANK_FILE_TO_SQUARE_64(rank, file));
 		fen ++; //Skip one extra space
 	}
@@ -246,6 +250,8 @@ void Parse_Fen(char *fen, BOARD_STRUCT *board)
 	Update_Bitboards(board);
 
 	Update_Piece_Lists(board);
+
+	Update_Board_Array_120(board);
 
 	Compute_Hash(board);
 
@@ -297,6 +303,15 @@ void Update_Bitboards(BOARD_STRUCT *board)
 		}
 	}
 
+}
+//Updates board_array120 from a filled board_array_64 list
+void Update_Board_Array_120(BOARD_STRUCT *board)
+{
+	int index;
+	for (index = 0; index < 64; index++)
+	{
+		board->board_array120[SQUARE_64_TO_120(index)] = board->board_array64[index];
+	}
 }
 
 //Prints pieces and useful info to console

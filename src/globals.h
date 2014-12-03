@@ -4,6 +4,7 @@
 */
 #include "math.h"
 #include <iostream>
+#include "move_macros.h"
 
 /***** Global Macros *****/
 
@@ -42,10 +43,16 @@
 #define RANK_FILE_TO_SQUARE_64(r,f)	(f+8*r)
 #define GET_RANK_64(x)				(x>>3)
 #define GET_FILE_64(x)				(x&7)
+#define GET_RANK_120(x)				GET_RANK_64(SQUARE_120_TO_64(x))
+#define GET_FILE_120(x)				GET_FILE_64(SQUARE_120_TO_64(x))
 
 #define SET_BIT(x,y)				(x |= (1i64<<y))
 #define CLR_BIT(x,y)				(x &= ~(1i64<<y))
 #define GET_BIT(x,y)				(x & (1i64<<y))
+
+#define IS_WHITE_PIECE(x)			((x > EMPTY) && (x <= wK)) 
+#define IS_BLACK_PIECE(x)			((x > wK) && (x <= bK))
+
 
 /***** Global structures and typedefs *****/
 
@@ -144,3 +151,6 @@ extern void Compute_Hash(BOARD_STRUCT *board);
 //makemove
 extern void Add_Move(MOVE_LIST_STRUCT *move_list, int from, int to, int piece, int capture, int special, int score);
 extern void Print_Movelist(MOVE_LIST_STRUCT *movelist);
+
+//movegen
+extern void Generate_Moves(BOARD_STRUCT*, MOVE_LIST_STRUCT*);
