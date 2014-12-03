@@ -63,12 +63,12 @@ void Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *movelist)
 				if (IS_BLACK_PIECE(board->board_array120[to120])) //If target has a piece that can be taken
 				{
 					capture = board->board_array120[to120];
-					Add_Move(movelist, from120, to120, wP, capture, NOT_SPECIAL, GET_MMVLVA_SCORE(wP,capture));
+					Add_Move(movelist, from120, to120, wP, capture, NOT_SPECIAL, GET_MMVLVA_SCORE(capture, wP));
 				}
 				else if (to120 == board->ep) //If target is ep square
 				{
 					capture = bP;
-					Add_Move(movelist, from120, to120, wP, capture, EP_CAPTURE, GET_MMVLVA_SCORE(wP, capture));
+					Add_Move(movelist, from120, to120, wP, capture, EP_CAPTURE, GET_MMVLVA_SCORE(capture, wP));
 				}
 			}
 
@@ -79,12 +79,12 @@ void Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *movelist)
 				if (IS_BLACK_PIECE(board->board_array120[to120])) //If target has a piece that can be taken
 				{
 					capture = board->board_array120[to120];
-					Add_Move(movelist, from120, to120, wP, capture, NOT_SPECIAL, GET_MMVLVA_SCORE(wP, capture));
+					Add_Move(movelist, from120, to120, wP, capture, NOT_SPECIAL, GET_MMVLVA_SCORE(capture, wP));
 				}
 				else if (to120 == board->ep) //If target is ep square
 				{
 					capture = bP;
-					Add_Move(movelist, from120, to120, wP, capture, EP_CAPTURE, GET_MMVLVA_SCORE(wP, capture));
+					Add_Move(movelist, from120, to120, wP, capture, EP_CAPTURE, GET_MMVLVA_SCORE(capture, wP));
 				}
 			}
 		}
@@ -117,7 +117,7 @@ void Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *movelist)
 					{
 						//Add capture
 						capture = board->board_array120[to120];
-						Add_Move(movelist, from120, to120, wN, capture, NOT_SPECIAL, GET_MMVLVA_SCORE(wN, capture));
+						Add_Move(movelist, from120, to120, wN, capture, NOT_SPECIAL, GET_MMVLVA_SCORE(capture, wN));
 					}
 				}
 			}
