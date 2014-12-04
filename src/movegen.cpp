@@ -7,7 +7,7 @@
 
 void Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *movelist)
 {
-	int i, j, from120, to120, rank, file, piece, capture;
+	int i, j, from120, to120, rank, file, piece, capture, slide_num;
 	const int side = board->side; //Store side to move
 	ASSERT((side == WHITE) || (side == BLACK));
 
@@ -122,6 +122,54 @@ void Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *movelist)
 				}
 			}
 		}
+		/***** End Knight Moves *****/
+
+		/***************************************/
+		/*************** BISHOPS ***************/
+		/***************************************/
+
+		for (i = 0; i < board->piece_num[wB]; i++) //Loop through all available white bishops
+		{
+			from120 = board->piece_list120[wB][i];
+			ASSERT(ON_BOARD_120(from120));
+			//Cycle through all directions, adding move if on board, and adding capture if applicable
+			for (j = 0; j < NUM_BISHOP_MOVES; j++)
+			{
+				//Increase slide distance, adding moves until off board or hitting another piece
+				for (slide_num = 1; slide_num < 8; slide_num++)
+				{
+					//Calculate target square based on direction and slide number
+					to120 = from120 + slide_num * BISHOP_MOVES[j];
+
+					//See if target square is on the board, if not, break loop
+					if (ON_BOARD_120(to120))
+					{
+						//Move if square is empty, capture and break if it contains a black piece, break if white piece
+						if (board->board_array120[to120] == EMPTY)
+						{
+							//Add quiet move
+							Add_Move(movelist, from120, to120, wB, 0, NOT_SPECIAL, 0);
+						}
+						else if (IS_BLACK_PIECE(board->board_array120[to120]))
+						{
+							//Add capture
+							capture = board->board_array120[to120];
+							Add_Move(movelist, from120, to120, wB, capture, NOT_SPECIAL, GET_MMVLVA_SCORE(capture, wB));
+							break;
+						}
+						else if (IS_WHITE_PIECE(board->board_array120[to120]))
+						{
+							break; //Stop sliding
+						}
+					}
+					else
+					{
+						break; //Stop sliding in this direction
+					}
+				}
+			}
+		}
+		/***** End Bishop Moves *****/
 	}
 	else //side == BLACK
 	{
