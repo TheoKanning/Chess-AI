@@ -170,18 +170,151 @@ void Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *movelist)
 			}
 		}
 		/***** End Bishop Moves *****/
+
+		/***************************************/
+		/**************** ROOKS ****************/
+		/***************************************/
+
+		for (i = 0; i < board->piece_num[wR]; i++) //Loop through all available white rooks
+		{
+			from120 = board->piece_list120[wR][i];
+			ASSERT(ON_BOARD_120(from120));
+
+			//Cycle through all directions, adding move if on board, and adding capture if applicable
+			for (j = 0; j < NUM_ROOK_MOVES; j++)
+			{
+				//Increase slide distance, adding moves until off board or hitting another piece
+				for (slide_num = 1; slide_num < 8; slide_num++)
+				{
+					//Calculate target square based on direction and slide number
+					to120 = from120 + slide_num * ROOK_MOVES[j];
+
+					//See if target square is on the board, if not, break loop
+					if (ON_BOARD_120(to120))
+					{
+						//Move if square is empty, capture and break if it contains a black piece, break if white piece
+						if (board->board_array120[to120] == EMPTY)
+						{
+							//Add quiet move
+							Add_Move(movelist, from120, to120, wR, 0, NOT_SPECIAL, 0);
+						}
+						else if (IS_BLACK_PIECE(board->board_array120[to120]))
+						{
+							//Add capture
+							capture = board->board_array120[to120];
+							Add_Move(movelist, from120, to120, wR, capture, NOT_SPECIAL, GET_MMVLVA_SCORE(capture, wR));
+							break;
+						}
+						else if (IS_WHITE_PIECE(board->board_array120[to120]))
+						{
+							break; //Stop sliding
+						}
+					}
+					else
+					{
+						break; //Stop sliding in this direction
+					}
+				}
+			}
+		}
+		/***** End Rook Moves *****/
+
+		/***************************************/
+		/*************** QUEENS ****************/
+		/***************************************/
+
+		for (i = 0; i < board->piece_num[wQ]; i++) //Loop through all available white queens
+		{
+			from120 = board->piece_list120[wQ][i];
+			ASSERT(ON_BOARD_120(from120));
+
+			//Cycle through all directions, adding move if on board, and adding capture if applicable
+			for (j = 0; j < NUM_QUEEN_MOVES; j++)
+			{
+				//Increase slide distance, adding moves until off board or hitting another piece
+				for (slide_num = 1; slide_num < 8; slide_num++)
+				{
+					//Calculate target square based on direction and slide number
+					to120 = from120 + slide_num * QUEEN_MOVES[j];
+
+					//See if target square is on the board, if not, break loop
+					if (ON_BOARD_120(to120))
+					{
+						//Move if square is empty, capture and break if it contains a black piece, break if white piece
+						if (board->board_array120[to120] == EMPTY)
+						{
+							//Add quiet move
+							Add_Move(movelist, from120, to120, wQ, 0, NOT_SPECIAL, 0);
+						}
+						else if (IS_BLACK_PIECE(board->board_array120[to120]))
+						{
+							//Add capture
+							capture = board->board_array120[to120];
+							Add_Move(movelist, from120, to120, wQ, capture, NOT_SPECIAL, GET_MMVLVA_SCORE(capture, wQ));
+							break;
+						}
+						else if (IS_WHITE_PIECE(board->board_array120[to120]))
+						{
+							break; //Stop sliding
+						}
+					}
+					else
+					{
+						break; //Stop sliding in this direction
+					}
+				}
+			}
+		}
+		/***** End Queen Moves *****/
+
+		/***************************************/
+		/*************** King *****************/
+		/***************************************/
+
+		from120 = board->piece_list120[wK][0];
+		ASSERT(ON_BOARD_120(from120));
+
+		/***** Normal Moves and Captures *****/
+		//Cycle through all directions, adding move if on board, and adding capture if applicable
+		for (j = 0; j < NUM_KING_MOVES; j++)
+		{
+			//Calculate target square based on direction and slide number
+			to120 = from120 + KING_MOVES[j];
+
+			//See if target square is on the board
+			if (ON_BOARD_120(to120))
+			{
+				//Move if square is empty, capture if it contains a black piece
+				if (board->board_array120[to120] == EMPTY)
+				{
+					//Add quiet move
+					Add_Move(movelist, from120, to120, wK, 0, NOT_SPECIAL, 0);
+				}
+				else if (IS_BLACK_PIECE(board->board_array120[to120]))
+				{
+					//Add capture
+					capture = board->board_array120[to120];
+					Add_Move(movelist, from120, to120, wK, capture, NOT_SPECIAL, GET_MMVLVA_SCORE(capture, wK));
+				}
+			}
+		}
+		/***** Castling *****/
+		//MAKE SURE MOVE DOES NOT CROSS SPACES UNDER ATTACK LATER
+		//Kingside
+		if ((board->castle_rights & WK_CASTLE) && (board->board_array120[F1] == EMPTY) && (board->board_array120[G1] == EMPTY)) //If spaces are empty
+		{
+			Add_Move(movelist, from120, G1, wK, 0, KING_CASTLE, 0); //Always moves to C1
+		}
+		//Queenside
+		if ((board->castle_rights & WQ_CASTLE) && (board->board_array120[B1] == EMPTY) && (board->board_array120[C1] == EMPTY) && (board->board_array120[D1] == EMPTY))
+		{
+			Add_Move(movelist, from120, C1, wK, 0, QUEEN_CASTLE, 0); //Always moves to C1
+		}
+		/***** End King Moves *****/
+
 	}
 	else //side == BLACK
 	{
 
 	}
-	//Knights
-
-	//Bishops and Queens
-
-	//Rooks and Queens
-
-	//Castling
-
-	//King
 }

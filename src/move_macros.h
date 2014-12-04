@@ -72,8 +72,10 @@ const int LVA_SCORES[13] = { 0, 5, 4, 4, 3, 2, 1, 5, 4, 4, 3, 2, 1 }; //LVA Scor
 #define NUM_BISHOP_MOVES		4
 #define NUM_ROOK_MOVES			4
 #define NUM_QUEEN_MOVES			8
+#define NUM_KING_MOVES			8
 
 const int KNIGHT_MOVES[8] = { -21, -19, -12, -8, 8, 12, 19, 21 };
 const int BISHOP_MOVES[4] = { -11, -9, 11, 9 };
 const int ROOK_MOVES[4] = { -10, -1, 1, 10 };
 const int QUEEN_MOVES[8] = { -11, -10, -9, -1, 1, 9, 10, 11 };
+const int KING_MOVES[8] = { -11, -10, -9, -1, 1, 9, 10, 11 };
