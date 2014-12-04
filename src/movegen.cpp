@@ -7,7 +7,7 @@
 
 void Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *movelist)
 {
-	int i, j, from120, to120, rank, file, piece, capture, slide_num;
+	int i, j, from120, to120, piece, capture, slide_num;
 	const int side = board->side; //Store side to move
 	ASSERT((side == WHITE) || (side == BLACK));
 
@@ -317,4 +317,89 @@ void Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *movelist)
 	{
 
 	}
+}
+//Sees if the specified square is under attack by the given side
+//Returns 1 if under attack, else 0
+int Under_Attack(int target120, int side, BOARD_STRUCT *board)
+{
+	int piece, direction, slider_num, from120;
+
+	ASSERT(ON_BOARD_120(target120));
+
+	if (side == WHITE)
+	{
+		//Pawns
+		if (board->board_array120[target120 - 9] == wP) return 1; //Check both directions
+		if (board->board_array120[target120 - 11] == wP) return 1;
+
+		//Knights
+		for (direction = 0; direction < NUM_KNIGHT_MOVES; direction++)
+		{
+			if (board->board_array120[target120 + KNIGHT_MOVES[direction]] == wN) return 1; //Check all knight sources, return 1 if found
+		}
+
+		//Bishops and queens
+		for (direction = 0; direction < NUM_BISHOP_MOVES; direction++)
+		{
+			for (slider_num = 1; slider_num < 8; slider_num++)
+			{
+				from120 = target120 + slider_num*BISHOP_MOVES[direction];
+				if (!ON_BOARD_120(from120))
+				{
+					break; //End this direction
+				}
+				else //Continue searching in this direction
+				{
+					piece = board->board_array120[from120];
+					if (IS_BLACK_PIECE(piece)) //Black piece in the way
+					{
+						break; //End direction
+					}
+					else if ((piece == wB) || (piece == wQ))
+					{
+						return 1;
+					}
+				}
+			}
+		}
+
+		//Rooks and queens
+		for (direction = 0; direction < NUM_ROOK_MOVES; direction++)
+		{
+			for (slider_num = 1; slider_num < 8; slider_num++)
+			{
+				from120 = target120 + slider_num*ROOK_MOVES[direction];
+				if (!ON_BOARD_120(from120))
+				{
+					break; //End this direction
+				}
+				else //Continue searching in this direction
+				{
+					piece = board->board_array120[from120];
+					if (IS_BLACK_PIECE(piece)) //Black piece in the way
+					{
+						break; //End direction
+					}
+					else if ((piece == wR) || (piece == wQ))
+					{
+						return 1;
+					}
+				}
+			}
+		}
+
+		//King
+		for (direction = 0; direction < NUM_KING_MOVES; direction++)
+		{
+			if (board->board_array120[target120 + KING_MOVES[direction]] == wK) return 1; //Check all knight sources, return 1 if found
+		}
+
+	}
+	else //side == BLACK
+	{
+		 
+	}
+	
+	return 0; //If no attacks were found
+
 }
