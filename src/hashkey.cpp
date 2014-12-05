@@ -5,21 +5,18 @@
 #include "stdlib.h"
 #include "time.h"
 
-U64 piece_keys[64][12];//[square][piece]
-U64 side_keys[2];
-U64 ep_keys[101]; //NO_SQUARE = 100;
-U64 castle_keys[16];
-
 //Returns random 64 bit uint
 #define RANDOM_U64()			(((U64)rand() + \
 								((U64)rand() << 15) + \
 								((U64)rand() << 30) + \
 								((U64)rand() << 45) + \
 							   (((U64)rand() & 0x0f) << 60)))
-									
 
-#define HASH_IN(x,y)			(x^=y)//Keep separate macros for readability later
-#define HASH_OUT(x,y)			(x^=y)
+//Hashkey data
+U64 piece_keys[64][12];//[square][piece]
+U64 side_keys[2];
+U64 ep_keys[101]; //NO_SQUARE = 100;
+U64 castle_keys[16];
 
 //Generates all hashkeys, called before board initialization
 void Init_Hashkeys(void)

@@ -135,6 +135,8 @@ typedef struct
 extern void Init_Board(BOARD_STRUCT *board);
 extern void Update_Piece_Lists(BOARD_STRUCT *board);
 extern void Update_Bitboards(BOARD_STRUCT *board);
+extern void Add_To_Piecelists(int piece, int index120, BOARD_STRUCT *board);
+extern void Remove_From_Piecelists(int piece, int index120, BOARD_STRUCT *board);
 extern void Parse_Fen(char *fen, BOARD_STRUCT *board);
 extern void Print_Board(BOARD_STRUCT *board);
 extern void Print_Bitboards(BOARD_STRUCT *board);

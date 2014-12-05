@@ -6,3 +6,5 @@
 char* file_names = "abcdefgh";
 char* rank_names = "12345678";
 char* piece_names = " PNBRQKPNBRQK";
+
+

@@ -3,6 +3,8 @@
 * Theo Kanning 12/2/14
 */
 
+
+
 //Shifts to corresponding fields
 #define fromShift				0
 #define toShift					7
@@ -79,3 +81,6 @@ const int BISHOP_MOVES[4] = { -11, -9, 11, 9 };
 const int ROOK_MOVES[4] = { -10, -1, 1, 10 };
 const int QUEEN_MOVES[8] = { -11, -10, -9, -1, 1, 9, 10, 11 };
 const int KING_MOVES[8] = { -11, -10, -9, -1, 1, 9, 10, 11 };
+
+#define HASH_IN(x,y)			(x^=y)//Keep separate macros for readability later
+#define HASH_OUT(x,y)			(x^=y)
