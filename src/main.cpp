@@ -14,14 +14,27 @@ using namespace std;
 BOARD_STRUCT board;
 MOVE_LIST_STRUCT movelist;
 
+int move_num = 0;
+int done = 0;
+
 int main()
 {
 	cout << PROGRAM_NAME << " version " << VERSION_NO << endl << AUTHOR << endl;	
 	Init_Hashkeys();
-	Parse_Fen(CASTLE2_FEN, &board);
-	//Init_Board(&board);
+	//Parse_Fen(CASTLE2_FEN, &board);
+	Init_Board(&board);
 	Print_Board(&board);
-	Generate_Moves(&board, &movelist);
-	Print_Movelist(&movelist);
+	while (!done)
+	{
+		Generate_Moves(&board, &movelist);
+		Print_Movelist(&movelist);
+
+		cin >> move_num;
+		if (move_num < 0 || move_num >= movelist.num) done = 1;
+
+		Make_Move(&movelist.list[move_num], &board); //Make first move
+		Print_Board(&board);
+	}
+	
 	system("PAUSE");
 }

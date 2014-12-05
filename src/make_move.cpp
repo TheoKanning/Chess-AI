@@ -67,9 +67,9 @@ void Make_Move(MOVE_STRUCT *move, BOARD_STRUCT *board)
 
 		/***** board_array64[64] *****/
 		//Remove from square
-		board->board_array120[from64] = EMPTY;
+		board->board_array64[from64] = EMPTY;
 		//Add to square
-		board->board_array120[to64] = piece;
+		board->board_array64[to64] = piece;
 
 		//Update hashkey
 		HASH_OUT(hash, piece_keys[piece][from64]); //From square
@@ -96,6 +96,7 @@ void Make_Move(MOVE_STRUCT *move, BOARD_STRUCT *board)
 		Remove_From_Piecelists(piece, from120, board);
 		if (capture != EMPTY) Remove_From_Piecelists(capture, to120, board);
 		Add_To_Piecelists(piece, to120, board);
+		//These functions automatically update material score
 		
 		/***** Pawn Bitboards *****/
 		if (piece == wP)
@@ -160,19 +161,26 @@ void Make_Move(MOVE_STRUCT *move, BOARD_STRUCT *board)
 	/***** Updates regardless of move type *****/
 
 	//side (Incremented at end of function)
-	board->side ^= side; //Toggle
+	board->side ^= 1; //Toggle
 
 	//hply; //total moves taken so far
 	board->hply++;
 
 	//move_counter; //100 move counter
-	if ((piece == wP) || (piece == bP) || (capture != EMPTY)) board->move_counter = 0; //if pawn move or capture
+	if ((piece == wP) || (piece == bP) || (capture != EMPTY))
+	{
+		board->move_counter = 0; //if pawn move or capture
+	}
+	else
+	{
+		board->move_counter++;
+	}
 
 	//castle_rights;
 	//Check if rights are available, then test conditions to prevent hashing twice
 	if (board->castle_rights & WK_CASTLE )
 	{
-		if (piece = wK || board->board_array120[H1] != wR)
+		if (piece == wK || board->board_array120[H1] != wR)
 		{
 			board->castle_rights &= ~WK_CASTLE;
 			HASH_OUT(hash, castle_keys[WK_CASTLE]);
@@ -180,7 +188,7 @@ void Make_Move(MOVE_STRUCT *move, BOARD_STRUCT *board)
 	}
 	if (board->castle_rights & WQ_CASTLE)
 	{
-		if (piece = wK || board->board_array120[A1] != wR)
+		if (piece == wK || board->board_array120[A1] != wR)
 		{
 			board->castle_rights &= ~WQ_CASTLE;
 			HASH_OUT(hash, castle_keys[WQ_CASTLE]);
@@ -188,7 +196,7 @@ void Make_Move(MOVE_STRUCT *move, BOARD_STRUCT *board)
 	}
 	if (board->castle_rights & BK_CASTLE)
 	{
-		if (piece = bK || board->board_array120[H8] != bR)
+		if (piece == bK || board->board_array120[H8] != bR)
 		{
 			board->castle_rights &= ~BK_CASTLE;
 			HASH_OUT(hash, castle_keys[BK_CASTLE]);
@@ -196,7 +204,7 @@ void Make_Move(MOVE_STRUCT *move, BOARD_STRUCT *board)
 	}
 	if (board->castle_rights & BQ_CASTLE)
 	{
-		if (piece = bK || board->board_array120[A8] != bR)
+		if (piece == bK || board->board_array120[A8] != bR)
 		{
 			board->castle_rights &= ~BQ_CASTLE;
 			HASH_OUT(hash, castle_keys[BQ_CASTLE]);
@@ -242,6 +250,7 @@ void Print_Movelist(MOVE_LIST_STRUCT *movelist)
 
 	for (index = 0; index < movelist->num; index++) //Iterate through all moves stored
 	{
+		cout << index << " ";
 		move_num = movelist->list[index].move; //Store move in temp variable
 		move_score = movelist->list[index].score;
 

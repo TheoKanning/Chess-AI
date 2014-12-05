@@ -123,6 +123,10 @@ typedef struct
 	int piece_num[13]; //Stores the number of each type of piece
 	int piece_list120[13][10]; //[Piece][instance] contains index of pieces on board, empty cells are 0, which is off the 120 board
 
+	int material; //Material score
+
+	int eval_score; //Overall evaluation score
+
 	U64 pawn_bitboards[3]; //One for white, black, and both
 
 	U64 hash_key;
@@ -151,6 +155,8 @@ extern void Init_Hashkeys(void);
 extern void Compute_Hash(BOARD_STRUCT *board);
 
 //makemove
+void Make_Move(MOVE_STRUCT *move, BOARD_STRUCT *board);
+void Take_Move(MOVE_STRUCT *move, BOARD_STRUCT *board);
 extern void Add_Move(MOVE_LIST_STRUCT *move_list, int from, int to, int piece, int capture, int special, int score);
 extern void Print_Movelist(MOVE_LIST_STRUCT *movelist);
 

@@ -7,6 +7,8 @@
 
 using namespace std;
 
+extern int piece_values[13];
+
 //Private functions
 void Update_Board_Array_120(BOARD_STRUCT *board);
 
@@ -261,10 +263,15 @@ void Parse_Fen(char *fen, BOARD_STRUCT *board)
 //Adds a piece and location to a piece list
 void Add_To_Piecelists(int piece, int index120, BOARD_STRUCT *board)
 {
-	ASSERT(piece != EMPTY); //Empty pieces should not be added
 	ASSERT(ON_BOARD_120(index120));
-	board->piece_list120[piece][board->piece_num[piece]] = index120;
-	board->piece_num[piece]++;
+	if (piece != EMPTY) //Ignore empty pieces
+	{
+		board->piece_list120[piece][board->piece_num[piece]] = index120;
+		board->piece_num[piece]++;
+	}
+
+	if (IS_WHITE_PIECE(piece)) board->material += piece_values[piece];
+	if (IS_BLACK_PIECE(piece)) board->material -= piece_values[piece];
 }
 
 //Removes a piece and location from piece list
@@ -272,23 +279,27 @@ void Remove_From_Piecelists(int piece, int index120, BOARD_STRUCT *board)
 {
 	int i;
 	int found = 0;
-	ASSERT(piece != EMPTY); //Empty pieces should not be removed
 	ASSERT(ON_BOARD_120(index120));
-
-	for (i = 0; i < board->piece_num[piece] - 1; i++) //Loop through available info
+	if (piece != EMPTY)
 	{
-		if (board->piece_list120[piece][i] == index120) found = 1; //Begin shifting indices down
-
-		if (found) //If the index has been found
+		for (i = 0; i < board->piece_num[piece] - 1; i++) //Loop through available info
 		{
-			board->piece_list120[piece][i] = board->piece_list120[piece][i + 1]; //Shift values down one index
+			if (board->piece_list120[piece][i] == index120) found = 1; //Begin shifting indices down
+
+			if (found) //If the index has been found
+			{
+				board->piece_list120[piece][i] = board->piece_list120[piece][i + 1]; //Shift values down one index
+			}
 		}
+
+		ASSERT(found || (board->piece_list120[piece][board->piece_num[piece]] = index120)); //Index was either found early or in last position
+		board->piece_list120[piece][board->piece_num[piece]] = 0; //Remove last index
+
+		board->piece_num[piece]--;
 	}
 
-	ASSERT(found || (board->piece_list120[piece][board->piece_num[piece]] = index120)); //Index was either found early or in last position
-	board->piece_list120[piece][board->piece_num[piece]] = 0; //Remove last index
-	
-	board->piece_num[piece]--;
+	if (IS_WHITE_PIECE(piece)) board->material += piece_values[piece];
+	if (IS_BLACK_PIECE(piece)) board->material -= piece_values[piece];
 }
 
 
@@ -314,6 +325,9 @@ void Update_Piece_Lists(BOARD_STRUCT *board)
 		{
 			board->piece_list120[piece][board->piece_num[piece]] = SQUARE_64_TO_120(index); //Store 10x12 index in list
 			board->piece_num[piece]++; //Increment piece count
+
+			if (IS_WHITE_PIECE(piece)) board->material += piece_values[piece];
+			if (IS_BLACK_PIECE(piece)) board->material -= piece_values[piece];
 		}
 	}
 }

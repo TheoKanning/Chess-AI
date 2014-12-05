@@ -9,9 +9,20 @@ void Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *movelist)
 {
 	int i, j, from120, to120, piece, capture, slide_num;
 	const int side = board->side; //Store side to move
-	ASSERT((side == WHITE) || (side == BLACK));
 
-	
+	/***** Clear move list *****/
+	for (i = 0; i < movelist->num; i++)
+	{
+		movelist->list[i].move = 0;
+		movelist->list[i].score = 0;
+	}
+
+	movelist->num = 0;
+	/***** Movelist now empty *****/
+
+
+	ASSERT((side == WHITE) || (side == BLACK));
+		
 	if (side == WHITE)
 	{
 		/***************************************/
