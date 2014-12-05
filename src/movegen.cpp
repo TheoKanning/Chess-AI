@@ -619,7 +619,44 @@ void Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *movelist)
 		}
 		/***** End King Moves *****/
 	}
+
+	/***** Sort list *****/
+	Sort_Moves(movelist);
 }
+//Sort moves according to score using comb sort algorithm
+void Sort_Moves(MOVE_LIST_STRUCT *movelist)
+{
+	int width = 10; //Distance between compared values
+	int done = 0; //Records whether or not the list is fully sorted
+	int index; //Index of start point
+	MOVE_STRUCT temp; //Temporary move value
+
+	while (!done)
+	{
+		if(width = 1) done = 1; //Only enable ending once minimum width is reached
+
+		for (index = 0; index < movelist->num - 1 - width; index++)
+		{
+			if (movelist->list[index].score < movelist->list[index + width].score)
+			{
+				//Swap moves
+				Copy_Move(&movelist->list[index], &temp); //1 -> temp
+				Copy_Move(&movelist->list[index+width], &movelist->list[index]); //2 -> 1
+				Copy_Move(&temp, &movelist->list[index+width]); //temp -> 2
+				done = 0;
+			}
+		}
+		if (width > 1) width--;
+	}
+}
+
+//Copies move 1 into move 2 pointer
+void Copy_Move(MOVE_STRUCT *move1, MOVE_STRUCT *move2)
+{
+	move2->move = move1->move;
+	move2->score = move1->score;
+}
+
 //Sees if the specified square is under attack by the given side
 //Returns 1 if under attack, else 0
 int Under_Attack(int target120, int side, BOARD_STRUCT *board)

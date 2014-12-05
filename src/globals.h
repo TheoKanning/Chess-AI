@@ -155,3 +155,5 @@ extern void Print_Movelist(MOVE_LIST_STRUCT *movelist);
 //movegen
 extern void Generate_Moves(BOARD_STRUCT*, MOVE_LIST_STRUCT*);
 extern int Under_Attack(int target120, int side, BOARD_STRUCT *board);
+extern void Sort_Moves(MOVE_LIST_STRUCT *movelist);
+extern void Copy_Move(MOVE_STRUCT *move1, MOVE_STRUCT *move2);
