@@ -509,7 +509,7 @@ void Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *movelist)
 							Add_Move(movelist, from120, to120, bR, capture, NOT_SPECIAL, GET_MMVLVA_SCORE(capture, bR));
 							break;
 						}
-						else if (IS_WHITE_PIECE(board->board_array120[to120]))
+						else if (IS_BLACK_PIECE(board->board_array120[to120]))
 						{
 							break; //Stop sliding
 						}
@@ -722,7 +722,7 @@ int Under_Attack(int target120, int side, BOARD_STRUCT *board)
 				else //Continue searching in this direction
 				{
 					piece = board->board_array120[from120];
-					if (IS_BLACK_PIECE(piece)) //Black piece in the way
+					if (IS_WHITE_PIECE(piece)) //White piece in the way
 					{
 						break; //End direction
 					}
@@ -747,7 +747,7 @@ int Under_Attack(int target120, int side, BOARD_STRUCT *board)
 				else //Continue searching in this direction
 				{
 					piece = board->board_array120[from120];
-					if (IS_BLACK_PIECE(piece)) //Black piece in the way
+					if (IS_WHITE_PIECE(piece)) //White piece in the way
 					{
 						break; //End direction
 					}

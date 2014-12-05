@@ -176,7 +176,7 @@ void Parse_Fen(char *fen, BOARD_STRUCT *board)
 	
 	//Castling rights
 	fen++;
-	board->side = 0;
+	board->castle_rights = 0;
 	while (*fen != ' ') //Continue until space is read
 	{
 		switch (*fen)

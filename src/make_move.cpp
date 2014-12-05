@@ -74,29 +74,40 @@ void Print_Movelist(MOVE_LIST_STRUCT *movelist)
 		rank = GET_RANK_120(square);
 		file = GET_FILE_120(square);
 
-		//Print
-		if ((piece != wP) && (piece != bP)) //If piece is not a pawn
+		/***** Print *****/
+		//Castle
+		if (IS_KING_CASTLE(move_num))
 		{
-			cout << piece_names[piece]; //Piece
+			cout << "O-O";
 		}
-		else if (GET_CAPTURE(move_num) != 0) //If piece is a pawn, and a capture occured
+		else if (IS_QUEEN_CASTLE(move_num))
 		{
-			cout << file_names[GET_FILE_120(from)];
+			cout << "O-O-O";
 		}
-
-		if (GET_CAPTURE(move_num) != 0) cout << "x"; //If Capture occured
-
-		cout << file_names[file]; //File and rank
-		cout << rank_names[rank];
-
-		if (IS_PROMOTION(move_num)) //Promoted piece
+		else
 		{
-			if (IS_QUEEN_PROMOTION(move_num)) cout << "Q";
-			if (IS_ROOK_PROMOTION(move_num)) cout << "R";
-			if (IS_BISHOP_PROMOTION(move_num)) cout << "B";
-			if (IS_KNIGHT_PROMOTION(move_num)) cout << "N";
-		}
+			if ((piece != wP) && (piece != bP)) //If piece is not a pawn
+			{
+				cout << piece_names[piece]; //Piece
+			}
+			else if (GET_CAPTURE(move_num) != 0) //If piece is a pawn, and a capture occured
+			{
+				cout << file_names[GET_FILE_120(from)];
+			}
 
+			if (GET_CAPTURE(move_num) != 0) cout << "x"; //If Capture occured
+
+			cout << file_names[file]; //File and rank
+			cout << rank_names[rank];
+
+			if (IS_PROMOTION(move_num)) //Promoted piece
+			{
+				if (IS_QUEEN_PROMOTION(move_num)) cout << "Q";
+				if (IS_ROOK_PROMOTION(move_num)) cout << "R";
+				if (IS_BISHOP_PROMOTION(move_num)) cout << "B";
+				if (IS_KNIGHT_PROMOTION(move_num)) cout << "N";
+			}
+		}
 		cout << " Score: " << move_score << endl;
 	}
 }
