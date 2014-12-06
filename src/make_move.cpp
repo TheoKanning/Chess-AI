@@ -7,7 +7,7 @@
 using namespace std;
 
 //Hashkey data
-extern U64 piece_keys[64][12];//[square][piece]
+extern U64 piece_keys[13][64];//[square][piece]
 extern U64 side_keys[2];
 extern U64 ep_keys[101]; //NO_SQUARE = 100;
 extern U64 castle_keys[16];
@@ -32,7 +32,7 @@ bit  [22:24] Special flags
 
 void Make_Move(MOVE_STRUCT *move, BOARD_STRUCT *board)
 {
-	int from120, to120, from64, to64, piece, capture, side;
+	int from120, to120, from64, to64, piece, capture, side, castle_temp;
 	int move_num = move->move;
 
 	U64 hash = board->hash_key;
@@ -101,28 +101,28 @@ void Make_Move(MOVE_STRUCT *move, BOARD_STRUCT *board)
 		/***** Pawn Bitboards *****/
 		if (piece == wP)
 		{
-			CLR_BIT(board->pawn_bitboards[WHITE], from120);
-			CLR_BIT(board->pawn_bitboards[BOTH], from120);
-			SET_BIT(board->pawn_bitboards[WHITE], to120);
-			SET_BIT(board->pawn_bitboards[BOTH], to120);
+			CLR_BIT(board->pawn_bitboards[WHITE], from64);
+			CLR_BIT(board->pawn_bitboards[BOTH], from64);
+			SET_BIT(board->pawn_bitboards[WHITE], to64);
+			SET_BIT(board->pawn_bitboards[BOTH], to64);
 		}
 		else if (piece == bP)
 		{
-			CLR_BIT(board->pawn_bitboards[BLACK], from120);
-			CLR_BIT(board->pawn_bitboards[BOTH], from120);
-			SET_BIT(board->pawn_bitboards[BLACK], to120);
-			SET_BIT(board->pawn_bitboards[BOTH], to120);
+			CLR_BIT(board->pawn_bitboards[BLACK], from64);
+			CLR_BIT(board->pawn_bitboards[BOTH], from64);
+			SET_BIT(board->pawn_bitboards[BLACK], to64);
+			SET_BIT(board->pawn_bitboards[BOTH], to64);
 		}
 
 		if (capture == wP)
 		{
-			CLR_BIT(board->pawn_bitboards[WHITE], to120);
-			CLR_BIT(board->pawn_bitboards[BOTH], to120);
+			CLR_BIT(board->pawn_bitboards[WHITE], to64);
+			CLR_BIT(board->pawn_bitboards[BOTH], to64);
 		}
 		else if (capture == bP)
 		{
-			CLR_BIT(board->pawn_bitboards[BLACK], to120);
-			CLR_BIT(board->pawn_bitboards[BOTH], to120);
+			CLR_BIT(board->pawn_bitboards[BLACK], to64);
+			CLR_BIT(board->pawn_bitboards[BOTH], to64);
 		}
 	}
 	else if (IS_EP_CAPTURE(move_num))
@@ -161,7 +161,9 @@ void Make_Move(MOVE_STRUCT *move, BOARD_STRUCT *board)
 	/***** Updates regardless of move type *****/
 
 	//side (Incremented at end of function)
+	HASH_OUT(hash,side_keys[board->side]);
 	board->side ^= 1; //Toggle
+	HASH_IN(hash, side_keys[board->side]);
 
 	//hply; //total moves taken so far
 	board->hply++;
@@ -182,35 +184,52 @@ void Make_Move(MOVE_STRUCT *move, BOARD_STRUCT *board)
 	{
 		if (piece == wK || board->board_array120[H1] != wR)
 		{
+			castle_temp = board->castle_rights;
+			HASH_OUT(hash, castle_keys[castle_temp]);
 			board->castle_rights &= ~WK_CASTLE;
-			HASH_OUT(hash, castle_keys[WK_CASTLE]);
+			HASH_IN(hash, castle_keys[board->castle_rights]);
 		}
 	}
 	if (board->castle_rights & WQ_CASTLE)
 	{
 		if (piece == wK || board->board_array120[A1] != wR)
 		{
+			castle_temp = board->castle_rights;
+			HASH_OUT(hash, castle_keys[castle_temp]);
 			board->castle_rights &= ~WQ_CASTLE;
-			HASH_OUT(hash, castle_keys[WQ_CASTLE]);
+			HASH_IN(hash, castle_keys[board->castle_rights]);
 		}
 	}
 	if (board->castle_rights & BK_CASTLE)
 	{
 		if (piece == bK || board->board_array120[H8] != bR)
 		{
+			castle_temp = board->castle_rights;
+			HASH_OUT(hash, castle_keys[castle_temp]);
 			board->castle_rights &= ~BK_CASTLE;
-			HASH_OUT(hash, castle_keys[BK_CASTLE]);
+			HASH_IN(hash, castle_keys[board->castle_rights]);
 		}
 	}
 	if (board->castle_rights & BQ_CASTLE)
 	{
 		if (piece == bK || board->board_array120[A8] != bR)
 		{
+			castle_temp = board->castle_rights;
+			HASH_OUT(hash, castle_keys[castle_temp]);
 			board->castle_rights &= ~BQ_CASTLE;
-			HASH_OUT(hash, castle_keys[BQ_CASTLE]);
+			HASH_IN(hash, castle_keys[board->castle_rights]);
 		}
 	}
 
+	/***** Update Hash *****/
+	board->hash_key = hash;
+
+	/***** Evaluate *****/
+	Evaluate_Board(board);
+
+#ifdef DEBUG
+	Check_Board(board);
+#endif
 }
 
 

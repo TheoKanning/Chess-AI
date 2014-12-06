@@ -142,6 +142,7 @@ extern void Update_Bitboards(BOARD_STRUCT *board);
 extern void Add_To_Piecelists(int piece, int index120, BOARD_STRUCT *board);
 extern void Remove_From_Piecelists(int piece, int index120, BOARD_STRUCT *board);
 extern void Parse_Fen(char *fen, BOARD_STRUCT *board);
+extern void Check_Board(BOARD_STRUCT *board);
 extern void Print_Board(BOARD_STRUCT *board);
 extern void Print_Bitboards(BOARD_STRUCT *board);
 
@@ -149,6 +150,9 @@ extern void Print_Bitboards(BOARD_STRUCT *board);
 extern char* file_names;
 extern char* rank_names;
 extern char* piece_names;
+
+//eval
+extern void Evaluate_Board(BOARD_STRUCT *board);
 
 //hashkeys
 extern void Init_Hashkeys(void);

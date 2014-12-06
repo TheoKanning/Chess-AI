@@ -104,6 +104,12 @@ void Init_Board(BOARD_STRUCT *board)
 	Update_Piece_Lists(board);
 
 	Compute_Hash(board);
+
+	Evaluate_Board(board);
+
+#ifdef DEBUG
+	Check_Board(board);
+#endif
 }
 
 //Sets a board to a fen position and fills all fields
@@ -257,7 +263,11 @@ void Parse_Fen(char *fen, BOARD_STRUCT *board)
 
 	Compute_Hash(board);
 
+	Evaluate_Board(board);
 
+#ifdef DEBUG
+	Check_Board(board);
+#endif
 }
 
 //Adds a piece and location to a piece list
@@ -298,8 +308,8 @@ void Remove_From_Piecelists(int piece, int index120, BOARD_STRUCT *board)
 		board->piece_num[piece]--;
 	}
 
-	if (IS_WHITE_PIECE(piece)) board->material += piece_values[piece];
-	if (IS_BLACK_PIECE(piece)) board->material -= piece_values[piece];
+	if (IS_WHITE_PIECE(piece)) board->material -= piece_values[piece];
+	if (IS_BLACK_PIECE(piece)) board->material += piece_values[piece];
 }
 
 
@@ -361,6 +371,92 @@ void Update_Board_Array_120(BOARD_STRUCT *board)
 		board->board_array120[SQUARE_64_TO_120(index)] = board->board_array64[index];
 	}
 }
+
+
+//Checks all board values for consistency
+//Asserts will fail if anything is incorrect
+void Check_Board(BOARD_STRUCT *board)
+{
+	int index64, index120, piece, i, j;
+	int material_temp = 0;
+	int piecelist_temp[13][10] = { 0 };
+	int piece_num_temp[13] = { 0 };
+	U64 hash_temp = 0;
+	U64 pawn_bitboards_temp[3] = { 0 };
+
+	//Check board arrays for consistency
+	for (index64 = 0; index64 < 64; index64++)
+	{
+		piece = board->board_array64[index64];
+		index120 = SQUARE_64_TO_120(index64);
+		ASSERT(board->board_array120[index120] == piece); //Check if both arrays have identical data
+
+		/***** Regenerate piece lists *****/
+		if (piece != EMPTY)
+		{
+			piecelist_temp[piece][piece_num_temp[piece]] = index120; //Store index
+			piece_num_temp[piece]++; //Increment count
+		}
+		if (piece == wP)
+		{
+			SET_BIT(pawn_bitboards_temp[WHITE], index64);
+			SET_BIT(pawn_bitboards_temp[BOTH], index64);
+		}
+		else if (piece == bP)
+		{
+			SET_BIT(pawn_bitboards_temp[BLACK], index64);
+			SET_BIT(pawn_bitboards_temp[BOTH], index64);
+		}
+		if (IS_WHITE_PIECE(piece)) material_temp += piece_values[piece]; //Update material values
+		if (IS_BLACK_PIECE(piece)) material_temp -= piece_values[piece];
+	}
+
+	/***** Verify Piece Lists *****/
+	for (piece = 0; piece <= bK; piece++)
+	{
+		ASSERT(piece_num_temp[piece] == board->piece_num[piece]); //Check piece num array for consistency
+	}
+
+	//Make sure unused piece list indices are zero
+	for (piece = 0; piece <= bK; piece++)
+	{
+		for (i = piece_num_temp[piece]; i < 10; i++)
+		{
+			ASSERT(board->piece_list120[piece][i] == 0); //Make sure unused indices are zero
+		}
+	}
+
+	//Make sure piece list indices are correct
+	for (piece = 0; piece <= bK; piece++)
+	{
+		for (i = 0; i < piece_num_temp[piece]; i++) //Index to look for
+		{
+			for (j = 0; j <= piece_num_temp[piece]; j++)//If last index reached, return error
+			{
+				ASSERT(j < piece_num_temp[piece]); //Make sure that last index has not been reached
+				if (piecelist_temp[piece][i] == board->piece_list120[piece][j]) break;
+			}
+		}
+	}
+
+	/***** Bitboards *****/
+	ASSERT(pawn_bitboards_temp[WHITE] == board->pawn_bitboards[WHITE]);
+	ASSERT(pawn_bitboards_temp[BLACK] == board->pawn_bitboards[BLACK]);
+	ASSERT(pawn_bitboards_temp[BOTH] == board->pawn_bitboards[BOTH]);
+
+	/***** Material Score *****/
+	ASSERT(material_temp == board->material);
+
+	/***** Hashkey *****/
+	hash_temp = board->hash_key; //Store previous value
+	Compute_Hash(board); //Recalculate hash
+	ASSERT(board->hash_key == hash_temp); //Make sure they match
+
+	/***** Castling *****/
+
+
+}
+
 
 //Prints pieces and useful info to console
 void Print_Board(BOARD_STRUCT *board)
@@ -467,6 +563,9 @@ void Print_Board(BOARD_STRUCT *board)
 
 	//Ply
 	cout << "Hply: " << board->hply << endl;
+
+	//Material score
+	cout << "Eval: " << board->eval_score / 100.0 << endl;
 }
 
 //Prints all three pawn bitboards using the same format as the Print_Board function

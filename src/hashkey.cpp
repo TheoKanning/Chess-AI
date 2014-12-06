@@ -13,7 +13,7 @@
 							   (((U64)rand() & 0x0f) << 60)))
 
 //Hashkey data
-U64 piece_keys[64][12];//[square][piece]
+U64 piece_keys[13][64];//[square][piece]
 U64 side_keys[2];
 U64 ep_keys[101]; //NO_SQUARE = 100;
 U64 castle_keys[16];
@@ -29,9 +29,9 @@ void Init_Hashkeys(void)
 	//Piece keys
 	for (index = 0; index < 64; index++)
 	{
-		for (index2 = 0; index2 < 12; index2++)
+		for (index2 = 0; index2 < 13; index2++)
 		{
-			piece_keys[index][index2] = RANDOM_U64();
+			piece_keys[index2][index] = RANDOM_U64();
 		}
 	}
 
@@ -53,15 +53,16 @@ void Init_Hashkeys(void)
 }
 
 
-//Takes a pointer to a board object and initializes its hash key
+//Takes a pointer to a board object and returns its hash key
 void Compute_Hash(BOARD_STRUCT *board)
 {
 	int index;
+	board->hash_key = 0; //Reset key
 
 	//Piece keys
 	for (index = 0; index < 64; index++)
 	{
-		HASH_IN(board->hash_key, piece_keys[index][board->board_array64[index]]);//Add the hash value of the piece at each index
+		HASH_IN(board->hash_key, piece_keys[board->board_array64[index]][index]);//Add the hash value of the piece at each index
 	}
 
 	//Side keys
