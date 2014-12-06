@@ -21,8 +21,9 @@ int main()
 {
 	cout << PROGRAM_NAME << " version " << VERSION_NO << endl << AUTHOR << endl;	
 	Init_Hashkeys();
-	//Parse_Fen(CASTLE2_FEN, &board);
-	Init_Board(&board);
+	
+	//Init_Board(&board);
+	Parse_Fen(EP_TEST_FEN, &board);
 	Print_Board(&board);
 	while (!done)
 	{

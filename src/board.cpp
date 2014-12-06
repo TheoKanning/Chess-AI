@@ -302,8 +302,8 @@ void Remove_From_Piecelists(int piece, int index120, BOARD_STRUCT *board)
 			}
 		}
 
-		ASSERT(found || (board->piece_list120[piece][board->piece_num[piece]] = index120)); //Index was either found early or in last position
-		board->piece_list120[piece][board->piece_num[piece]] = 0; //Remove last index
+		ASSERT(found || (board->piece_list120[piece][board->piece_num[piece]-1] == index120)); //Index was either found early or in last position
+		board->piece_list120[piece][board->piece_num[piece]-1] = 0; //Remove last index
 
 		board->piece_num[piece]--;
 	}
@@ -418,7 +418,7 @@ void Check_Board(BOARD_STRUCT *board)
 	}
 
 	//Make sure unused piece list indices are zero
-	for (piece = 0; piece <= bK; piece++)
+	for (piece = 1; piece <= bK; piece++)
 	{
 		for (i = piece_num_temp[piece]; i < 10; i++)
 		{
@@ -553,7 +553,14 @@ void Print_Board(BOARD_STRUCT *board)
 	cout << endl; //New line after castle info
 
 	//EP
-	cout << "EP: " << board->ep<< endl;
+	if (board->ep == NO_SQUARE)
+	{
+		cout << "EP: None" << endl;
+	}
+	else
+	{
+		cout << "EP: " << board->ep << endl;
+	}
 
 	//Hash
 	cout << "Hashkey: " << board->hash_key << endl;

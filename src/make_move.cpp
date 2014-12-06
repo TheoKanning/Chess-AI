@@ -32,7 +32,7 @@ bit  [22:24] Special flags
 
 void Make_Move(MOVE_STRUCT *move, BOARD_STRUCT *board)
 {
-	int from120, to120, from64, to64, piece, capture, side, castle_temp;
+	int from120, to120, from64, to64, piece, capture, side, castle_temp, ep_capture120, ep_capture64;
 	int move_num = move->move;
 
 	U64 hash = board->hash_key;
@@ -127,7 +127,77 @@ void Make_Move(MOVE_STRUCT *move, BOARD_STRUCT *board)
 	}
 	else if (IS_EP_CAPTURE(move_num))
 	{
+		HASH_OUT(hash, ep_keys[board->ep]);
+		board->ep = NO_SQUARE; //Reset ep square
+		HASH_IN(hash, ep_keys[board->ep]);
 
+		if (side == WHITE)
+		{
+			ep_capture120 = to120 - 10; //Square with captured pawn on it
+			capture = bP;
+		}
+		else
+		{
+			ep_capture120 = to120 + 10;
+			capture = wP;
+		}
+		ep_capture64 = SQUARE_120_TO_64(ep_capture120);
+
+			/***** board_array120[120] *****/
+			//Remove from square
+			ASSERT(board->board_array120[from120] == piece);
+			board->board_array120[from120] = EMPTY;
+
+			//Add to square
+			ASSERT(board->board_array120[to120] == EMPTY);
+			board->board_array120[to120] = piece;
+
+			//Remove capture pawn
+			ASSERT(board->board_array120[ep_capture120] == capture); //Black pawn in capture square
+			board->board_array120[ep_capture120] = EMPTY; //Remove capture
+
+			/***** board_array64[64] *****/
+			//Remove from square
+			board->board_array64[from64] = EMPTY;
+			//Add to square
+			board->board_array64[to64] = piece;
+			//Remove captured pawn
+			board->board_array64[ep_capture64] = EMPTY; //Remove capture
+
+			//Update hashkey
+			HASH_OUT(hash, piece_keys[piece][from64]); //From square
+			HASH_IN(hash, piece_keys[EMPTY][from64]);
+
+			HASH_OUT(hash, piece_keys[EMPTY][to64]); //From square
+			HASH_IN(hash, piece_keys[piece][to64]);
+
+			HASH_OUT(hash, piece_keys[capture][ep_capture64]); //Remove captured pawn
+			HASH_IN(hash, piece_keys[EMPTY][ep_capture64]);
+
+
+			/***** Piece Lists *****/
+			Remove_From_Piecelists(piece, from120, board);
+			Add_To_Piecelists(piece, to120, board);
+			Remove_From_Piecelists(capture, ep_capture120, board);
+			//These functions automatically update material score
+
+			/***** Pawn Bitboards *****/
+			CLR_BIT(board->pawn_bitboards[WHITE], from64);
+			CLR_BIT(board->pawn_bitboards[BOTH], from64);
+
+			SET_BIT(board->pawn_bitboards[WHITE], to64);
+			SET_BIT(board->pawn_bitboards[BOTH], to64);
+
+			if (capture == bP)
+			{
+				CLR_BIT(board->pawn_bitboards[BLACK], ep_capture64);
+				CLR_BIT(board->pawn_bitboards[BOTH], ep_capture64);
+			}
+			else
+			{
+				CLR_BIT(board->pawn_bitboards[WHITE], ep_capture64);
+				CLR_BIT(board->pawn_bitboards[BOTH], ep_capture64);
+			}
 	}
 	else if (IS_KING_CASTLE(move_num))
 	{
