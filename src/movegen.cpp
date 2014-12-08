@@ -682,7 +682,7 @@ void Sort_Moves(MOVE_LIST_STRUCT *movelist)
 	int width = 10; //Distance between compared values
 	int done = 0; //Records whether or not the list is fully sorted
 	int index; //Index of start point
-	MOVE_STRUCT temp; //Temporary move value
+	MOVE_STRUCT temp; //Temporary move structure
 
 	while (!done)
 	{
