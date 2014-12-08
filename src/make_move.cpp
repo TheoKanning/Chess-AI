@@ -51,6 +51,7 @@ void Make_Move(MOVE_STRUCT *move, BOARD_STRUCT *board)
 	ASSERT((EMPTY < piece) && (piece <= bK));
 	ASSERT((EMPTY <= capture) && (capture <= bK));
 
+	ASSERT(board->board_array120[from120] == piece);
 
 	/***** Quiet Moves and Captures *****/
 	if (IS_NOT_SPECIAL(move_num))
@@ -99,6 +100,17 @@ void Make_Move(MOVE_STRUCT *move, BOARD_STRUCT *board)
 		//These functions automatically update material score
 		
 		/***** Pawn Bitboards *****/
+		//Remove captured fist, then add moving piece
+		if (capture == wP)
+		{
+			CLR_BIT(board->pawn_bitboards[WHITE], to64);
+			CLR_BIT(board->pawn_bitboards[BOTH], to64);
+		}
+		else if (capture == bP)
+		{
+			CLR_BIT(board->pawn_bitboards[BLACK], to64);
+			CLR_BIT(board->pawn_bitboards[BOTH], to64);
+		}
 		if (piece == wP)
 		{
 			CLR_BIT(board->pawn_bitboards[WHITE], from64);
@@ -114,16 +126,7 @@ void Make_Move(MOVE_STRUCT *move, BOARD_STRUCT *board)
 			SET_BIT(board->pawn_bitboards[BOTH], to64);
 		}
 
-		if (capture == wP)
-		{
-			CLR_BIT(board->pawn_bitboards[WHITE], to64);
-			CLR_BIT(board->pawn_bitboards[BOTH], to64);
-		}
-		else if (capture == bP)
-		{
-			CLR_BIT(board->pawn_bitboards[BLACK], to64);
-			CLR_BIT(board->pawn_bitboards[BOTH], to64);
-		}
+		
 	}
 	else if (IS_EP_CAPTURE(move_num))
 	{
@@ -201,27 +204,391 @@ void Make_Move(MOVE_STRUCT *move, BOARD_STRUCT *board)
 	}
 	else if (IS_KING_CASTLE(move_num))
 	{
+		if (piece == wK)
+		{
+			ASSERT(from120 == E1);
+			ASSERT(to120 == G1);
+			ASSERT(board->board_array120[to120] == EMPTY);
 
+			//Move king
+			board->board_array120[from120] = EMPTY; //Remove from E1
+			board->board_array64[from64] = EMPTY;
+			Remove_From_Piecelists(wK, from120, board);
+			HASH_OUT(hash, piece_keys[wK][from64]);
+			HASH_IN(hash, piece_keys[EMPTY][from64]);
+
+			board->board_array120[to120] = wK; //Add to G1
+			board->board_array64[to64] = wK;
+			Add_To_Piecelists(wK, to120, board);
+			HASH_OUT(hash, piece_keys[EMPTY][to64]);
+			HASH_IN(hash, piece_keys[wK][to64]);
+
+			//Move rook
+			board->board_array120[H1] = EMPTY; //Remove from H1
+			board->board_array64[SQUARE_120_TO_64(H1)] = EMPTY; 
+			Remove_From_Piecelists(wR, H1, board);
+			HASH_OUT(hash, piece_keys[wR][SQUARE_120_TO_64(H1)]);
+			HASH_IN(hash, piece_keys[EMPTY][SQUARE_120_TO_64(H1)]);
+
+			board->board_array120[F1] = wR; //Add to F1
+			board->board_array64[SQUARE_120_TO_64(F1)] = wR; 
+			Add_To_Piecelists(wR, F1, board);
+			HASH_OUT(hash, piece_keys[EMPTY][SQUARE_120_TO_64(F1)]);
+			HASH_IN(hash, piece_keys[wR][SQUARE_120_TO_64(F1)]);
+
+			//Update castling rights and hash
+			HASH_OUT(hash, castle_keys[board->castle_rights]); //Remove old hashkey
+			board->castle_rights &= ~WK_CASTLE; //Remove kingside rights
+			board->castle_rights &= ~WQ_CASTLE; //Remove queenside rights
+			HASH_IN(hash, castle_keys[board->castle_rights]); //Add new hashkey
+
+		}
+		else if (piece == bK)
+		{
+			ASSERT(from120 == E8);
+			ASSERT(to120 == G8);
+			ASSERT(board->board_array120[to120] == EMPTY);
+
+			//Move king
+			board->board_array120[from120] = EMPTY; //Remove from E8
+			board->board_array64[from64] = EMPTY;
+			Remove_From_Piecelists(bK, from120, board);
+			HASH_OUT(hash, piece_keys[bK][from64]);
+			HASH_IN(hash, piece_keys[EMPTY][from64]);
+
+			board->board_array120[to120] = bK; //Add to G8
+			board->board_array64[to64] = bK;
+			Add_To_Piecelists(bK, to120, board);
+			HASH_OUT(hash, piece_keys[EMPTY][to64]);
+			HASH_IN(hash, piece_keys[bK][to64]);
+
+			//Move rook
+			board->board_array120[H8] = EMPTY; //Remove from H8
+			board->board_array64[SQUARE_120_TO_64(H8)] = EMPTY;
+			Remove_From_Piecelists(bR, H8, board);
+			HASH_OUT(hash, piece_keys[bR][SQUARE_120_TO_64(H8)]);
+			HASH_IN(hash, piece_keys[EMPTY][SQUARE_120_TO_64(H8)]);
+
+			board->board_array120[F8] = bR; //Add to F8
+			board->board_array64[SQUARE_120_TO_64(F8)] = bR;
+			Add_To_Piecelists(bR, F8, board);
+			HASH_OUT(hash, piece_keys[EMPTY][SQUARE_120_TO_64(F8)]);
+			HASH_IN(hash, piece_keys[bR][SQUARE_120_TO_64(F8)]);
+
+			//Update castling rights and hash
+			HASH_OUT(hash, castle_keys[board->castle_rights]); //Remove old hashkey
+			board->castle_rights &= ~BK_CASTLE; //Remove kingside rights
+			board->castle_rights &= ~BQ_CASTLE; //Remove queenside rights
+			HASH_IN(hash, castle_keys[board->castle_rights]); //Add new hashkey
+		}
 	}
 	else if (IS_QUEEN_CASTLE(move_num))
 	{
+		if (piece == wK)
+		{
+			ASSERT(from120 == E1);
+			ASSERT(to120 == C1);
+			ASSERT(board->board_array120[to120] == EMPTY);
 
+			//Move king
+			board->board_array120[from120] = EMPTY; //Remove from E1
+			board->board_array64[from64] = EMPTY;
+			Remove_From_Piecelists(wK, from120, board);
+			HASH_OUT(hash, piece_keys[wK][from64]);
+			HASH_IN(hash, piece_keys[EMPTY][from64]);
+
+			board->board_array120[to120] = wK; //Add to C1
+			board->board_array64[to64] = wK;
+			Add_To_Piecelists(wK, to120, board);
+			HASH_OUT(hash, piece_keys[EMPTY][to64]);
+			HASH_IN(hash, piece_keys[wK][to64]);
+
+			//Move rook
+			board->board_array120[A1] = EMPTY; //Remove from A1
+			board->board_array64[SQUARE_120_TO_64(A1)] = EMPTY;
+			Remove_From_Piecelists(wR, A1, board);
+			HASH_OUT(hash, piece_keys[wR][SQUARE_120_TO_64(A1)]);
+			HASH_IN(hash, piece_keys[EMPTY][SQUARE_120_TO_64(A1)]);
+
+			board->board_array120[D1] = wR; //Add to D1
+			board->board_array64[SQUARE_120_TO_64(D1)] = wR;
+			Add_To_Piecelists(wR, D1, board);
+			HASH_OUT(hash, piece_keys[EMPTY][SQUARE_120_TO_64(D1)]);
+			HASH_IN(hash, piece_keys[wR][SQUARE_120_TO_64(D1)]);
+
+			//Update castling rights and hash
+			HASH_OUT(hash, castle_keys[board->castle_rights]); //Remove old hashkey
+			board->castle_rights &= ~WK_CASTLE; //Remove kingside rights
+			board->castle_rights &= ~WQ_CASTLE; //Remove queenside rights
+			HASH_IN(hash, castle_keys[board->castle_rights]); //Add new hashkey
+
+		}
+		else if (piece == bK)
+		{
+			ASSERT(from120 == E8);
+			ASSERT(to120 == C8);
+			ASSERT(board->board_array120[to120] == EMPTY);
+
+			//Move king
+			board->board_array120[from120] = EMPTY; //Remove from E8
+			board->board_array64[from64] = EMPTY;
+			Remove_From_Piecelists(bK, from120, board);
+			HASH_OUT(hash, piece_keys[bK][from64]);
+			HASH_IN(hash, piece_keys[EMPTY][from64]);
+
+			board->board_array120[to120] = bK; //Add to C8
+			board->board_array64[to64] = bK;
+			Add_To_Piecelists(bK, to120, board);
+			HASH_OUT(hash, piece_keys[EMPTY][to64]);
+			HASH_IN(hash, piece_keys[bK][to64]);
+
+			//Move rook
+			board->board_array120[A8] = EMPTY; //Remove from A8
+			board->board_array64[SQUARE_120_TO_64(A8)] = EMPTY;
+			Remove_From_Piecelists(bR, A8, board);
+			HASH_OUT(hash, piece_keys[bR][SQUARE_120_TO_64(A8)]);
+			HASH_IN(hash, piece_keys[EMPTY][SQUARE_120_TO_64(A8)]);
+
+			board->board_array120[D8] = bR; //Add to D8
+			board->board_array64[SQUARE_120_TO_64(D8)] = bR;
+			Add_To_Piecelists(bR, D8, board);
+			HASH_OUT(hash, piece_keys[EMPTY][SQUARE_120_TO_64(D8)]);
+			HASH_IN(hash, piece_keys[bR][SQUARE_120_TO_64(D8)]);
+
+			//Update castling rights and hash
+			HASH_OUT(hash, castle_keys[board->castle_rights]); //Remove old hashkey
+			board->castle_rights &= ~BK_CASTLE; //Remove kingside rights
+			board->castle_rights &= ~BQ_CASTLE; //Remove queenside rights
+			HASH_IN(hash, castle_keys[board->castle_rights]); //Add new hashkey
+		}
 	}
 	else if (IS_QUEEN_PROMOTION(move_num))
 	{
+		if (side == WHITE)
+		{
+			ASSERT(GET_RANK_64(from64) == RANK_7);
+			ASSERT(GET_RANK_64(to64) == RANK_8);
+			ASSERT(piece == wP);
+			
+			//Remove pawn
+			board->board_array120[from120] = EMPTY; 
+			board->board_array64[from64] = EMPTY;
+			Remove_From_Piecelists(wP, from120, board);
+			HASH_OUT(hash, piece_keys[wP][from64]);
+			HASH_IN(hash, piece_keys[EMPTY][from64]);
 
+			//Add queen
+			board->board_array120[to120] = wQ; //Add to C8
+			board->board_array64[to64] = wQ;
+			Add_To_Piecelists(wQ, to120, board);
+			HASH_OUT(hash, piece_keys[capture][to64]);
+			HASH_IN(hash, piece_keys[wQ][to64]);
+
+			//Remove captured piece from lists
+			Remove_From_Piecelists(capture, to120, board);
+
+			//Bitboards
+			CLR_BIT(board->pawn_bitboards[WHITE], from64);
+			CLR_BIT(board->pawn_bitboards[BOTH], from64);
+		}
+		else
+		{
+			ASSERT(GET_RANK_64(from64) == RANK_2);
+			ASSERT(GET_RANK_64(to64) == RANK_1);
+			ASSERT(piece == bP);
+
+			//Remove pawn
+			board->board_array120[from120] = EMPTY;
+			board->board_array64[from64] = EMPTY;
+			Remove_From_Piecelists(bP, from120, board);
+			HASH_OUT(hash, piece_keys[bP][from64]);
+			HASH_IN(hash, piece_keys[EMPTY][from64]);
+
+			//Add queen
+			board->board_array120[to120] = bQ; //Add to C8
+			board->board_array64[to64] = bQ;
+			Add_To_Piecelists(bQ, to120, board);
+			HASH_OUT(hash, piece_keys[capture][to64]);
+			HASH_IN(hash, piece_keys[bQ][to64]);
+
+			//Remove captured piece from lists
+			Remove_From_Piecelists(capture, to120, board);
+
+			//Bitboards
+			CLR_BIT(board->pawn_bitboards[BLACK], from64);
+			CLR_BIT(board->pawn_bitboards[BOTH], from64);
+		}
 	}
 	else if (IS_ROOK_PROMOTION(move_num))
 	{
+		if (side == WHITE)
+		{
+			ASSERT(GET_RANK_64(from64) == RANK_7);
+			ASSERT(GET_RANK_64(to64) == RANK_8);
+			ASSERT(piece == wP);
 
+			//Remove pawn
+			board->board_array120[from120] = EMPTY;
+			board->board_array64[from64] = EMPTY;
+			Remove_From_Piecelists(wP, from120, board);
+			HASH_OUT(hash, piece_keys[wP][from64]);
+			HASH_IN(hash, piece_keys[EMPTY][from64]);
+
+			//Add rook
+			board->board_array120[to120] = wR; //Add to C8
+			board->board_array64[to64] = wR;
+			Add_To_Piecelists(wR, to120, board);
+			HASH_OUT(hash, piece_keys[capture][to64]);
+			HASH_IN(hash, piece_keys[wR][to64]);
+
+			//Remove captured piece from lists
+			Remove_From_Piecelists(capture, to120, board);
+
+			//Bitboards
+			CLR_BIT(board->pawn_bitboards[WHITE], from64);
+			CLR_BIT(board->pawn_bitboards[BOTH], from64);
+		}
+		else
+		{
+			ASSERT(GET_RANK_64(from64) == RANK_2);
+			ASSERT(GET_RANK_64(to64) == RANK_1);
+			ASSERT(piece == bP);
+
+			//Remove pawn
+			board->board_array120[from120] = EMPTY;
+			board->board_array64[from64] = EMPTY;
+			Remove_From_Piecelists(bP, from120, board);
+			HASH_OUT(hash, piece_keys[bP][from64]);
+			HASH_IN(hash, piece_keys[EMPTY][from64]);
+
+			//Add rook
+			board->board_array120[to120] = bR; //Add to C8
+			board->board_array64[to64] = bR;
+			Add_To_Piecelists(bR, to120, board);
+			HASH_OUT(hash, piece_keys[capture][to64]);
+			HASH_IN(hash, piece_keys[bR][to64]);
+
+			//Remove captured piece from lists
+			Remove_From_Piecelists(capture, to120, board);
+
+			//Bitboards
+			CLR_BIT(board->pawn_bitboards[BLACK], from64);
+			CLR_BIT(board->pawn_bitboards[BOTH], from64);
+		}
 	}
 	else if (IS_BISHOP_PROMOTION(move_num))
 	{
+		if (side == WHITE)
+		{
+			ASSERT(GET_RANK_64(from64) == RANK_7);
+			ASSERT(GET_RANK_64(to64) == RANK_8);
+			ASSERT(piece == wP);
 
+			//Remove pawn
+			board->board_array120[from120] = EMPTY;
+			board->board_array64[from64] = EMPTY;
+			Remove_From_Piecelists(wP, from120, board);
+			HASH_OUT(hash, piece_keys[wP][from64]);
+			HASH_IN(hash, piece_keys[EMPTY][from64]);
+
+			//Add bishop
+			board->board_array120[to120] = wB; //Add to C8
+			board->board_array64[to64] = wB;
+			Add_To_Piecelists(wB, to120, board);
+			HASH_OUT(hash, piece_keys[capture][to64]);
+			HASH_IN(hash, piece_keys[wB][to64]);
+
+			//Remove captured piece from lists
+			Remove_From_Piecelists(capture, to120, board);
+
+			//Bitboards
+			CLR_BIT(board->pawn_bitboards[WHITE], from64);
+			CLR_BIT(board->pawn_bitboards[BOTH], from64);
+		}
+		else
+		{
+			ASSERT(GET_RANK_64(from64) == RANK_2);
+			ASSERT(GET_RANK_64(to64) == RANK_1);
+			ASSERT(piece == bP);
+
+			//Remove pawn
+			board->board_array120[from120] = EMPTY;
+			board->board_array64[from64] = EMPTY;
+			Remove_From_Piecelists(bP, from120, board);
+			HASH_OUT(hash, piece_keys[bP][from64]);
+			HASH_IN(hash, piece_keys[EMPTY][from64]);
+
+			//Add bishop
+			board->board_array120[to120] = bB; //Add to C8
+			board->board_array64[to64] = bB;
+			Add_To_Piecelists(bB, to120, board);
+			HASH_OUT(hash, piece_keys[capture][to64]);
+			HASH_IN(hash, piece_keys[bB][to64]);
+
+			//Remove captured piece from lists
+			Remove_From_Piecelists(capture, to120, board);
+
+			//Bitboards
+			CLR_BIT(board->pawn_bitboards[BLACK], from64);
+			CLR_BIT(board->pawn_bitboards[BOTH], from64);
+		}
 	}
 	else if (IS_KNIGHT_PROMOTION(move_num))
 	{
+		if (side == WHITE)
+		{
+			ASSERT(GET_RANK_64(from64) == RANK_7);
+			ASSERT(GET_RANK_64(to64) == RANK_8);
+			ASSERT(piece == wP);
 
+			//Remove pawn
+			board->board_array120[from120] = EMPTY;
+			board->board_array64[from64] = EMPTY;
+			Remove_From_Piecelists(wP, from120, board);
+			HASH_OUT(hash, piece_keys[wP][from64]);
+			HASH_IN(hash, piece_keys[EMPTY][from64]);
+
+			//Add knight
+			board->board_array120[to120] = wN; //Add to C8
+			board->board_array64[to64] = wN;
+			Add_To_Piecelists(wN, to120, board);
+			HASH_OUT(hash, piece_keys[capture][to64]);
+			HASH_IN(hash, piece_keys[wN][to64]);
+
+			//Remove captured piece from lists
+			Remove_From_Piecelists(capture, to120, board);
+
+			//Bitboards
+			CLR_BIT(board->pawn_bitboards[WHITE], from64);
+			CLR_BIT(board->pawn_bitboards[BOTH], from64);
+		}
+		else
+		{
+			ASSERT(GET_RANK_64(from64) == RANK_2);
+			ASSERT(GET_RANK_64(to64) == RANK_1);
+			ASSERT(piece == bP);
+
+			//Remove pawn
+			board->board_array120[from120] = EMPTY;
+			board->board_array64[from64] = EMPTY;
+			Remove_From_Piecelists(bP, from120, board);
+			HASH_OUT(hash, piece_keys[bP][from64]);
+			HASH_IN(hash, piece_keys[EMPTY][from64]);
+
+			//Add knight
+			board->board_array120[to120] = bN; //Add to C8
+			board->board_array64[to64] = bN;
+			Add_To_Piecelists(bN, to120, board);
+			HASH_OUT(hash, piece_keys[capture][to64]);
+			HASH_IN(hash, piece_keys[bN][to64]);
+
+			//Remove captured piece from lists
+			Remove_From_Piecelists(capture, to120, board);
+
+			//Bitboards
+			CLR_BIT(board->pawn_bitboards[BLACK], from64);
+			CLR_BIT(board->pawn_bitboards[BOTH], from64);
+		}
 	}
 	else
 	{

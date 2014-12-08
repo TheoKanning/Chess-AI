@@ -48,6 +48,8 @@ void Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *movelist)
 				if (GET_RANK_120(to120) == RANK_8)
 				{
 					Add_Move(movelist, from120, to120, wP, 0, QUEEN_PROMOTE, QUEEN_PROMOTE_SCORE);
+					Add_Move(movelist, from120, to120, wP, 0, ROOK_PROMOTE, KNIGHT_PROMOTE_SCORE);
+					Add_Move(movelist, from120, to120, wP, 0, BISHOP_PROMOTE, KNIGHT_PROMOTE_SCORE);
 					Add_Move(movelist, from120, to120, wP, 0, KNIGHT_PROMOTE, KNIGHT_PROMOTE_SCORE);
 				}
 				else //If not a promotion
@@ -57,7 +59,6 @@ void Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *movelist)
 				
 				/***** Double Pushes *****/
 				to120 = from120 + 20;
-				ASSERT(ON_BOARD_120(to120));
 
 				//Same as before, first space in front already established as empty
 				if ((GET_RANK_120(from120) == RANK_2) && (board->board_array120[to120] == EMPTY)) //If pawn is on starting rank, and second square is also empty
@@ -74,7 +75,17 @@ void Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *movelist)
 				if (IS_BLACK_PIECE(board->board_array120[to120])) //If target has a piece that can be taken
 				{
 					capture = board->board_array120[to120];
-					Add_Move(movelist, from120, to120, wP, capture, NOT_SPECIAL, GET_MMVLVA_SCORE(capture, wP));
+					if (GET_RANK_120(to120) == RANK_8) //If capturing into promotion
+					{
+						Add_Move(movelist, from120, to120, wP, capture, QUEEN_PROMOTE, QUEEN_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, wP));
+						Add_Move(movelist, from120, to120, wP, capture, ROOK_PROMOTE, KNIGHT_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, wP));
+						Add_Move(movelist, from120, to120, wP, capture, BISHOP_PROMOTE, KNIGHT_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, wP));
+						Add_Move(movelist, from120, to120, wP, capture, KNIGHT_PROMOTE, KNIGHT_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, wP));
+					}
+					else
+					{
+						Add_Move(movelist, from120, to120, wP, capture, NOT_SPECIAL, GET_MMVLVA_SCORE(capture, wP));
+					}
 				}
 				else if (to120 == board->ep) //If target is ep square
 				{
@@ -90,7 +101,17 @@ void Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *movelist)
 				if (IS_BLACK_PIECE(board->board_array120[to120])) //If target has a piece that can be taken
 				{
 					capture = board->board_array120[to120];
-					Add_Move(movelist, from120, to120, wP, capture, NOT_SPECIAL, GET_MMVLVA_SCORE(capture, wP));
+					if (GET_RANK_120(to120) == RANK_8) //If capturing into promotion
+					{
+						Add_Move(movelist, from120, to120, wP, capture, QUEEN_PROMOTE, QUEEN_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, wP));
+						Add_Move(movelist, from120, to120, wP, capture, ROOK_PROMOTE, KNIGHT_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, wP));
+						Add_Move(movelist, from120, to120, wP, capture, BISHOP_PROMOTE, KNIGHT_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, wP));
+						Add_Move(movelist, from120, to120, wP, capture, KNIGHT_PROMOTE, KNIGHT_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, wP));
+					}
+					else
+					{
+						Add_Move(movelist, from120, to120, wP, capture, NOT_SPECIAL, GET_MMVLVA_SCORE(capture, wP));
+					}
 				}
 				else if (to120 == board->ep) //If target is ep square
 				{
@@ -352,6 +373,8 @@ void Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *movelist)
 				if (GET_RANK_120(to120) == RANK_1)
 				{
 					Add_Move(movelist, from120, to120, bP, 0, QUEEN_PROMOTE, QUEEN_PROMOTE_SCORE);
+					Add_Move(movelist, from120, to120, bP, 0, ROOK_PROMOTE, KNIGHT_PROMOTE_SCORE);
+					Add_Move(movelist, from120, to120, bP, 0, BISHOP_PROMOTE, KNIGHT_PROMOTE_SCORE);
 					Add_Move(movelist, from120, to120, bP, 0, KNIGHT_PROMOTE, KNIGHT_PROMOTE_SCORE);
 				}
 				else //If not a promotion
@@ -361,7 +384,6 @@ void Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *movelist)
 
 				/***** Double Pushes *****/
 				to120 = from120 - 20;
-				ASSERT(ON_BOARD_120(to120));
 
 				//Same as before, first space in front already established as empty
 				if ((GET_RANK_120(from120) == RANK_7) && (board->board_array120[to120] == EMPTY)) //If pawn is on starting rank, and second square is also empty
@@ -378,7 +400,17 @@ void Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *movelist)
 				if (IS_WHITE_PIECE(board->board_array120[to120])) //If target has a piece that can be taken
 				{
 					capture = board->board_array120[to120];
-					Add_Move(movelist, from120, to120, bP, capture, NOT_SPECIAL, GET_MMVLVA_SCORE(capture, bP));
+					if (GET_RANK_120(to120) == RANK_1) //If capturing into promotion
+					{
+						Add_Move(movelist, from120, to120, bP, capture, QUEEN_PROMOTE, QUEEN_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, bP));
+						Add_Move(movelist, from120, to120, bP, capture, ROOK_PROMOTE, KNIGHT_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, bP));
+						Add_Move(movelist, from120, to120, bP, capture, BISHOP_PROMOTE, KNIGHT_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, bP));
+						Add_Move(movelist, from120, to120, bP, capture, KNIGHT_PROMOTE, KNIGHT_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, bP));
+					}
+					else
+					{
+						Add_Move(movelist, from120, to120, bP, capture, NOT_SPECIAL, GET_MMVLVA_SCORE(capture, bP));
+					}
 				}
 				else if (to120 == board->ep) //If target is ep square
 				{
@@ -394,7 +426,17 @@ void Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *movelist)
 				if (IS_WHITE_PIECE(board->board_array120[to120])) //If target has a piece that can be taken
 				{
 					capture = board->board_array120[to120];
-					Add_Move(movelist, from120, to120, bP, capture, NOT_SPECIAL, GET_MMVLVA_SCORE(capture, bP));
+					if (GET_RANK_120(to120) == RANK_1) //If capturing into promotion
+					{
+						Add_Move(movelist, from120, to120, bP, capture, QUEEN_PROMOTE, QUEEN_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, bP));
+						Add_Move(movelist, from120, to120, bP, capture, ROOK_PROMOTE, KNIGHT_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, bP));
+						Add_Move(movelist, from120, to120, bP, capture, BISHOP_PROMOTE, KNIGHT_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, bP));
+						Add_Move(movelist, from120, to120, bP, capture, KNIGHT_PROMOTE, KNIGHT_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, bP));
+					}
+					else
+					{
+						Add_Move(movelist, from120, to120, bP, capture, NOT_SPECIAL, GET_MMVLVA_SCORE(capture, bP));
+					}
 				}
 				else if (to120 == board->ep) //If target is ep square
 				{
@@ -644,9 +686,9 @@ void Sort_Moves(MOVE_LIST_STRUCT *movelist)
 
 	while (!done)
 	{
-		if(width = 1) done = 1; //Only enable ending once minimum width is reached
+		if(width == 1) done = 1; //Only enable ending once minimum width is reached
 
-		for (index = 0; index < movelist->num - 1 - width; index++)
+		for (index = 0; index < movelist->num - width; index++)
 		{
 			if (movelist->list[index].score < movelist->list[index + width].score)
 			{
