@@ -1,24 +1,24 @@
 /* movegen.c
-* Contains all functions for generating a movelist given a board pointer
+* Contains all functions for generating a move list given a board pointer
 * Thep Kanning 12/2/14
 */
 
 #include "globals.h"
 
-void Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *movelist)
+void Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *move_list)
 {
 	int i, j, from120, to120, piece, capture, slide_num;
 	const int side = board->side; //Store side to move
 
 	/***** Clear move list *****/
-	for (i = 0; i < movelist->num; i++)
+	for (i = 0; i < move_list->num; i++)
 	{
-		movelist->list[i].move = 0;
-		movelist->list[i].score = 0;
+		move_list->list[i].move = 0;
+		move_list->list[i].score = 0;
 	}
 
-	movelist->num = 0;
-	/***** Movelist now empty *****/
+	move_list->num = 0;
+	/***** Move list now empty *****/
 
 
 	ASSERT((side == WHITE) || (side == BLACK));
@@ -47,14 +47,14 @@ void Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *movelist)
 				//Add as a promotion if this leads to rank 8
 				if (GET_RANK_120(to120) == RANK_8)
 				{
-					Add_Move(movelist, from120, to120, wP, 0, QUEEN_PROMOTE, QUEEN_PROMOTE_SCORE);
-					Add_Move(movelist, from120, to120, wP, 0, ROOK_PROMOTE, KNIGHT_PROMOTE_SCORE);
-					Add_Move(movelist, from120, to120, wP, 0, BISHOP_PROMOTE, KNIGHT_PROMOTE_SCORE);
-					Add_Move(movelist, from120, to120, wP, 0, KNIGHT_PROMOTE, KNIGHT_PROMOTE_SCORE);
+					Add_Move(move_list, from120, to120, wP, 0, QUEEN_PROMOTE, QUEEN_PROMOTE_SCORE);
+					Add_Move(move_list, from120, to120, wP, 0, ROOK_PROMOTE, KNIGHT_PROMOTE_SCORE);
+					Add_Move(move_list, from120, to120, wP, 0, BISHOP_PROMOTE, KNIGHT_PROMOTE_SCORE);
+					Add_Move(move_list, from120, to120, wP, 0, KNIGHT_PROMOTE, KNIGHT_PROMOTE_SCORE);
 				}
 				else //If not a promotion
 				{
-					Add_Move(movelist, from120, to120, wP, 0, NOT_SPECIAL, 0);
+					Add_Move(move_list, from120, to120, wP, 0, NOT_SPECIAL, 0);
 				}
 				
 				/***** Double Pushes *****/
@@ -63,7 +63,7 @@ void Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *movelist)
 				//Same as before, first space in front already established as empty
 				if ((GET_RANK_120(from120) == RANK_2) && (board->board_array120[to120] == EMPTY)) //If pawn is on starting rank, and second square is also empty
 				{
-					Add_Move(movelist, from120, to120, wP, 0, NOT_SPECIAL, 0);
+					Add_Move(move_list, from120, to120, wP, 0, NOT_SPECIAL, 0);
 				}
 			}
 
@@ -77,20 +77,20 @@ void Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *movelist)
 					capture = board->board_array120[to120];
 					if (GET_RANK_120(to120) == RANK_8) //If capturing into promotion
 					{
-						Add_Move(movelist, from120, to120, wP, capture, QUEEN_PROMOTE, QUEEN_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, wP));
-						Add_Move(movelist, from120, to120, wP, capture, ROOK_PROMOTE, KNIGHT_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, wP));
-						Add_Move(movelist, from120, to120, wP, capture, BISHOP_PROMOTE, KNIGHT_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, wP));
-						Add_Move(movelist, from120, to120, wP, capture, KNIGHT_PROMOTE, KNIGHT_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, wP));
+						Add_Move(move_list, from120, to120, wP, capture, QUEEN_PROMOTE, QUEEN_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, wP));
+						Add_Move(move_list, from120, to120, wP, capture, ROOK_PROMOTE, KNIGHT_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, wP));
+						Add_Move(move_list, from120, to120, wP, capture, BISHOP_PROMOTE, KNIGHT_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, wP));
+						Add_Move(move_list, from120, to120, wP, capture, KNIGHT_PROMOTE, KNIGHT_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, wP));
 					}
 					else
 					{
-						Add_Move(movelist, from120, to120, wP, capture, NOT_SPECIAL, GET_MMVLVA_SCORE(capture, wP));
+						Add_Move(move_list, from120, to120, wP, capture, NOT_SPECIAL, GET_MMVLVA_SCORE(capture, wP));
 					}
 				}
 				else if (to120 == board->ep) //If target is ep square
 				{
 					capture = bP;
-					Add_Move(movelist, from120, to120, wP, capture, EP_CAPTURE, GET_MMVLVA_SCORE(capture, wP));
+					Add_Move(move_list, from120, to120, wP, capture, EP_CAPTURE, GET_MMVLVA_SCORE(capture, wP));
 				}
 			}
 
@@ -103,20 +103,20 @@ void Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *movelist)
 					capture = board->board_array120[to120];
 					if (GET_RANK_120(to120) == RANK_8) //If capturing into promotion
 					{
-						Add_Move(movelist, from120, to120, wP, capture, QUEEN_PROMOTE, QUEEN_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, wP));
-						Add_Move(movelist, from120, to120, wP, capture, ROOK_PROMOTE, KNIGHT_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, wP));
-						Add_Move(movelist, from120, to120, wP, capture, BISHOP_PROMOTE, KNIGHT_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, wP));
-						Add_Move(movelist, from120, to120, wP, capture, KNIGHT_PROMOTE, KNIGHT_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, wP));
+						Add_Move(move_list, from120, to120, wP, capture, QUEEN_PROMOTE, QUEEN_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, wP));
+						Add_Move(move_list, from120, to120, wP, capture, ROOK_PROMOTE, KNIGHT_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, wP));
+						Add_Move(move_list, from120, to120, wP, capture, BISHOP_PROMOTE, KNIGHT_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, wP));
+						Add_Move(move_list, from120, to120, wP, capture, KNIGHT_PROMOTE, KNIGHT_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, wP));
 					}
 					else
 					{
-						Add_Move(movelist, from120, to120, wP, capture, NOT_SPECIAL, GET_MMVLVA_SCORE(capture, wP));
+						Add_Move(move_list, from120, to120, wP, capture, NOT_SPECIAL, GET_MMVLVA_SCORE(capture, wP));
 					}
 				}
 				else if (to120 == board->ep) //If target is ep square
 				{
 					capture = bP;
-					Add_Move(movelist, from120, to120, wP, capture, EP_CAPTURE, GET_MMVLVA_SCORE(capture, wP));
+					Add_Move(move_list, from120, to120, wP, capture, EP_CAPTURE, GET_MMVLVA_SCORE(capture, wP));
 				}
 			}
 		}
@@ -143,13 +143,13 @@ void Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *movelist)
 					if (board->board_array120[to120] == EMPTY)
 					{
 						//Add quiet move
-						Add_Move(movelist, from120, to120, wN, 0, NOT_SPECIAL, 0);
+						Add_Move(move_list, from120, to120, wN, 0, NOT_SPECIAL, 0);
 					}
 					else if (IS_BLACK_PIECE(board->board_array120[to120]))
 					{
 						//Add capture
 						capture = board->board_array120[to120];
-						Add_Move(movelist, from120, to120, wN, capture, NOT_SPECIAL, GET_MMVLVA_SCORE(capture, wN));
+						Add_Move(move_list, from120, to120, wN, capture, NOT_SPECIAL, GET_MMVLVA_SCORE(capture, wN));
 					}
 				}
 			}
@@ -180,13 +180,13 @@ void Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *movelist)
 						if (board->board_array120[to120] == EMPTY)
 						{
 							//Add quiet move
-							Add_Move(movelist, from120, to120, wB, 0, NOT_SPECIAL, 0);
+							Add_Move(move_list, from120, to120, wB, 0, NOT_SPECIAL, 0);
 						}
 						else if (IS_BLACK_PIECE(board->board_array120[to120]))
 						{
 							//Add capture
 							capture = board->board_array120[to120];
-							Add_Move(movelist, from120, to120, wB, capture, NOT_SPECIAL, GET_MMVLVA_SCORE(capture, wB));
+							Add_Move(move_list, from120, to120, wB, capture, NOT_SPECIAL, GET_MMVLVA_SCORE(capture, wB));
 							break;
 						}
 						else if (IS_WHITE_PIECE(board->board_array120[to120]))
@@ -228,13 +228,13 @@ void Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *movelist)
 						if (board->board_array120[to120] == EMPTY)
 						{
 							//Add quiet move
-							Add_Move(movelist, from120, to120, wR, 0, NOT_SPECIAL, 0);
+							Add_Move(move_list, from120, to120, wR, 0, NOT_SPECIAL, 0);
 						}
 						else if (IS_BLACK_PIECE(board->board_array120[to120]))
 						{
 							//Add capture
 							capture = board->board_array120[to120];
-							Add_Move(movelist, from120, to120, wR, capture, NOT_SPECIAL, GET_MMVLVA_SCORE(capture, wR));
+							Add_Move(move_list, from120, to120, wR, capture, NOT_SPECIAL, GET_MMVLVA_SCORE(capture, wR));
 							break;
 						}
 						else if (IS_WHITE_PIECE(board->board_array120[to120]))
@@ -276,13 +276,13 @@ void Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *movelist)
 						if (board->board_array120[to120] == EMPTY)
 						{
 							//Add quiet move
-							Add_Move(movelist, from120, to120, wQ, 0, NOT_SPECIAL, 0);
+							Add_Move(move_list, from120, to120, wQ, 0, NOT_SPECIAL, 0);
 						}
 						else if (IS_BLACK_PIECE(board->board_array120[to120]))
 						{
 							//Add capture
 							capture = board->board_array120[to120];
-							Add_Move(movelist, from120, to120, wQ, capture, NOT_SPECIAL, GET_MMVLVA_SCORE(capture, wQ));
+							Add_Move(move_list, from120, to120, wQ, capture, NOT_SPECIAL, GET_MMVLVA_SCORE(capture, wQ));
 							break;
 						}
 						else if (IS_WHITE_PIECE(board->board_array120[to120]))
@@ -320,13 +320,13 @@ void Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *movelist)
 				if (board->board_array120[to120] == EMPTY)
 				{
 					//Add quiet move
-					Add_Move(movelist, from120, to120, wK, 0, NOT_SPECIAL, 0);
+					Add_Move(move_list, from120, to120, wK, 0, NOT_SPECIAL, 0);
 				}
 				else if (IS_BLACK_PIECE(board->board_array120[to120]))
 				{
 					//Add capture
 					capture = board->board_array120[to120];
-					Add_Move(movelist, from120, to120, wK, capture, NOT_SPECIAL, GET_MMVLVA_SCORE(capture, wK));
+					Add_Move(move_list, from120, to120, wK, capture, NOT_SPECIAL, GET_MMVLVA_SCORE(capture, wK));
 				}
 			}
 		}
@@ -336,14 +336,14 @@ void Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *movelist)
 			&& (board->board_array120[F1] == EMPTY) && (board->board_array120[G1] == EMPTY) //Travel squares are empty
 			&& !Under_Attack(E1, BLACK, board) && !Under_Attack(F1, BLACK, board) && !Under_Attack(G1, BLACK, board)) //King does not move through check
 		{
-			Add_Move(movelist, E1, G1, wK, 0, KING_CASTLE, 0); //Always moves to G1	
+			Add_Move(move_list, E1, G1, wK, 0, KING_CASTLE, 0); //Always moves to G1	
 		}
 		//Queenside
 		if ((board->castle_rights & WQ_CASTLE) //Castling rights active
 			&& (board->board_array120[B1] == EMPTY) && (board->board_array120[C1] == EMPTY) && (board->board_array120[D1] == EMPTY) //Travel squares are empty
 			&& !Under_Attack(C1, BLACK, board) && !Under_Attack(D1, BLACK, board) && !Under_Attack(E1, BLACK, board)) //King does not move through check
 		{
-			Add_Move(movelist, E1, C1, wK, 0, QUEEN_CASTLE, 0); //Always moves to C1	
+			Add_Move(move_list, E1, C1, wK, 0, QUEEN_CASTLE, 0); //Always moves to C1	
 		}
 		/***** End King Moves *****/
 
@@ -372,14 +372,14 @@ void Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *movelist)
 				//Add as a promotion if this leads to rank 1
 				if (GET_RANK_120(to120) == RANK_1)
 				{
-					Add_Move(movelist, from120, to120, bP, 0, QUEEN_PROMOTE, QUEEN_PROMOTE_SCORE);
-					Add_Move(movelist, from120, to120, bP, 0, ROOK_PROMOTE, KNIGHT_PROMOTE_SCORE);
-					Add_Move(movelist, from120, to120, bP, 0, BISHOP_PROMOTE, KNIGHT_PROMOTE_SCORE);
-					Add_Move(movelist, from120, to120, bP, 0, KNIGHT_PROMOTE, KNIGHT_PROMOTE_SCORE);
+					Add_Move(move_list, from120, to120, bP, 0, QUEEN_PROMOTE, QUEEN_PROMOTE_SCORE);
+					Add_Move(move_list, from120, to120, bP, 0, ROOK_PROMOTE, KNIGHT_PROMOTE_SCORE);
+					Add_Move(move_list, from120, to120, bP, 0, BISHOP_PROMOTE, KNIGHT_PROMOTE_SCORE);
+					Add_Move(move_list, from120, to120, bP, 0, KNIGHT_PROMOTE, KNIGHT_PROMOTE_SCORE);
 				}
 				else //If not a promotion
 				{
-					Add_Move(movelist, from120, to120, bP, 0, NOT_SPECIAL, 0);
+					Add_Move(move_list, from120, to120, bP, 0, NOT_SPECIAL, 0);
 				}
 
 				/***** Double Pushes *****/
@@ -388,7 +388,7 @@ void Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *movelist)
 				//Same as before, first space in front already established as empty
 				if ((GET_RANK_120(from120) == RANK_7) && (board->board_array120[to120] == EMPTY)) //If pawn is on starting rank, and second square is also empty
 				{
-					Add_Move(movelist, from120, to120, bP, 0, NOT_SPECIAL, 0);
+					Add_Move(move_list, from120, to120, bP, 0, NOT_SPECIAL, 0);
 				}
 			}
 
@@ -402,20 +402,20 @@ void Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *movelist)
 					capture = board->board_array120[to120];
 					if (GET_RANK_120(to120) == RANK_1) //If capturing into promotion
 					{
-						Add_Move(movelist, from120, to120, bP, capture, QUEEN_PROMOTE, QUEEN_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, bP));
-						Add_Move(movelist, from120, to120, bP, capture, ROOK_PROMOTE, KNIGHT_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, bP));
-						Add_Move(movelist, from120, to120, bP, capture, BISHOP_PROMOTE, KNIGHT_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, bP));
-						Add_Move(movelist, from120, to120, bP, capture, KNIGHT_PROMOTE, KNIGHT_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, bP));
+						Add_Move(move_list, from120, to120, bP, capture, QUEEN_PROMOTE, QUEEN_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, bP));
+						Add_Move(move_list, from120, to120, bP, capture, ROOK_PROMOTE, KNIGHT_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, bP));
+						Add_Move(move_list, from120, to120, bP, capture, BISHOP_PROMOTE, KNIGHT_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, bP));
+						Add_Move(move_list, from120, to120, bP, capture, KNIGHT_PROMOTE, KNIGHT_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, bP));
 					}
 					else
 					{
-						Add_Move(movelist, from120, to120, bP, capture, NOT_SPECIAL, GET_MMVLVA_SCORE(capture, bP));
+						Add_Move(move_list, from120, to120, bP, capture, NOT_SPECIAL, GET_MMVLVA_SCORE(capture, bP));
 					}
 				}
 				else if (to120 == board->ep) //If target is ep square
 				{
 					capture = wP;
-					Add_Move(movelist, from120, to120, bP, capture, EP_CAPTURE, GET_MMVLVA_SCORE(capture, bP));
+					Add_Move(move_list, from120, to120, bP, capture, EP_CAPTURE, GET_MMVLVA_SCORE(capture, bP));
 				}
 			}
 
@@ -428,20 +428,20 @@ void Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *movelist)
 					capture = board->board_array120[to120];
 					if (GET_RANK_120(to120) == RANK_1) //If capturing into promotion
 					{
-						Add_Move(movelist, from120, to120, bP, capture, QUEEN_PROMOTE, QUEEN_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, bP));
-						Add_Move(movelist, from120, to120, bP, capture, ROOK_PROMOTE, KNIGHT_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, bP));
-						Add_Move(movelist, from120, to120, bP, capture, BISHOP_PROMOTE, KNIGHT_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, bP));
-						Add_Move(movelist, from120, to120, bP, capture, KNIGHT_PROMOTE, KNIGHT_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, bP));
+						Add_Move(move_list, from120, to120, bP, capture, QUEEN_PROMOTE, QUEEN_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, bP));
+						Add_Move(move_list, from120, to120, bP, capture, ROOK_PROMOTE, KNIGHT_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, bP));
+						Add_Move(move_list, from120, to120, bP, capture, BISHOP_PROMOTE, KNIGHT_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, bP));
+						Add_Move(move_list, from120, to120, bP, capture, KNIGHT_PROMOTE, KNIGHT_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, bP));
 					}
 					else
 					{
-						Add_Move(movelist, from120, to120, bP, capture, NOT_SPECIAL, GET_MMVLVA_SCORE(capture, bP));
+						Add_Move(move_list, from120, to120, bP, capture, NOT_SPECIAL, GET_MMVLVA_SCORE(capture, bP));
 					}
 				}
 				else if (to120 == board->ep) //If target is ep square
 				{
 					capture = wP;
-					Add_Move(movelist, from120, to120, bP, capture, EP_CAPTURE, GET_MMVLVA_SCORE(capture, bP));
+					Add_Move(move_list, from120, to120, bP, capture, EP_CAPTURE, GET_MMVLVA_SCORE(capture, bP));
 				}
 			}
 		}
@@ -468,13 +468,13 @@ void Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *movelist)
 					if (board->board_array120[to120] == EMPTY)
 					{
 						//Add quiet move
-						Add_Move(movelist, from120, to120, bN, 0, NOT_SPECIAL, 0);
+						Add_Move(move_list, from120, to120, bN, 0, NOT_SPECIAL, 0);
 					}
 					else if (IS_WHITE_PIECE(board->board_array120[to120]))
 					{
 						//Add capture
 						capture = board->board_array120[to120];
-						Add_Move(movelist, from120, to120, bN, capture, NOT_SPECIAL, GET_MMVLVA_SCORE(capture, bN));
+						Add_Move(move_list, from120, to120, bN, capture, NOT_SPECIAL, GET_MMVLVA_SCORE(capture, bN));
 					}
 				}
 			}
@@ -505,13 +505,13 @@ void Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *movelist)
 						if (board->board_array120[to120] == EMPTY)
 						{
 							//Add quiet move
-							Add_Move(movelist, from120, to120, bB, 0, NOT_SPECIAL, 0);
+							Add_Move(move_list, from120, to120, bB, 0, NOT_SPECIAL, 0);
 						}
 						else if (IS_WHITE_PIECE(board->board_array120[to120]))
 						{
 							//Add capture
 							capture = board->board_array120[to120];
-							Add_Move(movelist, from120, to120, bB, capture, NOT_SPECIAL, GET_MMVLVA_SCORE(capture, bB));
+							Add_Move(move_list, from120, to120, bB, capture, NOT_SPECIAL, GET_MMVLVA_SCORE(capture, bB));
 							break;
 						}
 						else if (IS_BLACK_PIECE(board->board_array120[to120]))
@@ -553,13 +553,13 @@ void Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *movelist)
 						if (board->board_array120[to120] == EMPTY)
 						{
 							//Add quiet move
-							Add_Move(movelist, from120, to120, bR, 0, NOT_SPECIAL, 0);
+							Add_Move(move_list, from120, to120, bR, 0, NOT_SPECIAL, 0);
 						}
 						else if (IS_WHITE_PIECE(board->board_array120[to120]))
 						{
 							//Add capture
 							capture = board->board_array120[to120];
-							Add_Move(movelist, from120, to120, bR, capture, NOT_SPECIAL, GET_MMVLVA_SCORE(capture, bR));
+							Add_Move(move_list, from120, to120, bR, capture, NOT_SPECIAL, GET_MMVLVA_SCORE(capture, bR));
 							break;
 						}
 						else if (IS_BLACK_PIECE(board->board_array120[to120]))
@@ -601,13 +601,13 @@ void Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *movelist)
 						if (board->board_array120[to120] == EMPTY)
 						{
 							//Add quiet move
-							Add_Move(movelist, from120, to120, bQ, 0, NOT_SPECIAL, 0);
+							Add_Move(move_list, from120, to120, bQ, 0, NOT_SPECIAL, 0);
 						}
 						else if (IS_WHITE_PIECE(board->board_array120[to120]))
 						{
 							//Add capture
 							capture = board->board_array120[to120];
-							Add_Move(movelist, from120, to120, bQ, capture, NOT_SPECIAL, GET_MMVLVA_SCORE(capture, bQ));
+							Add_Move(move_list, from120, to120, bQ, capture, NOT_SPECIAL, GET_MMVLVA_SCORE(capture, bQ));
 							break;
 						}
 						else if (IS_BLACK_PIECE(board->board_array120[to120]))
@@ -645,13 +645,13 @@ void Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *movelist)
 				if (board->board_array120[to120] == EMPTY)
 				{
 					//Add quiet move
-					Add_Move(movelist, from120, to120, bK, 0, NOT_SPECIAL, 0);
+					Add_Move(move_list, from120, to120, bK, 0, NOT_SPECIAL, 0);
 				}
 				else if (IS_WHITE_PIECE(board->board_array120[to120]))
 				{
 					//Add capture
 					capture = board->board_array120[to120];
-					Add_Move(movelist, from120, to120, bK, capture, NOT_SPECIAL, GET_MMVLVA_SCORE(capture, bK));
+					Add_Move(move_list, from120, to120, bK, capture, NOT_SPECIAL, GET_MMVLVA_SCORE(capture, bK));
 				}
 			}
 		}
@@ -661,23 +661,23 @@ void Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *movelist)
 			&& (board->board_array120[F8] == EMPTY) && (board->board_array120[G8] == EMPTY) //Travel squares are empty
 			&& !Under_Attack(E8, WHITE, board) && !Under_Attack(F8, WHITE, board) && !Under_Attack(G8, WHITE, board)) //King does not move through check
 		{
-			Add_Move(movelist, E8, G8, bK, 0, KING_CASTLE, 0); //Always moves to G8
+			Add_Move(move_list, E8, G8, bK, 0, KING_CASTLE, 0); //Always moves to G8
 		}
 		//Queenside
 		if ((board->castle_rights & BQ_CASTLE) //Castling rights active
 			&& (board->board_array120[B8] == EMPTY) && (board->board_array120[C8] == EMPTY) && (board->board_array120[D8] == EMPTY) //Travel squares are empty
 			&& !Under_Attack(C8, WHITE, board) && !Under_Attack(D8, WHITE, board) && !Under_Attack(E8, WHITE, board)) //King does not move through check
 		{
-			Add_Move(movelist, E8, C8, bK, 0, QUEEN_CASTLE, 0); //Always moves to C8	
+			Add_Move(move_list, E8, C8, bK, 0, QUEEN_CASTLE, 0); //Always moves to C8	
 		}
 		/***** End King Moves *****/
 	}
 
 	/***** Sort list *****/
-	Sort_Moves(movelist);
+	Sort_Moves(move_list);
 }
 //Sort moves according to score using comb sort algorithm
-void Sort_Moves(MOVE_LIST_STRUCT *movelist)
+void Sort_Moves(MOVE_LIST_STRUCT *move_list)
 {
 	int width = 10; //Distance between compared values
 	int done = 0; //Records whether or not the list is fully sorted
@@ -688,14 +688,14 @@ void Sort_Moves(MOVE_LIST_STRUCT *movelist)
 	{
 		if(width == 1) done = 1; //Only enable ending once minimum width is reached
 
-		for (index = 0; index < movelist->num - width; index++)
+		for (index = 0; index < move_list->num - width; index++)
 		{
-			if (movelist->list[index].score < movelist->list[index + width].score)
+			if (move_list->list[index].score < move_list->list[index + width].score)
 			{
 				//Swap moves
-				Copy_Move(&movelist->list[index], &temp); //1 -> temp
-				Copy_Move(&movelist->list[index+width], &movelist->list[index]); //2 -> 1
-				Copy_Move(&temp, &movelist->list[index+width]); //temp -> 2
+				Copy_Move(&move_list->list[index], &temp); //1 -> temp
+				Copy_Move(&move_list->list[index+width], &move_list->list[index]); //2 -> 1
+				Copy_Move(&temp, &move_list->list[index+width]); //temp -> 2
 				done = 0;
 			}
 		}

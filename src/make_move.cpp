@@ -33,7 +33,7 @@ bit  [22:24] Special flags
 	1 1 1 Promote to knight
 */
 
-void Make_Move(MOVE_STRUCT *move, BOARD_STRUCT *board)
+int Make_Move(MOVE_STRUCT *move, BOARD_STRUCT *board)
 {
 	int from120, to120, from64, to64, piece, capture, side, castle_temp, ep_capture120;
 	int move_num = move->move;
@@ -54,6 +54,14 @@ void Make_Move(MOVE_STRUCT *move, BOARD_STRUCT *board)
 
 	ASSERT(board->board_array120[from120] == piece);
 	ASSERT(board->board_array120[to120] == capture || IS_EP_CAPTURE(move_num));
+
+	/***** Update Undo Move Structure *****/
+	board->undo_list.list[board->undo_list.num].move_num = move_num;
+	board->undo_list.list[board->undo_list.num].move_counter = board->move_counter;
+	board->undo_list.list[board->undo_list.num].ep = board->ep;
+	board->undo_list.list[board->undo_list.num].castle = board->castle_rights;
+	board->undo_list.list[board->undo_list.num].hash = board->hash_key;
+	board->undo_list.num++;
 
 	/***** Quiet Moves and Captures *****/
 	if (IS_NOT_SPECIAL(move_num))
@@ -182,7 +190,7 @@ void Make_Move(MOVE_STRUCT *move, BOARD_STRUCT *board)
 			HASH_IN(board->hash_key, castle_keys[board->castle_rights]); //Add new hashkey
 		}
 	}
-	else if (IS_QUEEN_PROMOTION(move_num))
+	else if (IS_QUEEN_PROMOTION(move_num) || IS_ROOK_PROMOTION(move_num) || IS_BISHOP_PROMOTION(move_num) || IS_KNIGHT_PROMOTION(move_num))
 	{
 		if (side == WHITE)
 		{
@@ -196,9 +204,11 @@ void Make_Move(MOVE_STRUCT *move, BOARD_STRUCT *board)
 			//Remove captured piece, if any
 			if (capture != EMPTY) Remove_Piece(to120, board);
 
-			//Add queen
-			Add_Piece(wQ, to120, board);
-
+			//Add piece
+			if (IS_QUEEN_PROMOTION(move_num)) Add_Piece(wQ, to120, board);
+			if (IS_ROOK_PROMOTION(move_num)) Add_Piece(wR, to120, board);
+			if (IS_BISHOP_PROMOTION(move_num)) Add_Piece(wB, to120, board);
+			if (IS_KNIGHT_PROMOTION(move_num)) Add_Piece(wN, to120, board);
 		}
 		else
 		{
@@ -212,110 +222,11 @@ void Make_Move(MOVE_STRUCT *move, BOARD_STRUCT *board)
 			//Remove captured piece, if any
 			if (capture != EMPTY) Remove_Piece(to120, board);
 
-			//Add queen
-			Add_Piece(bQ, to120, board);
-		}
-	}
-	else if (IS_ROOK_PROMOTION(move_num))
-	{
-		if (side == WHITE)
-		{
-			ASSERT(GET_RANK_64(from64) == RANK_7);
-			ASSERT(GET_RANK_64(to64) == RANK_8);
-			ASSERT(piece == wP);
-
-			//Remove pawn
-			Remove_Piece(from120, board);
-
-			//Remove captured piece, if any
-			if (capture != EMPTY) Remove_Piece(to120, board);
-
-			//Add rook
-			Add_Piece(wR, to120, board);
-
-		}
-		else
-		{
-			ASSERT(GET_RANK_64(from64) == RANK_2);
-			ASSERT(GET_RANK_64(to64) == RANK_1);
-			ASSERT(piece == bP);
-
-			//Remove pawn
-			Remove_Piece(from120, board);
-
-			//Remove captured piece, if any
-			if (capture != EMPTY) Remove_Piece(to120, board);
-
-			//Add rook
-			Add_Piece(bR, to120, board);
-		}
-	}
-	else if (IS_BISHOP_PROMOTION(move_num))
-	{
-		if (side == WHITE)
-		{
-			ASSERT(GET_RANK_64(from64) == RANK_7);
-			ASSERT(GET_RANK_64(to64) == RANK_8);
-			ASSERT(piece == wP);
-
-			//Remove pawn
-			Remove_Piece(from120, board);
-
-			//Remove captured piece, if any
-			if (capture != EMPTY) Remove_Piece(to120, board);
-
-			//Add bishop
-			Add_Piece(wB, to120, board);
-
-		}
-		else
-		{
-			ASSERT(GET_RANK_64(from64) == RANK_2);
-			ASSERT(GET_RANK_64(to64) == RANK_1);
-			ASSERT(piece == bP);
-
-			//Remove pawn
-			Remove_Piece(from120, board);
-
-			//Remove captured piece, if any
-			if (capture != EMPTY) Remove_Piece(to120, board);
-
-			//Add bishop
-			Add_Piece(bB, to120, board);
-		}
-	}
-	else if (IS_KNIGHT_PROMOTION(move_num))
-	{
-		if (side == WHITE)
-		{
-			ASSERT(GET_RANK_64(from64) == RANK_7);
-			ASSERT(GET_RANK_64(to64) == RANK_8);
-			ASSERT(piece == wP);
-
-			//Remove pawn
-			Remove_Piece(from120, board);
-
-			//Remove captured piece, if any
-			if (capture != EMPTY) Remove_Piece(to120, board);
-
-			//Add knight
-			Add_Piece(wN, to120, board);
-
-		}
-		else
-		{
-			ASSERT(GET_RANK_64(from64) == RANK_2);
-			ASSERT(GET_RANK_64(to64) == RANK_1);
-			ASSERT(piece == bP);
-
-			//Remove pawn
-			Remove_Piece(from120, board);
-
-			//Remove captured piece, if any
-			if (capture != EMPTY) Remove_Piece(to120, board);
-
-			//Add knight
-			Add_Piece(bN, to120, board);
+			//Add promoted piece
+			if (IS_QUEEN_PROMOTION(move_num)) Add_Piece(bQ, to120, board);
+			if (IS_ROOK_PROMOTION(move_num)) Add_Piece(bR, to120, board);
+			if (IS_BISHOP_PROMOTION(move_num)) Add_Piece(bB, to120, board);
+			if (IS_KNIGHT_PROMOTION(move_num)) Add_Piece(bN, to120, board);
 		}
 	}
 	else
@@ -385,9 +296,28 @@ void Make_Move(MOVE_STRUCT *move, BOARD_STRUCT *board)
 			HASH_IN(board->hash_key, castle_keys[board->castle_rights]);
 		}
 	}
+
 	/***** Check test *****/
 	//If king under attack
-	//take move
+	if (side == BLACK) //White just made a move
+	{
+		from120 = board->piece_list120[wK][0]; //White king square
+		if (Under_Attack(from120, BLACK, board)) //If in check
+		{
+			Take_Move(board);
+			return -1;
+		}
+	}
+	else
+	{
+		from120 = board->piece_list120[bK][0]; //Black king square
+		if (Under_Attack(from120, WHITE, board)) //If in check
+		{
+			Take_Move(board);
+			return -1;
+		}
+	}
+	
 
 	/***** Evaluate *****/
 	Evaluate_Board(board);
@@ -396,7 +326,162 @@ void Make_Move(MOVE_STRUCT *move, BOARD_STRUCT *board)
 	Check_Board(board);
 #endif
 
+	return 1;
 }
+
+//Undoes most recent move stored in board history
+void Take_Move(BOARD_STRUCT *board)
+{
+	int from120, to120, from64, to64, piece, capture, side, ep_capture120;
+
+	//Read data from undo struct
+	int move_num = board->undo_list.list[board->undo_list.num-1].move_num;
+	int move_counter = board->undo_list.list[board->undo_list.num-1].move_counter;
+	int ep = board->undo_list.list[board->undo_list.num-1].ep;
+	int castle = board->undo_list.list[board->undo_list.num-1].castle;
+	U64 hash = board->undo_list.list[board->undo_list.num-1].hash;
+
+
+
+	from120 = GET_FROM_SQ(move_num);
+	to120 = GET_TO_SQ(move_num);
+	from64 = SQUARE_120_TO_64(from120);
+	to64 = SQUARE_120_TO_64(to120);
+
+	piece = GET_PIECE(move_num);
+	capture = GET_CAPTURE(move_num);
+
+	//Toggle side first, side now represents the side of the move that is being undone
+	HASH_OUT(board->hash_key, side_keys[board->side]);
+	board->side ^= 1; //Toggle
+	HASH_IN(board->hash_key, side_keys[board->side]);
+	side = board->side; //Side of move being undones
+
+	ASSERT(ON_BOARD_120(from120));
+	ASSERT(ON_BOARD_120(to120));
+	ASSERT((EMPTY < piece) && (piece <= bK));
+	ASSERT((EMPTY <= capture) && (capture <= bK));
+
+
+	/***** Quiet Moves and Captures *****/
+	if (IS_NOT_SPECIAL(move_num))
+	{
+		Move_Piece(to120, from120, board);
+		if (capture != EMPTY) Add_Piece(capture, to120, board);
+	}
+	
+	else if (IS_EP_CAPTURE(move_num))
+	{
+
+		if (side == WHITE)
+		{
+			ep_capture120 = to120 - 10; //Square with captured pawn on it
+			capture = bP;
+		}
+		else
+		{
+			ep_capture120 = to120 + 10;
+			capture = wP;
+		}
+
+		Move_Piece(to120, from120, board); //Move active pawn
+		Add_Piece(capture, ep_capture120, board); //Remove captured pawn
+
+	}
+	else if (IS_KING_CASTLE(move_num))
+	{
+		if (piece == wK)
+		{
+			//Move king
+			Move_Piece(G1, E1, board);
+
+			//Move rook
+			Move_Piece(F1, H1, board);
+		}
+		else if (piece == bK)
+		{
+			//Move king
+			Move_Piece(G8, E8, board);
+
+			//Move rook
+			Move_Piece(F8, H8, board);
+		}
+	}
+	else if (IS_QUEEN_CASTLE(move_num))
+	{
+		if (piece == wK)
+		{
+			//Move king
+			Move_Piece(C1, E1, board);
+
+			//Move rook
+			Move_Piece(D1, A1, board);
+		}
+		else if (piece == bK)
+		{
+			//Move king
+			Move_Piece(C8, E8, board);
+
+			//Move rook
+			Move_Piece(D8, A8, board);
+		}
+	}
+	else if (IS_QUEEN_PROMOTION(move_num) || IS_ROOK_PROMOTION(move_num) || IS_BISHOP_PROMOTION(move_num) || IS_KNIGHT_PROMOTION(move_num))
+	{
+		//Remove promoted piece
+		Remove_Piece(to120, board);
+
+		//Add pawn
+		if (side == WHITE)  Add_Piece(wP, from120, board);
+		if (side == BLACK)  Add_Piece(bP, from120, board);
+
+		//Add captured piece, if any
+		if (capture != EMPTY) Add_Piece(capture, to120, board);
+	}
+	else
+	{
+		ASSERT(1 == 0); //This should never be called
+	}
+
+	/***** Updates regardless of move type *****/
+
+	//side changed at beginning of function
+	
+	//hply; //total moves taken so far
+	board->hply--;
+
+	//move_counter; //100 move counter
+	board->move_counter = move_counter;
+
+	//Ep square
+	HASH_OUT(board->hash_key, ep_keys[board->ep]);
+	board->ep = ep; //Enter value from undo
+	HASH_IN(board->hash_key, ep_keys[board->ep]);
+
+	//castle_rights;
+	HASH_OUT(board->hash_key, castle_keys[board->castle_rights]);
+	board->castle_rights = castle;
+	HASH_IN(board->hash_key, castle_keys[board->castle_rights]);
+	
+	ASSERT(board->hash_key == hash);
+
+	//Remove undo structure from list
+	board->undo_list.list[board->undo_list.num - 1].move_num = 0;
+	board->undo_list.list[board->undo_list.num - 1].move_counter = 0;
+	board->undo_list.list[board->undo_list.num - 1].ep = 0;
+	board->undo_list.list[board->undo_list.num - 1].castle = 0;
+	board->undo_list.list[board->undo_list.num - 1].hash = 0;
+
+	board->undo_list.num--;
+
+	/***** Evaluate *****/
+	Evaluate_Board(board);
+
+#ifdef DEBUG
+	Check_Board(board);
+#endif
+}
+
 
 //Moves one piece, updating all lists, bitboards, and hashes
 void Move_Piece(int from120, int to120, BOARD_STRUCT *board)
@@ -506,8 +591,8 @@ void Add_Piece(int piece, int index120, BOARD_STRUCT *board)
 	}
 }
 
-//Creates integer from move data and stores in movelist
-void Add_Move(MOVE_LIST_STRUCT *movelist, int from, int to, int piece, int capture, int special, int score)
+//Creates integer from move data and stores in move_list
+void Add_Move(MOVE_LIST_STRUCT *move_list, int from, int to, int piece, int capture, int special, int score)
 {
 	int temp = 0;
 	
@@ -526,25 +611,25 @@ void Add_Move(MOVE_LIST_STRUCT *movelist, int from, int to, int piece, int captu
 	SET_SPECIAL(temp, special);
 
 	//Store in list and update counter
-	movelist->list[movelist->num].move = temp; 
-	movelist->list[movelist->num].score = score;
-	movelist->num++; //Increment counter
+	move_list->list[move_list->num].move = temp; 
+	move_list->list[move_list->num].score = score;
+	move_list->num++; //Increment counter
 }
 
 //Prints all moves in standard chess format
-void Print_Movelist(MOVE_LIST_STRUCT *movelist)
+void Print_Move_List(MOVE_LIST_STRUCT *move_list)
 {
 	int index, rank, file, piece, square, from;
 	int move_num, move_score; //Integer for move
 
-	cout << endl << "Movelist: " << endl;
-	cout << "Moves found: " << movelist->num << endl;
+	cout << endl << "Move List: " << endl;
+	cout << "Moves found: " << move_list->num << endl;
 
-	for (index = 0; index < movelist->num; index++) //Iterate through all moves stored
+	for (index = 0; index < move_list->num; index++) //Iterate through all moves stored
 	{
 		cout << index << " ";
-		move_num = movelist->list[index].move; //Store move in temp variable
-		move_score = movelist->list[index].score;
+		move_num = move_list->list[index].move; //Store move in temp variable
+		move_score = move_list->list[index].score;
 
 		//Get moving piece
 		piece = GET_PIECE(move_num);

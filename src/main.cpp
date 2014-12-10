@@ -12,7 +12,7 @@ using namespace std;
 #define CASTLE2_FEN		"r3kbnr/ppp2ppp/2npbq2/4p3/4P3/2NPBQ2/PPP2PPP/R3KBNR b KQkq - 0 1"
 #define PROMOTION_FEN	"r1bqkbnr/pPppp1pp/2n5/8/8/5N2/PP1PPPpP/RNBQKB1R w KQkq - 0 1"
 BOARD_STRUCT board;
-MOVE_LIST_STRUCT movelist;
+MOVE_LIST_STRUCT move_list;
 
 int move_num = 0;
 int done = 0;
@@ -23,17 +23,18 @@ int main()
 	Init_Hashkeys();
 	
 	//Init_Board(&board);
-	Parse_Fen(PROMOTION_FEN, &board);
+	Parse_Fen(PN_TEST_FEN, &board);
 	Print_Board(&board);
 	while (!done)
 	{
-		Generate_Moves(&board, &movelist);
-		Print_Movelist(&movelist);
+		Generate_Moves(&board, &move_list);
+		Print_Move_List(&move_list);
 
 		cin >> move_num;
-		if (move_num < 0 || move_num >= movelist.num) done = 1;
+		if (move_num < 0 || move_num >= move_list.num) done = 1;
 
-		Make_Move(&movelist.list[move_num], &board); //Make first move
+		Make_Move(&move_list.list[move_num], &board); //Make first move
+		//Take_Move(&board);
 		Print_Board(&board);
 	}
 	

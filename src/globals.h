@@ -110,6 +110,22 @@ typedef struct
 
 typedef struct
 {
+	int move_counter;
+	int ep;
+	int castle;
+	int move_num;
+	U64 hash; //Hash before move
+
+}UNDO_STRUCT;
+
+typedef struct
+{
+	UNDO_STRUCT list[MAX_PLY];
+	int num;
+}UNDO_LIST_STRUCT;
+
+typedef struct
+{
 	int board_array120[120];
 	int board_array64[64]; 
 
@@ -128,6 +144,8 @@ typedef struct
 	int eval_score; //Overall evaluation score
 
 	U64 pawn_bitboards[3]; //One for white, black, and both
+
+	UNDO_LIST_STRUCT undo_list;
 
 	U64 hash_key;
 
@@ -159,13 +177,13 @@ extern void Init_Hashkeys(void);
 extern void Compute_Hash(BOARD_STRUCT *board);
 
 //makemove
-void Make_Move(MOVE_STRUCT *move, BOARD_STRUCT *board);
-void Take_Move(MOVE_STRUCT *move, BOARD_STRUCT *board);
+extern int Make_Move(MOVE_STRUCT *move, BOARD_STRUCT *board);
+extern void Take_Move(BOARD_STRUCT *board);
 extern void Add_Move(MOVE_LIST_STRUCT *move_list, int from, int to, int piece, int capture, int special, int score);
-extern void Print_Movelist(MOVE_LIST_STRUCT *movelist);
+extern void Print_Move_List(MOVE_LIST_STRUCT *move_list);
 
 //movegen
 extern void Generate_Moves(BOARD_STRUCT*, MOVE_LIST_STRUCT*);
 extern int Under_Attack(int target120, int side, BOARD_STRUCT *board);
-extern void Sort_Moves(MOVE_LIST_STRUCT *movelist);
+extern void Sort_Moves(MOVE_LIST_STRUCT *move_list);
 extern void Copy_Move(MOVE_STRUCT *move1, MOVE_STRUCT *move2);
