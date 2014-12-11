@@ -743,13 +743,13 @@ int Under_Attack(int target120, int side, BOARD_STRUCT *board)
 				else //Continue searching in this direction
 				{
 					piece = board->board_array120[from120];
-					if (IS_BLACK_PIECE(piece)) //Black piece in the way
-					{
-						break; //End direction
-					}
-					else if ((piece == wB) || (piece == wQ))
+					if ((piece == wB) || (piece == wQ))
 					{
 						return 1;
+					}
+					else if (piece != EMPTY) //Piece in the way
+					{
+						break; //End direction
 					}
 				}
 			}
@@ -768,13 +768,13 @@ int Under_Attack(int target120, int side, BOARD_STRUCT *board)
 				else //Continue searching in this direction
 				{
 					piece = board->board_array120[from120];
-					if (IS_BLACK_PIECE(piece)) //Black piece in the way
-					{
-						break; //End direction
-					}
-					else if ((piece == wR) || (piece == wQ))
+					if ((piece == wR) || (piece == wQ))
 					{
 						return 1;
+					}
+					else if (piece != EMPTY) //Piece in the way
+					{
+						break; //End direction
 					}
 				}
 			}
@@ -812,13 +812,13 @@ int Under_Attack(int target120, int side, BOARD_STRUCT *board)
 				else //Continue searching in this direction
 				{
 					piece = board->board_array120[from120];
-					if (IS_WHITE_PIECE(piece)) //White piece in the way
-					{
-						break; //End direction
-					}
-					else if ((piece == bB) || (piece == bQ))
+					if ((piece == bB) || (piece == bQ))
 					{
 						return 1;
+					}
+					else if (piece != EMPTY) //Piece in the way
+					{
+						break; //End direction
 					}
 				}
 			}
@@ -837,13 +837,13 @@ int Under_Attack(int target120, int side, BOARD_STRUCT *board)
 				else //Continue searching in this direction
 				{
 					piece = board->board_array120[from120];
-					if (IS_WHITE_PIECE(piece)) //White piece in the way
-					{
-						break; //End direction
-					}
-					else if ((piece == bR) || (piece == bQ))
+					if ((piece == bR) || (piece == bQ))
 					{
 						return 1;
+					}
+					else if (piece != EMPTY) //Piece in the way
+					{
+						break; //End direction
 					}
 				}
 			}

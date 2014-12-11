@@ -25,7 +25,6 @@ void Init_Hashkeys(void)
 
 	//Set rand seed
 	srand(time(NULL));
-
 	//Piece keys
 	for (index = 0; index < 64; index++)
 	{

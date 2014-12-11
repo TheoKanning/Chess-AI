@@ -8,7 +8,7 @@
 
 /***** Global Macros *****/
 
-#define DEBUG //Define debug mode for full assert function
+//#define DEBUG //Define debug mode for full assert function
 
 #define PROGRAM_NAME "Chess-AI"
 #define AUTHOR	"Theo Kanning"
@@ -187,3 +187,7 @@ extern void Generate_Moves(BOARD_STRUCT*, MOVE_LIST_STRUCT*);
 extern int Under_Attack(int target120, int side, BOARD_STRUCT *board);
 extern void Sort_Moves(MOVE_LIST_STRUCT *move_list);
 extern void Copy_Move(MOVE_STRUCT *move1, MOVE_STRUCT *move2);
+
+//search
+extern int Iterative_Deepening(BOARD_STRUCT *board, int depth);
+extern int Search(BOARD_STRUCT *board, int depth);

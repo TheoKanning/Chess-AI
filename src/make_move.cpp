@@ -63,14 +63,16 @@ int Make_Move(MOVE_STRUCT *move, BOARD_STRUCT *board)
 	board->undo_list.list[board->undo_list.num].hash = board->hash_key;
 	board->undo_list.num++;
 
+	/***** En Passant Square *****/
+	HASH_OUT(board->hash_key, ep_keys[board->ep]); //Remove to add later
+	board->ep = NO_SQUARE;
+
 	/***** Quiet Moves and Captures *****/
 	if (IS_NOT_SPECIAL(move_num))
 	{
 		Move_Piece(from120, to120, board);
 		
-		/***** En Passant Square *****/
-		HASH_OUT(board->hash_key, ep_keys[board->ep]); //Remove to add later
-		board->ep = NO_SQUARE;
+		
 		if (piece == wP)
 		{
 			if (from120 + 20 == to120) board->ep = from120 + 10; //If double push
@@ -79,13 +81,11 @@ int Make_Move(MOVE_STRUCT *move, BOARD_STRUCT *board)
 		{
 			if (from120 - 20 == to120) board->ep = from120 - 10; //If double push
 		}
-		HASH_IN(board->hash_key, ep_keys[board->ep]); //Re add ep key
+		//HASH_IN(board->hash_key, ep_keys[board->ep]); //Re add ep key
 	}
 	else if (IS_EP_CAPTURE(move_num))
 	{
-		HASH_OUT(board->hash_key, ep_keys[board->ep]);
-		board->ep = NO_SQUARE; //Reset ep square
-		HASH_IN(board->hash_key, ep_keys[board->ep]);
+		
 
 		if (side == WHITE)
 		{
@@ -99,12 +99,21 @@ int Make_Move(MOVE_STRUCT *move, BOARD_STRUCT *board)
 		}
 
 		ASSERT(board->board_array120[from120] == piece);
+		if (board->board_array120[ep_capture120] != capture)
+		{
+			Print_Board(board);
+			Take_Move(board); //See previous move
+			Print_Board(board);
+		}
 		ASSERT(board->board_array120[to120] == EMPTY);
 		ASSERT(board->board_array120[ep_capture120] == capture);
 		
 		Move_Piece(from120, to120, board); //Move active pawn
 		Remove_Piece(ep_capture120, board); //Remove captured pawn
 
+		//HASH_OUT(board->hash_key, ep_keys[board->ep]);
+		//board->ep = NO_SQUARE; //Reset ep square
+		//HASH_IN(board->hash_key, ep_keys[board->ep]);
 	}
 	else if (IS_KING_CASTLE(move_num))
 	{
@@ -241,6 +250,9 @@ int Make_Move(MOVE_STRUCT *move, BOARD_STRUCT *board)
 	board->side ^= 1; //Toggle
 	HASH_IN(board->hash_key, side_keys[board->side]);
 
+	//Re add ep key
+	HASH_IN(board->hash_key, ep_keys[board->ep]); 
+
 	//hply; //total moves taken so far
 	board->hply++;
 
@@ -299,13 +311,13 @@ int Make_Move(MOVE_STRUCT *move, BOARD_STRUCT *board)
 
 	/***** Check test *****/
 	//If king under attack
-	if (side == BLACK) //White just made a move
+	if (side == WHITE) //White just made a move
 	{
 		from120 = board->piece_list120[wK][0]; //White king square
 		if (Under_Attack(from120, BLACK, board)) //If in check
 		{
 			Take_Move(board);
-			return -1;
+			return 0;
 		}
 	}
 	else
@@ -314,7 +326,7 @@ int Make_Move(MOVE_STRUCT *move, BOARD_STRUCT *board)
 		if (Under_Attack(from120, WHITE, board)) //If in check
 		{
 			Take_Move(board);
-			return -1;
+			return 0;
 		}
 	}
 	
