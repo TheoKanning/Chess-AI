@@ -27,7 +27,8 @@ int main()
 	
 	Parse_Fen("3K4/8/8/8/8/8/4p3/2k2R2 b - - 0 1", &board);
 	Print_Board(&board);
-	Iterative_Deepening(&board, 6);
+	Perft_Test("3K4/8/8/8/8/8/4p3/2k2R2 b - - 0 1", 6, &board);
+
 	
 	/*
 	while (!done)
