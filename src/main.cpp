@@ -25,7 +25,7 @@ int main()
 	
 	//Init_Board(&board);
 	
-	Parse_Fen(PN_TEST_FEN, &board);
+	Parse_Fen(START_FEN, &board);
 	Print_Board(&board);
 	Iterative_Deepening(7, &board);
 	//Perft_Test("3K4/8/8/8/8/8/4p3/2k2R2 b - - 0 1", 6, &board);

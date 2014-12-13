@@ -464,8 +464,6 @@ void Take_Move(BOARD_STRUCT *board)
 
 	board->undo_list.num--;
 
-	/***** Evaluate *****/
-	Evaluate_Board(board);
 
 #ifdef DEBUG
 	Check_Board(board);
@@ -491,7 +489,7 @@ void Move_Piece(int from120, int to120, BOARD_STRUCT *board)
 	if (capture != EMPTY) Remove_Piece(to120, board);
 
 	//Clear from square
-	board->board_array120[from120] = EMPTY; 
+	board->board_array120[from120] = EMPTY;
 	board->board_array64[from64] = EMPTY;
 	Remove_From_Piecelists(piece, from120, board);
 	HASH_OUT(board->hash_key, piece_keys[piece][from64]);

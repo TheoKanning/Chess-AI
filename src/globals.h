@@ -12,7 +12,7 @@
 
 #define PROGRAM_NAME "Chess-AI"
 #define AUTHOR	"Theo Kanning"
-#define VERSION_NO	0.2
+#define VERSION_NO	0.7
 
 #ifndef DEBUG
         #define ASSERT(x)
@@ -146,6 +146,7 @@ typedef struct
 	int piece_list120[13][10]; //[Piece][instance] contains index of pieces on board, empty cells are 0, which is off the 120 board
 
 	int material; //Material score
+	int piece_square_score;
 
 	int eval_score; //Overall evaluation score
 
@@ -174,9 +175,17 @@ extern void Print_Bitboards(BOARD_STRUCT *board);
 extern char* file_names;
 extern char* rank_names;
 extern char* piece_names;
+extern short pawn_piece_square_table[64];
+extern short knight_piece_square_table[64];
+extern short bishop_piece_square_table[64];
+extern short rook_piece_square_table[64];
+extern short queen_piece_square_table[64];
+extern short king_piece_square_table[64];
+extern short king_endgame__piece_square_table[64];
 
 //eval
 extern int Evaluate_Board(BOARD_STRUCT *board);
+extern int Get_Piece_Square_Score(int index64, int piece);
 
 //hashkeys
 extern void Init_Hashkeys(void);

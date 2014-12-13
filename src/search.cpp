@@ -21,8 +21,9 @@ int Iterative_Deepening(int depth, BOARD_STRUCT *board)
 		time(&stop);
 		
 		//Print Data
+		cout << "Depth:" << i << " ";
 		Print_PV_List(&PV_list);
-		cout << " Score:" << score << " Time:" << stop - start << " seconds" << endl;
+		cout << " Score:" << score/100.0 << " Time:" << stop - start << " seconds" << endl;
 	}
 	return 1;
 }
@@ -83,7 +84,6 @@ void Print_PV_List(PV_LIST_STRUCT *pv_list)
 {
 	int i;
 
-	cout << "PV List: ";
 	for (i = 0; i < pv_list->num; i++)
 	{
 		Print_Move(&pv_list->list[i]);

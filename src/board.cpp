@@ -282,9 +282,11 @@ void Add_To_Piecelists(int piece, int index120, BOARD_STRUCT *board)
 
 	if (IS_WHITE_PIECE(piece)) board->material += piece_values[piece];
 	if (IS_BLACK_PIECE(piece)) board->material -= piece_values[piece];
+	board->piece_square_score += Get_Piece_Square_Score(SQUARE_120_TO_64(index120), piece);
 }
 
 //Removes a piece and location from piece list
+//Updates piece_square evaluation
 void Remove_From_Piecelists(int piece, int index120, BOARD_STRUCT *board)
 {
 	int i;
@@ -310,6 +312,7 @@ void Remove_From_Piecelists(int piece, int index120, BOARD_STRUCT *board)
 
 	if (IS_WHITE_PIECE(piece)) board->material -= piece_values[piece];
 	if (IS_BLACK_PIECE(piece)) board->material += piece_values[piece];
+	board->piece_square_score -= Get_Piece_Square_Score(SQUARE_120_TO_64(index120), piece);
 }
 
 
@@ -317,6 +320,10 @@ void Remove_From_Piecelists(int piece, int index120, BOARD_STRUCT *board)
 void Update_Piece_Lists(BOARD_STRUCT *board)
 {
 	int index,piece;
+
+	//Reset material and piece square count to 0
+
+
 	//Set all values to zero
 	for (piece = 0; piece <= bK; piece++)
 	{
@@ -338,6 +345,7 @@ void Update_Piece_Lists(BOARD_STRUCT *board)
 
 			if (IS_WHITE_PIECE(piece)) board->material += piece_values[piece];
 			if (IS_BLACK_PIECE(piece)) board->material -= piece_values[piece];
+			board->piece_square_score += Get_Piece_Square_Score(index, piece);
 		}
 	}
 }
@@ -379,6 +387,7 @@ void Check_Board(BOARD_STRUCT *board)
 {
 	int index64, index120, piece, i, j;
 	int material_temp = 0;
+	int piece_square_temp = 0;
 	int piecelist_temp[13][10] = { 0 };
 	int piece_num_temp[13] = { 0 };
 	U64 hash_temp = 0;
@@ -409,6 +418,8 @@ void Check_Board(BOARD_STRUCT *board)
 		}
 		if (IS_WHITE_PIECE(piece)) material_temp += piece_values[piece]; //Update material values
 		if (IS_BLACK_PIECE(piece)) material_temp -= piece_values[piece];
+
+		piece_square_temp += Get_Piece_Square_Score(index64, piece);
 	}
 
 	/***** Verify Piece Lists *****/
@@ -446,6 +457,7 @@ void Check_Board(BOARD_STRUCT *board)
 
 	/***** Material Score *****/
 	ASSERT(material_temp == board->material);
+	ASSERT(piece_square_temp == board->piece_square_score);
 
 	/***** Hashkey *****/
 	hash_temp = board->hash_key; //Store previous value
