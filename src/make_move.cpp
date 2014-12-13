@@ -99,12 +99,6 @@ int Make_Move(MOVE_STRUCT *move, BOARD_STRUCT *board)
 		}
 
 		ASSERT(board->board_array120[from120] == piece);
-		if (board->board_array120[ep_capture120] != capture)
-		{
-			Print_Board(board);
-			Take_Move(board); //See previous move
-			Print_Board(board);
-		}
 		ASSERT(board->board_array120[to120] == EMPTY);
 		ASSERT(board->board_array120[ep_capture120] == capture);
 		
@@ -311,28 +305,12 @@ int Make_Move(MOVE_STRUCT *move, BOARD_STRUCT *board)
 
 	/***** Check test *****/
 	//If king under attack
-	if (side == WHITE) //White just made a move
+	if (In_Check(side,board)) 
 	{
-		from120 = board->piece_list120[wK][0]; //White king square
-		if (Under_Attack(from120, BLACK, board)) //If in check
-		{
 			Take_Move(board);
 			return 0;
-		}
-	}
-	else
-	{
-		from120 = board->piece_list120[bK][0]; //Black king square
-		if (Under_Attack(from120, WHITE, board)) //If in check
-		{
-			Take_Move(board);
-			return 0;
-		}
 	}
 	
-
-	/***** Evaluate *****/
-	Evaluate_Board(board);
 
 #ifdef DEBUG
 	Check_Board(board);
@@ -631,8 +609,7 @@ void Add_Move(MOVE_LIST_STRUCT *move_list, int from, int to, int piece, int capt
 //Prints all moves in standard chess format
 void Print_Move_List(MOVE_LIST_STRUCT *move_list)
 {
-	int index, rank, file, piece, square, from;
-	int move_num, move_score; //Integer for move
+	int index;
 
 	cout << endl << "Move List: " << endl;
 	cout << "Moves found: " << move_list->num << endl;
@@ -640,53 +617,61 @@ void Print_Move_List(MOVE_LIST_STRUCT *move_list)
 	for (index = 0; index < move_list->num; index++) //Iterate through all moves stored
 	{
 		cout << index << " ";
-		move_num = move_list->list[index].move; //Store move in temp variable
-		move_score = move_list->list[index].score;
+		Print_Move(&move_list->list[index]);
+		
+		cout << " Score: " << move_list->list[index].score << endl;
+	}
+}
 
-		//Get moving piece
-		piece = GET_PIECE(move_num);
+//Prints individual move without score data
+void Print_Move(MOVE_STRUCT *move)
+{
+	int move_num, piece, from, square, rank, file;
 
-		//Get rank and file of ending position
-		from = GET_FROM_SQ(move_num);
-		square = GET_TO_SQ(move_num);
-		ASSERT(ON_BOARD_120(square));
-		rank = GET_RANK_120(square);
-		file = GET_FILE_120(square);
+	move_num = move->move; //Store move in temp variable
 
-		/***** Print *****/
-		//Castle
-		if (IS_KING_CASTLE(move_num))
+	//Get moving piece
+	piece = GET_PIECE(move_num);
+
+	//Get rank and file of ending position
+	from = GET_FROM_SQ(move_num);
+	square = GET_TO_SQ(move_num);
+	ASSERT(ON_BOARD_120(square));
+	rank = GET_RANK_120(square);
+	file = GET_FILE_120(square);
+
+	/***** Print *****/
+	//Castle
+	if (IS_KING_CASTLE(move_num))
+	{
+		cout << "O-O";
+	}
+	else if (IS_QUEEN_CASTLE(move_num))
+	{
+		cout << "O-O-O";
+	}
+	else
+	{
+		if ((piece != wP) && (piece != bP)) //If piece is not a pawn
 		{
-			cout << "O-O";
+			cout << piece_names[piece]; //Piece
 		}
-		else if (IS_QUEEN_CASTLE(move_num))
+		else if (GET_CAPTURE(move_num) != 0) //If piece is a pawn, and a capture occured
 		{
-			cout << "O-O-O";
+			cout << file_names[GET_FILE_120(from)];
 		}
-		else
+
+		if (GET_CAPTURE(move_num) != 0) cout << "x"; //If Capture occured
+
+		cout << file_names[file]; //File and rank
+		cout << rank_names[rank];
+
+		if (IS_PROMOTION(move_num)) //Promoted piece
 		{
-			if ((piece != wP) && (piece != bP)) //If piece is not a pawn
-			{
-				cout << piece_names[piece]; //Piece
-			}
-			else if (GET_CAPTURE(move_num) != 0) //If piece is a pawn, and a capture occured
-			{
-				cout << file_names[GET_FILE_120(from)];
-			}
-
-			if (GET_CAPTURE(move_num) != 0) cout << "x"; //If Capture occured
-
-			cout << file_names[file]; //File and rank
-			cout << rank_names[rank];
-
-			if (IS_PROMOTION(move_num)) //Promoted piece
-			{
-				if (IS_QUEEN_PROMOTION(move_num)) cout << "Q";
-				if (IS_ROOK_PROMOTION(move_num)) cout << "R";
-				if (IS_BISHOP_PROMOTION(move_num)) cout << "B";
-				if (IS_KNIGHT_PROMOTION(move_num)) cout << "N";
-			}
+			if (IS_QUEEN_PROMOTION(move_num)) cout << "Q";
+			if (IS_ROOK_PROMOTION(move_num)) cout << "R";
+			if (IS_BISHOP_PROMOTION(move_num)) cout << "B";
+			if (IS_KNIGHT_PROMOTION(move_num)) cout << "N";
 		}
-		cout << " Score: " << move_score << endl;
 	}
 }

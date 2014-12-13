@@ -5,7 +5,19 @@
 #include "globals.h"
 
 
-void Evaluate_Board(BOARD_STRUCT *board)
+int Evaluate_Board(BOARD_STRUCT *board)
 {
+	int score = 0;
+
 	board->eval_score = board->material;
+	score = board->material;
+
+	if (board->side == WHITE)
+	{
+		return score;
+	}
+	else
+	{
+		return -score;
+	}
 }

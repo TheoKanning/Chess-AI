@@ -674,6 +674,7 @@ void Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *move_list)
 	}
 
 	/***** Sort list *****/
+	//May be moved to search function later
 	Sort_Moves(move_list);
 }
 //Sort moves according to score using comb sort algorithm
@@ -858,4 +859,21 @@ int Under_Attack(int target120, int side, BOARD_STRUCT *board)
 	
 	return 0; //If no attacks were found
 
+}
+
+//Returns 1 if the current side's king is in check
+int In_Check(int side, BOARD_STRUCT *board)
+{
+	int king_square = 0;
+
+	if (side == WHITE)
+	{
+		king_square = board->piece_list120[wK][0];
+	}
+	else
+	{
+		king_square = board->piece_list120[bK][0];
+	}
+
+	return Under_Attack(king_square, side^1, board);
 }

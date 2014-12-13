@@ -32,7 +32,7 @@
 #define MAX_PLY						1028 //Maximum depth for searching
 #define MAX_SEARCH_DEPTH			64   //Max search depth, arbitrary
 #define MAX_MOVE_LIST_LENGTH		218 //Maximum moves in any position
-
+#define INF							10000000 //Large enough number to be infinite
 
 #define ON_BOARD_120(x)				((21 <= x && x <= 28) || (31 <= x && x <= 38) || (41 <= x && x <= 48) || (51 <= x && x <= 58) || \
 									 (61 <= x && x <= 68) || (71 <= x && x <= 78) || (81 <= x && x <= 88) || (91 <= x && x <= 98))
@@ -126,6 +126,12 @@ typedef struct
 
 typedef struct
 {
+	MOVE_STRUCT list[MAX_SEARCH_DEPTH];
+	int num;
+}PV_LIST_STRUCT;
+
+typedef struct
+{
 	int board_array120[120];
 	int board_array64[64]; 
 
@@ -170,7 +176,7 @@ extern char* rank_names;
 extern char* piece_names;
 
 //eval
-extern void Evaluate_Board(BOARD_STRUCT *board);
+extern int Evaluate_Board(BOARD_STRUCT *board);
 
 //hashkeys
 extern void Init_Hashkeys(void);
@@ -180,14 +186,21 @@ extern void Compute_Hash(BOARD_STRUCT *board);
 extern int Make_Move(MOVE_STRUCT *move, BOARD_STRUCT *board);
 extern void Take_Move(BOARD_STRUCT *board);
 extern void Add_Move(MOVE_LIST_STRUCT *move_list, int from, int to, int piece, int capture, int special, int score);
+extern void Print_Move(MOVE_STRUCT *move);
 extern void Print_Move_List(MOVE_LIST_STRUCT *move_list);
 
 //movegen
 extern void Generate_Moves(BOARD_STRUCT*, MOVE_LIST_STRUCT*);
 extern int Under_Attack(int target120, int side, BOARD_STRUCT *board);
+extern int In_Check(int side, BOARD_STRUCT *board);
 extern void Sort_Moves(MOVE_LIST_STRUCT *move_list);
 extern void Copy_Move(MOVE_STRUCT *move1, MOVE_STRUCT *move2);
 
 //perft
 extern int Perft_Test(char *fen, int depth, BOARD_STRUCT *board);
 extern int Search(BOARD_STRUCT *board, int depth);
+
+//search
+int Iterative_Deepening(int depth, BOARD_STRUCT *board);
+int Alpha_Beta(int alpha, int beta, int depth, PV_LIST_STRUCT *list, BOARD_STRUCT *board);
+void Print_PV_List(PV_LIST_STRUCT *pv_list);
