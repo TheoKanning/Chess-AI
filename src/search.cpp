@@ -44,7 +44,7 @@ int Alpha_Beta(int alpha, int beta, int depth, PV_LIST_STRUCT *pv_list_ptr, BOAR
 	if (depth == 0)
 	{
 		pv_list_ptr->num = 0;
-		return Evaluate_Board(board); //Quiescent search later
+		return Quiescent_Search( alpha, beta, board);
 	}
 
 	Generate_Moves(board, &move_list);
@@ -78,7 +78,7 @@ int Alpha_Beta(int alpha, int beta, int depth, PV_LIST_STRUCT *pv_list_ptr, BOAR
 		}
 		if (score >= beta)
 		{
-			return score; //Beta cutoff
+			return beta; //Beta cutoff
 		}
 		if (score > alpha)
 		{
@@ -101,3 +101,39 @@ int Alpha_Beta(int alpha, int beta, int depth, PV_LIST_STRUCT *pv_list_ptr, BOAR
 	return alpha;
 }
 
+//Quiescent search to find positions suitable for evaluation
+int Quiescent_Search(int alpha, int beta, BOARD_STRUCT *board)
+{
+	int move;
+	MOVE_LIST_STRUCT move_list;
+	int score = Evaluate_Board(board);
+	
+	
+
+	if (score >= beta) return beta;
+	if (alpha < score) alpha = score;
+
+	Generate_Moves(board, &move_list);
+	//If in pv line, find PV move
+	Sort_Moves(&move_list);
+	Get_Capture_Moves(&move_list);
+
+	for (move = 0; move < move_list.num; move++) //For all moves in list
+	{
+		if (Make_Move(&move_list.list[move], board)) //If move is successful
+		{
+			score = -Quiescent_Search(-beta, -alpha,  board);
+			Take_Move(board);
+		}
+		if (score >= beta)
+		{
+			return beta; //Beta cutoff
+		}
+		if (score > alpha)
+		{
+			alpha = score;
+		}
+	}
+
+	return alpha;
+}

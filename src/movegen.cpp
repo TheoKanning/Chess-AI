@@ -701,6 +701,29 @@ void Sort_Moves(MOVE_LIST_STRUCT *move_list)
 	}
 }
 
+
+//Removes all non-captures, returns 0 if no captures are found
+int Get_Capture_Moves(MOVE_LIST_STRUCT *move_list)
+{
+	int index;
+	int count = 0;//Number of captures found
+	for (index = 0; index < move_list->num; index++)
+	{
+		if (move_list->list[index].score >= CAPTURE_SCORE) //If move is a capture
+		{
+			count++;
+		}
+		else
+		{
+			move_list->list[index].score = 0;
+			move_list->list[index].move = 0;
+		}
+	}
+
+	move_list->num = count;
+	if (count == 0) return 0;
+	return 1;
+}
 //Copies move 1 into move 2 pointer
 void Copy_Move(MOVE_STRUCT *move1, MOVE_STRUCT *move2)
 {

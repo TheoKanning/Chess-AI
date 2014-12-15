@@ -64,8 +64,8 @@
 #define PV_SCORE				10000
 #define QUEEN_PROMOTE_SCORE		1000
 #define KNIGHT_PROMOTE_SCORE	500
-#define CAPTURE_SCORE			100	//Number to add to make capture scores higher or lower than other heuristics
-#define GET_MMVLVA_SCORE(x,y)	(MMV_SCORES[x] + LVA_SCORES[y])
+#define CAPTURE_SCORE			1000	//Number to add to make capture scores higher or lower than other heuristics
+#define GET_MMVLVA_SCORE(x,y)	(CAPTURE_SCORE + MMV_SCORES[x] + LVA_SCORES[y])
 
 const int MMV_SCORES[13] = { 0, 10, 20, 20, 30, 40, 50, 10, 20, 20, 30, 40, 50 }; //MVV Scores are multiples of ten
 const int LVA_SCORES[13] = { 0, 5, 4, 4, 3, 2, 1, 5, 4, 4, 3, 2, 1 }; //LVA Scores are less important

@@ -205,6 +205,7 @@ extern int Under_Attack(int target120, int side, BOARD_STRUCT *board);
 extern int In_Check(int side, BOARD_STRUCT *board);
 extern void Sort_Moves(MOVE_LIST_STRUCT *move_list);
 extern void Copy_Move(MOVE_STRUCT *move1, MOVE_STRUCT *move2);
+extern int Get_Capture_Moves(MOVE_LIST_STRUCT *move_list);
 
 //perft
 extern int Perft_Test(char *fen, int depth, BOARD_STRUCT *board);
@@ -218,4 +219,5 @@ extern void Print_PV_List(PV_LIST_STRUCT *pv_list);
 //search
 int Iterative_Deepening(int depth, BOARD_STRUCT *board);
 int Alpha_Beta(int alpha, int beta, int depth, PV_LIST_STRUCT *list, BOARD_STRUCT *board);
+int Quiescent_Search(int alpha, int beta, BOARD_STRUCT *board);
 
