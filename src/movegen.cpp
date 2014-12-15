@@ -673,9 +673,6 @@ void Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *move_list)
 		/***** End King Moves *****/
 	}
 
-	/***** Sort list *****/
-	//May be moved to search function later
-	Sort_Moves(move_list);
 }
 //Sort moves according to score using comb sort algorithm
 void Sort_Moves(MOVE_LIST_STRUCT *move_list)

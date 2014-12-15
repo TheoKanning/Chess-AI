@@ -128,6 +128,7 @@ typedef struct
 {
 	MOVE_STRUCT list[MAX_SEARCH_DEPTH];
 	int num;
+	int in_pv_line;
 }PV_LIST_STRUCT;
 
 typedef struct
@@ -209,7 +210,12 @@ extern void Copy_Move(MOVE_STRUCT *move1, MOVE_STRUCT *move2);
 extern int Perft_Test(char *fen, int depth, BOARD_STRUCT *board);
 extern int Search(BOARD_STRUCT *board, int depth);
 
+//pv_table
+extern void Clear_PV_List(PV_LIST_STRUCT *pv);
+extern int Find_PV_Move(MOVE_STRUCT *move, MOVE_LIST_STRUCT *move_list);
+extern void Print_PV_List(PV_LIST_STRUCT *pv_list);
+
 //search
 int Iterative_Deepening(int depth, BOARD_STRUCT *board);
 int Alpha_Beta(int alpha, int beta, int depth, PV_LIST_STRUCT *list, BOARD_STRUCT *board);
-void Print_PV_List(PV_LIST_STRUCT *pv_list);
+
