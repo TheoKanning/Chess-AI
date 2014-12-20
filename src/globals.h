@@ -12,7 +12,7 @@
 
 #define PROGRAM_NAME "Chess-AI"
 #define AUTHOR	"Theo Kanning"
-#define VERSION_NO	0.7
+#define VERSION_NO	1.0
 
 #ifndef DEBUG
         #define ASSERT(x)
@@ -34,8 +34,11 @@
 #define MAX_MOVE_LIST_LENGTH		218 //Maximum moves in any position
 #define INF							10000000 //Large enough number to be infinite
 
+#define START_FEN		"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+
 #define ON_BOARD_120(x)				((21 <= x && x <= 28) || (31 <= x && x <= 38) || (41 <= x && x <= 48) || (51 <= x && x <= 58) || \
 									 (61 <= x && x <= 68) || (71 <= x && x <= 78) || (81 <= x && x <= 88) || (91 <= x && x <= 98))
+#define ON_BOARD_64(x)				(x >= 0 && x < 64)
 
 #define SQUARE_120_TO_64(x)			((x%10 -1 + 8*((x-21)/10)))
 #define SQUARE_64_TO_120(x)			((x + 21 + 2*((x/8))))
@@ -133,6 +136,20 @@ typedef struct
 
 typedef struct
 {
+	int start_time;
+	int stop_time;
+	int time_set;
+	int stopped;
+	int nodes;
+
+	int depth;
+
+	int quit;
+	
+}SEARCH_INFO_STRUCT;
+
+typedef struct
+{
 	int board_array120[120];
 	int board_array64[64]; 
 
@@ -168,6 +185,7 @@ extern void Update_Bitboards(BOARD_STRUCT *board);
 extern void Add_To_Piecelists(int piece, int index120, BOARD_STRUCT *board);
 extern void Remove_From_Piecelists(int piece, int index120, BOARD_STRUCT *board);
 extern void Parse_Fen(char *fen, BOARD_STRUCT *board);
+extern void Clear_Undo_List(BOARD_STRUCT *board);
 extern void Check_Board(BOARD_STRUCT *board);
 extern void Print_Board(BOARD_STRUCT *board);
 extern void Print_Bitboards(BOARD_STRUCT *board);
@@ -183,6 +201,7 @@ extern short rook_piece_square_table[64];
 extern short queen_piece_square_table[64];
 extern short king_piece_square_table[64];
 extern short king_endgame__piece_square_table[64];
+extern int GetTimeMs(void);
 
 //eval
 extern int Evaluate_Board(BOARD_STRUCT *board);
@@ -197,6 +216,7 @@ extern int Make_Move(MOVE_STRUCT *move, BOARD_STRUCT *board);
 extern void Take_Move(BOARD_STRUCT *board);
 extern void Add_Move(MOVE_LIST_STRUCT *move_list, int from, int to, int piece, int capture, int special, int score);
 extern void Print_Move(MOVE_STRUCT *move);
+extern char* UCI_Move_String(MOVE_STRUCT *move);
 extern void Print_Move_List(MOVE_LIST_STRUCT *move_list);
 
 //movegen
@@ -217,7 +237,15 @@ extern int Find_PV_Move(MOVE_STRUCT *move, MOVE_LIST_STRUCT *move_list);
 extern void Print_PV_List(PV_LIST_STRUCT *pv_list);
 
 //search
-int Iterative_Deepening(int depth, BOARD_STRUCT *board);
-int Alpha_Beta(int alpha, int beta, int depth, PV_LIST_STRUCT *list, BOARD_STRUCT *board);
-int Quiescent_Search(int alpha, int beta, BOARD_STRUCT *board);
+extern int Iterative_Deepening(int depth, BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info);
+extern int Alpha_Beta(int alpha, int beta, int depth, PV_LIST_STRUCT *list, BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info);
+extern int Quiescent_Search(int alpha, int beta, BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info);
+extern int Search_Position(BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info);
+extern int Get_Time_Ms(void);
+
+//uci
+extern void ParseGo(char* line, SEARCH_INFO_STRUCT *info, BOARD_STRUCT *board);
+extern void ParsePosition(char* lineIn, BOARD_STRUCT *board);
+extern int ParseMove(char *ptrChar, BOARD_STRUCT *board);
+extern void Uci_Loop(BOARD_STRUCT *pos, SEARCH_INFO_STRUCT *info);
 

@@ -322,7 +322,8 @@ void Update_Piece_Lists(BOARD_STRUCT *board)
 	int index,piece;
 
 	//Reset material and piece square count to 0
-
+	board->material = 0;
+	board->piece_square_score = 0;
 
 	//Set all values to zero
 	for (piece = 0; piece <= bK; piece++)
@@ -355,6 +356,11 @@ void Update_Piece_Lists(BOARD_STRUCT *board)
 void Update_Bitboards(BOARD_STRUCT *board)
 {
 	int index;
+	//Reset bitboards
+	board->pawn_bitboards[WHITE] = 0;
+	board->pawn_bitboards[BLACK] = 0;
+	board->pawn_bitboards[BOTH] = 0;
+
 	for (index = 0; index < 64; index++)
 	{
 		if (board->board_array64[index] == wP) //White pawn
@@ -378,6 +384,24 @@ void Update_Board_Array_120(BOARD_STRUCT *board)
 	{
 		board->board_array120[SQUARE_64_TO_120(index)] = board->board_array64[index];
 	}
+}
+
+//Clears undo list struct in a board
+void Clear_Undo_List(BOARD_STRUCT *board)
+{
+	int index;
+
+	for (index = 0; index < board->undo_list.num; index++)
+	{
+		//Clear all fields 
+		board->undo_list.list[index].castle = 0;
+		board->undo_list.list[index].ep = 0;
+		board->undo_list.list[index].hash = 0;
+		board->undo_list.list[index].move_counter = 0;
+		board->undo_list.list[index].move_num = 0;
+	}
+
+	board->undo_list.num = 0;
 }
 
 
@@ -474,6 +498,9 @@ void Check_Board(BOARD_STRUCT *board)
 void Print_Board(BOARD_STRUCT *board)
 {
 	int rank, file;
+
+	Clear_Undo_List(board);
+
 	//Print board
 	cout << endl << "    A B C D E F G H" << endl;
 	for (rank = RANK_8; rank >= RANK_1; rank--)

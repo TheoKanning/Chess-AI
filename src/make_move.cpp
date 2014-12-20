@@ -461,7 +461,6 @@ void Take_Move(BOARD_STRUCT *board)
 	board->undo_list.list[board->undo_list.num - 1].ep = 0;
 	board->undo_list.list[board->undo_list.num - 1].castle = 0;
 	board->undo_list.list[board->undo_list.num - 1].hash = 0;
-
 	board->undo_list.num--;
 
 
@@ -672,4 +671,38 @@ void Print_Move(MOVE_STRUCT *move)
 			if (IS_KNIGHT_PROMOTION(move_num)) cout << "N";
 		}
 	}
+}
+
+
+//Prints a move in UCI format
+char* UCI_Move_String(MOVE_STRUCT *move)
+{
+	static char MvStr[6];
+	int move_num = move->move;
+
+	int from_file = GET_FILE_120(GET_FROM_SQ(move_num));
+	int from_rank = GET_RANK_120(GET_FROM_SQ(move_num));
+	int to_file = GET_FILE_120(GET_TO_SQ(move_num));
+	int to_rank = GET_RANK_120(GET_TO_SQ(move_num));
+
+	
+	//Get prmotion char, if any
+	if (IS_PROMOTION(move_num)) {
+		char pchar = 'q';
+		if (IS_KNIGHT_PROMOTION(move_num)) {
+			pchar = 'n';
+		}
+		else if (IS_ROOK_PROMOTION(move_num))  {
+			pchar = 'r';
+		}
+		else if (IS_BISHOP_PROMOTION(move_num))  {
+			pchar = 'b';
+		}
+		sprintf_s(MvStr, "%c%c%c%c%c", ('a' + from_file), ('1' + from_rank), ('a' + to_file), ('1' + to_rank), pchar);
+	}
+	else {
+		sprintf_s(MvStr, "%c%c%c%c", ('a' + from_file), ('1' + from_rank), ('a' + to_file), ('1' + to_rank));
+	}
+
+	return MvStr;
 }
