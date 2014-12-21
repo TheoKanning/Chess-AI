@@ -282,7 +282,7 @@ void Add_To_Piecelists(int piece, int index120, BOARD_STRUCT *board)
 
 	if (IS_WHITE_PIECE(piece)) board->material += piece_values[piece];
 	if (IS_BLACK_PIECE(piece)) board->material -= piece_values[piece];
-	board->piece_square_score += Get_Piece_Square_Score(SQUARE_120_TO_64(index120), piece);
+	if ((piece != wK) && (piece != bK))	board->total_material += piece_values[piece];
 }
 
 //Removes a piece and location from piece list
@@ -312,7 +312,7 @@ void Remove_From_Piecelists(int piece, int index120, BOARD_STRUCT *board)
 
 	if (IS_WHITE_PIECE(piece)) board->material -= piece_values[piece];
 	if (IS_BLACK_PIECE(piece)) board->material += piece_values[piece];
-	board->piece_square_score -= Get_Piece_Square_Score(SQUARE_120_TO_64(index120), piece);
+	if ((piece != wK) && (piece != bK))	board->total_material -= piece_values[piece];
 }
 
 
@@ -323,7 +323,7 @@ void Update_Piece_Lists(BOARD_STRUCT *board)
 
 	//Reset material and piece square count to 0
 	board->material = 0;
-	board->piece_square_score = 0;
+	board->total_material = 0;
 
 	//Set all values to zero
 	for (piece = 0; piece <= bK; piece++)
@@ -346,7 +346,7 @@ void Update_Piece_Lists(BOARD_STRUCT *board)
 
 			if (IS_WHITE_PIECE(piece)) board->material += piece_values[piece];
 			if (IS_BLACK_PIECE(piece)) board->material -= piece_values[piece];
-			board->piece_square_score += Get_Piece_Square_Score(index, piece);
+			if ((piece != wK) && (piece != bK))	board->total_material += piece_values[piece];
 		}
 	}
 }
@@ -404,6 +404,34 @@ void Clear_Undo_List(BOARD_STRUCT *board)
 	board->undo_list.num = 0;
 }
 
+//Checks backwards in the undo list struct to see if the current position has occured three times
+int Is_Threefold_Repetition(BOARD_STRUCT *board)
+{
+	int count = 1; //Number of times current hash has occured, starts at 1
+	int index = 1;
+	int start = board->undo_list.num - 1;
+	U64 hash = board->hash_key; //Hash key to search for
+
+	/* Searches backwards until the first irreversible move found.
+	* The number of reversible moves is equal to the move counter
+	*/
+	if (board->move_counter < 4) return 0;
+
+	//could probably be index < move counter, but I'd rather be safe than worry about it
+	for (index = 0; index <= board->move_counter; index++)
+	{
+		if (board->undo_list.list[start - index].hash == hash)//if match is found
+		{
+			count++;
+			if (count >= 3)
+			{
+				return 1;
+			}
+		}
+	}
+	return 0;
+}
+
 
 //Checks all board values for consistency
 //Asserts will fail if anything is incorrect
@@ -411,6 +439,7 @@ void Check_Board(BOARD_STRUCT *board)
 {
 	int index64, index120, piece, i, j;
 	int material_temp = 0;
+	int total_material_temp = 0;
 	int piece_square_temp = 0;
 	int piecelist_temp[13][10] = { 0 };
 	int piece_num_temp[13] = { 0 };
@@ -442,8 +471,8 @@ void Check_Board(BOARD_STRUCT *board)
 		}
 		if (IS_WHITE_PIECE(piece)) material_temp += piece_values[piece]; //Update material values
 		if (IS_BLACK_PIECE(piece)) material_temp -= piece_values[piece];
-
-		piece_square_temp += Get_Piece_Square_Score(index64, piece);
+		if ((piece != wK) && (piece != bK)) total_material_temp += piece_values[piece];
+		
 	}
 
 	/***** Verify Piece Lists *****/
@@ -481,7 +510,7 @@ void Check_Board(BOARD_STRUCT *board)
 
 	/***** Material Score *****/
 	ASSERT(material_temp == board->material);
-	ASSERT(piece_square_temp == board->piece_square_score);
+	ASSERT(total_material_temp == board->total_material);
 
 	/***** Hashkey *****/
 	hash_temp = board->hash_key; //Store previous value

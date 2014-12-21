@@ -55,6 +55,12 @@
 
 #define IS_WHITE_PIECE(x)			((x > EMPTY) && (x <= wK)) 
 #define IS_BLACK_PIECE(x)			((x > wK) && (x <= bK))
+#define IS_PAWN(x)					((x == wP) || (x == bP))
+#define IS_KNIGHT(x)				((x == wN) || (x == bN))
+#define IS_BISHOP(x)				((x == wB) || (x == bB))
+#define IS_ROOK(x)					((x == wR) || (x == bR))
+#define IS_QUEEN(x)					((x == wQ) || (x == bQ))
+#define IS_KING(x)					((x == wK) || (x == bK))
 
 
 /***** Global structures and typedefs *****/
@@ -164,7 +170,8 @@ typedef struct
 	int piece_list120[13][10]; //[Piece][instance] contains index of pieces on board, empty cells are 0, which is off the 120 board
 
 	int material; //Material score
-	int piece_square_score;
+	int total_material;
+	//int piece_square_score;
 
 	int eval_score; //Overall evaluation score
 
@@ -173,6 +180,7 @@ typedef struct
 	UNDO_LIST_STRUCT undo_list;
 
 	U64 hash_key;
+	U64 pawn_hash_key;
 
 } BOARD_STRUCT;
 
@@ -186,6 +194,7 @@ extern void Add_To_Piecelists(int piece, int index120, BOARD_STRUCT *board);
 extern void Remove_From_Piecelists(int piece, int index120, BOARD_STRUCT *board);
 extern void Parse_Fen(char *fen, BOARD_STRUCT *board);
 extern void Clear_Undo_List(BOARD_STRUCT *board);
+extern int  Is_Threefold_Repetition(BOARD_STRUCT *board);
 extern void Check_Board(BOARD_STRUCT *board);
 extern void Print_Board(BOARD_STRUCT *board);
 extern void Print_Bitboards(BOARD_STRUCT *board);
@@ -200,12 +209,15 @@ extern short bishop_piece_square_table[64];
 extern short rook_piece_square_table[64];
 extern short queen_piece_square_table[64];
 extern short king_piece_square_table[64];
-extern short king_endgame__piece_square_table[64];
+extern short king_endgame_piece_square_table[64];
 extern int GetTimeMs(void);
 
 //eval
 extern int Evaluate_Board(BOARD_STRUCT *board);
-extern int Get_Piece_Square_Score(int index64, int piece);
+extern int Get_Board_Piece_Square_Score(BOARD_STRUCT *board);
+extern int Get_Piece_Square_Score(int index64, int piece, BOARD_STRUCT *board);
+extern int Get_Pawn_Eval_Score(BOARD_STRUCT *board);
+extern void Init_Pawn_Masks(void);
 
 //hashkeys
 extern void Init_Hashkeys(void);

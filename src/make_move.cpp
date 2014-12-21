@@ -516,6 +516,13 @@ void Move_Piece(int from120, int to120, BOARD_STRUCT *board)
 		SET_BIT(board->pawn_bitboards[BLACK], to64);
 		SET_BIT(board->pawn_bitboards[BOTH], to64);
 	}
+
+	//Update pawn_hash_key
+	if (IS_PAWN(piece) || IS_KNIGHT(piece))
+	{
+		HASH_OUT(board->pawn_hash_key, piece_keys[piece][from64]);
+		HASH_IN(board->pawn_hash_key, piece_keys[piece][to64]);
+	}
 }
 
 //Removes a piece from the board, updating all lists, bitboards, and hashes
@@ -547,6 +554,12 @@ void Remove_Piece(int index120, BOARD_STRUCT *board)
 		CLR_BIT(board->pawn_bitboards[BLACK], index64);
 		CLR_BIT(board->pawn_bitboards[BOTH], index64);
 	}
+
+	//Update pawn_hash_key
+	if (IS_PAWN(piece) || IS_KNIGHT(piece))
+	{
+		HASH_OUT(board->pawn_hash_key, piece_keys[piece][index64]);
+	}
 }
 //Adds piece to board after promotion
 void Add_Piece(int piece, int index120, BOARD_STRUCT *board)
@@ -575,6 +588,12 @@ void Add_Piece(int piece, int index120, BOARD_STRUCT *board)
 	{
 		SET_BIT(board->pawn_bitboards[BLACK], index64);
 		SET_BIT(board->pawn_bitboards[BOTH], index64);
+	}
+
+	//Update pawn_hash_key
+	if (IS_PAWN(piece) || IS_KNIGHT(piece))
+	{
+		HASH_IN(board->pawn_hash_key, piece_keys[piece][index64]);
 	}
 }
 

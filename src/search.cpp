@@ -47,7 +47,7 @@ int Search_Position(BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info)
 
 	
 	printf("bestmove %s\n", UCI_Move_String(&best_move));
-	
+	 
 	return 1;
 }
 
@@ -107,12 +107,12 @@ int Alpha_Beta(int alpha, int beta, int depth, PV_LIST_STRUCT *pv_list_ptr, BOAR
 	}
 
 	//Check for 50 move rule and threefold repetition
-	if (board->move_counter >= 100)
+	if (board->move_counter >= 100 || Is_Threefold_Repetition(board))
 	{
 		return 0;
 	}
 
-
+	//If at depth 0, extend if in check, start quiescent search if not
 	if (depth == 0 && In_Check(board->side, board))
 	{
 		depth++;

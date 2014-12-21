@@ -52,16 +52,20 @@ void Init_Hashkeys(void)
 }
 
 
-//Takes a pointer to a board object and returns its hash key
+//Takes a pointer to a board object and updates its hash_key and pawn_hash_key fields
 void Compute_Hash(BOARD_STRUCT *board)
 {
 	int index;
+	int piece;
 	board->hash_key = 0; //Reset key
+	board->pawn_hash_key = 0;
 
 	//Piece keys
 	for (index = 0; index < 64; index++)
 	{
-		HASH_IN(board->hash_key, piece_keys[board->board_array64[index]][index]);//Add the hash value of the piece at each index
+		piece = board->board_array64[index];
+		HASH_IN(board->hash_key, piece_keys[piece][index]);//Add the hash value of the piece at each index
+		if (IS_KING(piece) || IS_PAWN(piece)) HASH_IN(board->pawn_hash_key, piece_keys[piece][index]); //Add only pawn and king moves into pawn hash
 	}
 
 	//Side keys
