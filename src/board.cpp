@@ -107,6 +107,8 @@ void Init_Board(BOARD_STRUCT *board)
 
 	Evaluate_Board(board);
 
+	board->age = 0;
+
 #ifdef DEBUG
 	Check_Board(board);
 #endif
@@ -254,6 +256,8 @@ void Parse_Fen(char *fen, BOARD_STRUCT *board)
 
 	board->hply *= 2; //Each move is 2 ply
 	if (board->side == WHITE) board->hply--;
+
+	board->age = 0;
 
 	Update_Bitboards(board);
 

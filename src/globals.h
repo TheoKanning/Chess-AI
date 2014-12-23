@@ -8,7 +8,7 @@
 
 /***** Global Macros *****/
 
-//#define DEBUG //Define debug mode for full assert function
+#define DEBUG //Define debug mode for full assert function
 
 #define PROGRAM_NAME "Chess-AI"
 #define AUTHOR	"Theo Kanning"
@@ -150,9 +150,28 @@ typedef struct
 
 	int depth;
 
+	int age; //Number of irreversible moves made
+	int hash_hits;
+
 	int quit;
 	
 }SEARCH_INFO_STRUCT;
+
+typedef struct
+{
+	U64 hash;
+	int depth;
+	int flag;
+	int eval;
+	int age; //number of irreversible moves made
+	int move;
+}HASH_ENTRY_STRUCT;
+
+typedef struct
+{
+	int num_entries;
+	HASH_ENTRY_STRUCT *table;
+}HASH_TABLE_STRUCT;
 
 typedef struct
 {
@@ -181,6 +200,7 @@ typedef struct
 
 	U64 hash_key;
 	U64 pawn_hash_key;
+	int age; //number of irreversible moves made
 
 } BOARD_STRUCT;
 
@@ -222,7 +242,10 @@ extern void Init_Pawn_Masks(void);
 //hashkeys
 extern void Init_Hashkeys(void);
 extern void Compute_Hash(BOARD_STRUCT *board);
-
+void Add_Hash_Entry(HASH_ENTRY_STRUCT *hash_ptr, SEARCH_INFO_STRUCT *info);
+extern int Get_Hash_Entry(U64 hash, HASH_ENTRY_STRUCT *hash_ptr);
+extern void Fill_Hash_Entry(int age, int depth, int eval, int flag, U64 hash, int move, HASH_ENTRY_STRUCT *hash_ptr);
+ 
 //makemove
 extern int Make_Move(MOVE_STRUCT *move, BOARD_STRUCT *board);
 extern void Take_Move(BOARD_STRUCT *board);

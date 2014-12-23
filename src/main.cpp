@@ -14,6 +14,7 @@ using namespace std;
 #define CASTLE2_FEN		"r3kbnr/ppp2ppp/2npbq2/4p3/4P3/2NPBQ2/PPP2PPP/R3KBNR b KQkq - 0 1"
 #define PROMOTION_FEN	"r1bqkbnr/pPppp1pp/2n5/8/8/5N2/PP1PPPpP/RNBQKB1R w KQkq - 0 1"
 #define MATE_IN_2_FEN	"8/6K1/1p1B1RB1/8/2Q5/2n1kP1N/3b4/4n3 w - - 0 1"
+#define ENDGAME_FEN		"8/3r1pp1/4k3/4p3/4P3/4K3/3R1PP1/8 w - - 0 1"
 BOARD_STRUCT board;
 MOVE_LIST_STRUCT move_list;
 SEARCH_INFO_STRUCT info;
@@ -27,7 +28,7 @@ int main()
 	Init_Hashkeys();
 	Init_Pawn_Masks();
 	Init_Board(&board);
-
+	Parse_Fen(ENDGAME_FEN, &board);
 	char line[256];
 
 	setvbuf(stdin, NULL, _IONBF, NULL);
@@ -54,8 +55,8 @@ int main()
 
 	//Parse_Fen(MATE_IN_2_FEN, &board);
 	//Print_Board(&board);
-	//Iterative_Deepening(6, &board, &info);
-	
+	Iterative_Deepening(7, &board, &info);
+	Iterative_Deepening(7, &board, &info);
 	
 	
 	while (!done)
