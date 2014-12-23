@@ -5,9 +5,11 @@
 #include "globals.h"
 #include "time.h"
 #include "windows.h"
+//#include "afx.h"
 
 using namespace std;
-//Searches a given position using board ans search info
+
+//Searches a given position using board and search info
 int Search_Position(BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info)
 {
 	int currentDepth, score;
@@ -20,11 +22,12 @@ int Search_Position(BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info)
 
 	for (currentDepth = 1; currentDepth <= info->depth; ++currentDepth) {
 
+		//ASSERT(AfxCheckMemory());
 		pv_list.in_pv_line = 1;
 
 		score = Alpha_Beta(-INF, INF, currentDepth, &pv_list, board, info);
 
-		if (info->stopped == TRUE) {
+		if (info->stopped == 1) {
 			break;
 		}
 
@@ -56,10 +59,11 @@ int Search_Position(BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info)
 int Iterative_Deepening(int depth, BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info)
 {
 	int i, score;
+	score = 0;
 	time_t start, stop;
 	PV_LIST_STRUCT PV_list;
 
-	info->start_time = 0;
+	info->start_time = Get_Time_Ms();
 	info->stop_time = 10000000;
 	info->stopped = 0;
 
@@ -76,6 +80,7 @@ int Iterative_Deepening(int depth, BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info
 		cout << "Depth:" << i << " ";
 		Print_PV_List(&PV_list);
 		cout << " Score:" << score/100.0 << " Time:" << stop - start << " seconds Nodes: " << info->nodes << " Hits: " << info->hash_hits << endl;
+		cout << "Nodes/sec: " << info->nodes * 1000 / (Get_Time_Ms() - info->start_time) << endl;
 	}
 	//If checkmate found
 	if (score == INF)
@@ -107,7 +112,7 @@ int Alpha_Beta(int alpha, int beta, int depth, PV_LIST_STRUCT *pv_list_ptr, BOAR
 
 	info->nodes++;
 	//Check for timeout
-	if ((info->nodes % 1000) == 0) //every 1000 nodes
+	if ((info->nodes % 5000) == 0) //every 5000 nodes
 	{
 		if (Get_Time_Ms() > info->stop_time - 50)
 		{
@@ -123,15 +128,19 @@ int Alpha_Beta(int alpha, int beta, int depth, PV_LIST_STRUCT *pv_list_ptr, BOAR
 	}
 
 	//If at depth 0, extend if in check, start quiescent search if not
-	if (depth == 0 && In_Check(board->side, board))
+	if (depth == 0)
 	{
-		depth++;
+		if (In_Check(board->side, board))
+		{
+			depth++;
+		}
+		else
+		{
+			pv_list_ptr->num = 0;
+			return Quiescent_Search(alpha, beta, board, info);
+		}
 	}
-	else if (depth == 0 )
-	{
-		pv_list_ptr->num = 0;
-		return Quiescent_Search( alpha, beta, board, info);
-	}
+
 
 	//Check hash table 
 	valid = Get_Hash_Entry(board->hash_key, &hash_entry);
@@ -144,7 +153,7 @@ int Alpha_Beta(int alpha, int beta, int depth, PV_LIST_STRUCT *pv_list_ptr, BOAR
 		{
 			//Store move in pv list
 			move_list.list[0].move = hash_entry.move;
-			Copy_Move(&move_list.list[0], &pv_list_ptr->list[0]); //Copy first move into pv list
+			Copy_Move(&move_list.list[0 ], &pv_list_ptr->list[0]); //Copy first move into pv list
 			memcpy(pv_list_ptr->list + 1, pv_list.list, pv_list.num * sizeof(MOVE_STRUCT)); //Copy remaining moves into pointer list
 			pv_list_ptr->num = pv_list.num + 1;
 			return hash_entry.eval;
@@ -258,7 +267,7 @@ int Quiescent_Search(int alpha, int beta, BOARD_STRUCT *board, SEARCH_INFO_STRUC
 	
 	info->nodes++;
 
-	if ((info->nodes % 1000) == 0) //every 1000 nodes
+	if ((info->nodes % 5000) == 0) //every 5000 nodes
 	{
 		if (Get_Time_Ms() > info->stop_time - 50)
 		{

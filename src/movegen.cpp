@@ -332,18 +332,24 @@ void Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *move_list)
 		}
 		/***** Castling *****/
 		//Kingside
-		if ((board->castle_rights & WK_CASTLE) //Castling rights active
-			&& (board->board_array120[F1] == EMPTY) && (board->board_array120[G1] == EMPTY) //Travel squares are empty
-			&& !Under_Attack(E1, BLACK, board) && !Under_Attack(F1, BLACK, board) && !Under_Attack(G1, BLACK, board)) //King does not move through check
+		if ((board->castle_rights & WK_CASTLE))
 		{
-			Add_Move(move_list, E1, G1, wK, 0, KING_CASTLE, 0); //Always moves to G1	
+			//Castling rights active
+			if ((board->board_array120[F1] == EMPTY) && (board->board_array120[G1] == EMPTY) //Travel squares are empty
+				&& !Under_Attack(E1, BLACK, board) && !Under_Attack(F1, BLACK, board) && !Under_Attack(G1, BLACK, board)) //King does not move through check
+			{
+				Add_Move(move_list, E1, G1, wK, 0, KING_CASTLE, 0); //Always moves to G1	
+			}
 		}
 		//Queenside
-		if ((board->castle_rights & WQ_CASTLE) //Castling rights active
-			&& (board->board_array120[B1] == EMPTY) && (board->board_array120[C1] == EMPTY) && (board->board_array120[D1] == EMPTY) //Travel squares are empty
-			&& !Under_Attack(C1, BLACK, board) && !Under_Attack(D1, BLACK, board) && !Under_Attack(E1, BLACK, board)) //King does not move through check
+		if ((board->castle_rights & WQ_CASTLE))
 		{
-			Add_Move(move_list, E1, C1, wK, 0, QUEEN_CASTLE, 0); //Always moves to C1	
+			//Castling rights active
+			if ((board->board_array120[B1] == EMPTY) && (board->board_array120[C1] == EMPTY) && (board->board_array120[D1] == EMPTY) //Travel squares are empty
+				&& !Under_Attack(C1, BLACK, board) && !Under_Attack(D1, BLACK, board) && !Under_Attack(E1, BLACK, board)) //King does not move through check
+			{
+				Add_Move(move_list, E1, C1, wK, 0, QUEEN_CASTLE, 0); //Always moves to C1	
+			}
 		}
 		/***** End King Moves *****/
 
@@ -657,18 +663,24 @@ void Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *move_list)
 		}
 		/***** Castling *****/
 		//Kingside
-		if ((board->castle_rights & BK_CASTLE) //Castling rights active
-			&& (board->board_array120[F8] == EMPTY) && (board->board_array120[G8] == EMPTY) //Travel squares are empty
-			&& !Under_Attack(E8, WHITE, board) && !Under_Attack(F8, WHITE, board) && !Under_Attack(G8, WHITE, board)) //King does not move through check
+		if ((board->castle_rights & BK_CASTLE))
 		{
-			Add_Move(move_list, E8, G8, bK, 0, KING_CASTLE, 0); //Always moves to G8
+			//Castling rights active
+			if ((board->board_array120[F8] == EMPTY) && (board->board_array120[G8] == EMPTY) //Travel squares are empty
+				&& !Under_Attack(E8, WHITE, board) && !Under_Attack(F8, WHITE, board) && !Under_Attack(G8, WHITE, board)) //King does not move through check
+			{
+				Add_Move(move_list, E8, G8, bK, 0, KING_CASTLE, 0); //Always moves to G8
+			}
 		}
 		//Queenside
-		if ((board->castle_rights & BQ_CASTLE) //Castling rights active
-			&& (board->board_array120[B8] == EMPTY) && (board->board_array120[C8] == EMPTY) && (board->board_array120[D8] == EMPTY) //Travel squares are empty
-			&& !Under_Attack(C8, WHITE, board) && !Under_Attack(D8, WHITE, board) && !Under_Attack(E8, WHITE, board)) //King does not move through check
+		if ((board->castle_rights & BQ_CASTLE))
 		{
-			Add_Move(move_list, E8, C8, bK, 0, QUEEN_CASTLE, 0); //Always moves to C8	
+			//Castling rights active
+			if ((board->board_array120[B8] == EMPTY) && (board->board_array120[C8] == EMPTY) && (board->board_array120[D8] == EMPTY) //Travel squares are empty
+				&& !Under_Attack(C8, WHITE, board) && !Under_Attack(D8, WHITE, board) && !Under_Attack(E8, WHITE, board)) //King does not move through check
+			{
+				Add_Move(move_list, E8, C8, bK, 0, QUEEN_CASTLE, 0); //Always moves to C8	
+			}
 		}
 		/***** End King Moves *****/
 	}

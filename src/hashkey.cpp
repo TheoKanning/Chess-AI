@@ -18,10 +18,10 @@ U64 side_keys[2];
 U64 ep_keys[101]; //NO_SQUARE = 100;
 U64 castle_keys[16];
 
-int HASH_SIZE = 1000000; //Number of hash entries stored
+int HASH_SIZE = 10000; //Number of hash entries stored
 int HASH_SIZE_MB = 0;
 
-HASH_ENTRY_STRUCT hash_table[1000000];
+HASH_ENTRY_STRUCT hash_table[10000];
 
 static void Copy_Hash_Entry(HASH_ENTRY_STRUCT *ptr1, HASH_ENTRY_STRUCT *ptr2);
 
@@ -105,9 +105,6 @@ int Get_Hash_Entry(U64 hash, HASH_ENTRY_STRUCT *hash_ptr)
 void Add_Hash_Entry(HASH_ENTRY_STRUCT *hash_ptr, SEARCH_INFO_STRUCT *info)
 {
 	int hash_index = hash_ptr->hash % HASH_SIZE;
-
-	Copy_Hash_Entry(hash_ptr, &hash_table[hash_index]);
-	return;
 
 	//Check criteria and return if one is not met
 	

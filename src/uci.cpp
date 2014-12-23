@@ -68,8 +68,7 @@ void ParseGo(char* line, SEARCH_INFO_STRUCT *info, BOARD_STRUCT *board) {
 		info->depth = MAX_SEARCH_DEPTH;
 	}
 
-	printf("time:%d start:%d stop:%d depth:%d timeset:%d\n",
-		time, info->start_time, info->stop_time, info->depth, info->time_set);
+	printf("time:%d start:%d stop:%d depth:%d timeset:%d\n", time, info->start_time, info->stop_time, info->depth, info->time_set);
 
 	Search_Position(board, info);
 }

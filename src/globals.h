@@ -5,6 +5,7 @@
 #include "math.h"
 #include <iostream>
 #include "move_macros.h"
+//#include "stdafx.h"
 
 /***** Global Macros *****/
 
@@ -12,7 +13,7 @@
 
 #define PROGRAM_NAME "Chess-AI"
 #define AUTHOR	"Theo Kanning"
-#define VERSION_NO	1.0
+#define VERSION_NO	1.1
 
 #ifndef DEBUG
         #define ASSERT(x)
@@ -235,7 +236,7 @@ extern int GetTimeMs(void);
 //eval
 extern int Evaluate_Board(BOARD_STRUCT *board);
 extern int Get_Board_Piece_Square_Score(BOARD_STRUCT *board);
-extern int Get_Piece_Square_Score(int index64, int piece, BOARD_STRUCT *board);
+extern int Get_Piece_Square_Score(int index64, int piece, float phase, BOARD_STRUCT *board);
 extern int Get_Pawn_Eval_Score(BOARD_STRUCT *board);
 extern void Init_Pawn_Masks(void);
 

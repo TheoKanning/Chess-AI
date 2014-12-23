@@ -33,6 +33,9 @@ int main()
 
 	setvbuf(stdin, NULL, _IONBF, NULL);
 	setvbuf(stdout, NULL, _IONBF, NULL);
+	
+	ParsePosition("position startpos", &board);
+	ParseGo("go wtime 100000 btime 100000 winc 0 binc 0", &info, &board);
 
 	while (1) {
 		memset(&line[0], 0, sizeof(line));
@@ -55,8 +58,8 @@ int main()
 
 	//Parse_Fen(MATE_IN_2_FEN, &board);
 	//Print_Board(&board);
-	Iterative_Deepening(7, &board, &info);
-	Iterative_Deepening(7, &board, &info);
+	Iterative_Deepening(9, &board, &info);
+	//Iterative_Deepening(7, &board, &info);
 	
 	
 	while (!done)

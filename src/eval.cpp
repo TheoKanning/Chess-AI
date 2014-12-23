@@ -7,7 +7,7 @@
 #define ENDGAME_MATERIAL 2000
 #define START_MATERIAL	 8000
 
-#define PASSED_PAWN_SCORE 25
+#define PASSED_PAWN_SCORE 20
 #define ISOLATED_PAWN_SCORE	-15
 
 //Pawn evaluation masks
@@ -46,21 +46,9 @@ int Get_Board_Piece_Square_Score(BOARD_STRUCT *board)
 {
 	int index64;
 	int piece;
+	int piece_num;
 	int score = 0;
-	//Loop through every square and add the approriate score
-	for (index64 = 0; index64 < 64; index64++)
-	{
-		piece = board->board_array64[index64];
 
-		if (piece != EMPTY) score += Get_Piece_Square_Score(index64, piece, board);
-	}
-
-	return score;
-}
-
-//Returns the piece square table score of a piece in a given position
-int Get_Piece_Square_Score(int index64, int piece, BOARD_STRUCT *board)
-{
 	//Calculate game period
 	float phase;
 	if (board->total_material <= ENDGAME_MATERIAL)
@@ -72,6 +60,31 @@ int Get_Piece_Square_Score(int index64, int piece, BOARD_STRUCT *board)
 		phase = 1 - ((float)(board->total_material - ENDGAME_MATERIAL)) / (START_MATERIAL - ENDGAME_MATERIAL);
 	}
 
+	//Loop through every square and add the approriate score
+	for (piece = wP; piece <= bK; piece++)
+	{
+		for (piece_num = 0; piece_num < board->piece_num[piece]; piece_num++)
+		{
+			index64 = SQUARE_120_TO_64(board->piece_list120[piece][piece_num]);
+			score += Get_Piece_Square_Score(index64, piece, phase, board);
+		}
+	}
+	/*
+	for (index64 = 0; index64 < 64; index64++)
+	{
+		piece = board->board_array64[index64];
+
+		if (piece != EMPTY) score += Get_Piece_Square_Score(index64, piece, phase, board);
+	}
+	*/
+
+
+	return score;
+}
+
+//Returns the piece square table score of a piece in a given position
+int Get_Piece_Square_Score(int index64, int piece, float phase, BOARD_STRUCT *board)
+{
 	switch (piece)
 	{
 	case EMPTY:
