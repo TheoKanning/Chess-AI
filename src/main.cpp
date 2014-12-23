@@ -34,8 +34,8 @@ int main()
 	setvbuf(stdin, NULL, _IONBF, NULL);
 	setvbuf(stdout, NULL, _IONBF, NULL);
 	
-	ParsePosition("position startpos", &board);
-	ParseGo("go wtime 100000 btime 100000 winc 0 binc 0", &info, &board);
+	Parse_Position("position startpos", &board);
+	Parse_Go("go wtime 100000 btime 100000 winc 0 binc 0", &info, &board);
 
 	while (1) {
 		memset(&line[0], 0, sizeof(line));

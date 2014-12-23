@@ -5,7 +5,7 @@
 #include "globals.h"
 #include "time.h"
 #include "windows.h"
-//#include "afx.h"
+#include "crtdbg.h"
 
 using namespace std;
 
@@ -20,9 +20,8 @@ int Search_Position(BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info)
 	info->stopped = 0;
 	info->nodes = 0;
 
-	for (currentDepth = 1; currentDepth <= info->depth; ++currentDepth) {
-
-		//ASSERT(AfxCheckMemory());
+	for (currentDepth = 1; currentDepth <= info->depth; ++currentDepth) 
+	{		
 		pv_list.in_pv_line = 1;
 
 		score = Alpha_Beta(-INF, INF, currentDepth, &pv_list, board, info);
@@ -107,6 +106,14 @@ int Alpha_Beta(int alpha, int beta, int depth, PV_LIST_STRUCT *pv_list_ptr, BOAR
 	PV_LIST_STRUCT pv_list;
 	HASH_ENTRY_STRUCT hash_entry;
 	int valid = 0;
+
+	//Clear pv list
+	for (int i = 0; i < MAX_SEARCH_DEPTH; i++)
+	{
+		pv_list.list[i].move = 0;
+		pv_list.list[i].score = 0;
+	}
+	
 	pv_list.num = 0;
 	pv_list.in_pv_line = 0;
 
@@ -154,7 +161,7 @@ int Alpha_Beta(int alpha, int beta, int depth, PV_LIST_STRUCT *pv_list_ptr, BOAR
 			//Store move in pv list
 			move_list.list[0].move = hash_entry.move;
 			Copy_Move(&move_list.list[0 ], &pv_list_ptr->list[0]); //Copy first move into pv list
-			memcpy(pv_list_ptr->list + 1, pv_list.list, pv_list.num * sizeof(MOVE_STRUCT)); //Copy remaining moves into pointer list
+			pv_list.num = 1;
 			pv_list_ptr->num = pv_list.num + 1;
 			return hash_entry.eval;
 		}
@@ -184,6 +191,7 @@ int Alpha_Beta(int alpha, int beta, int depth, PV_LIST_STRUCT *pv_list_ptr, BOAR
 	{
 		if (Make_Move(&move_list.list[move], board)) //If move is successful
 		{
+			
 			//if move score == PV_SCORE
 			//Fill local PV table with last n-1 moves
 			// Set is_pv to 1

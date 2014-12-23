@@ -10,7 +10,7 @@
 #define INPUTBUFFER 400 * 6
 
 // go depth 6 wtime 180000 btime 100000 binc 1000 winc 1000 movetime 1000 movestogo 40
-void ParseGo(char* line, SEARCH_INFO_STRUCT *info, BOARD_STRUCT *board) {
+void Parse_Go(char* line, SEARCH_INFO_STRUCT *info, BOARD_STRUCT *board) {
 
 	int depth = -1, movestogo = 30, movetime = -1;
 	int time = -1, inc = 0;
@@ -76,7 +76,7 @@ void ParseGo(char* line, SEARCH_INFO_STRUCT *info, BOARD_STRUCT *board) {
 // position fen fenstr
 // position startpos
 // ... moves e2e4 e7e5 b7b8q
-void ParsePosition(char* lineIn, BOARD_STRUCT *board) {
+void Parse_Position(char* lineIn, BOARD_STRUCT *board) {
 
 	Clear_Undo_List(board);
 
@@ -102,7 +102,7 @@ void ParsePosition(char* lineIn, BOARD_STRUCT *board) {
 	if (ptrChar != NULL) {
 		ptrChar += 6;
 		while (*ptrChar) {
-			parsed_move.move = ParseMove(ptrChar, board);
+			parsed_move.move = Parse_Move(ptrChar, board);
 			if (parsed_move.move == 0) break;
 			Make_Move(&parsed_move, board);
 			board->hply = 0;
@@ -112,7 +112,7 @@ void ParsePosition(char* lineIn, BOARD_STRUCT *board) {
 	}
 }
 
-void Uci_Loop(BOARD_STRUCT *pos, SEARCH_INFO_STRUCT *info) {
+void Uci_Loop(BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info) {
 
 
 	setvbuf(stdin, NULL, _IONBF, NULL);
@@ -140,14 +140,14 @@ void Uci_Loop(BOARD_STRUCT *pos, SEARCH_INFO_STRUCT *info) {
 			continue;
 		}
 		else if (!strncmp(line, "position", 8)) {
-			ParsePosition(line, pos);
+			Parse_Position(line, board);
 		}
 		else if (!strncmp(line, "ucinewgame", 10)) {
-			ParsePosition("position startpos\n", pos);
+			Parse_Position("position startpos\n", board);
 		}
 		else if (!strncmp(line, "go", 2)) {
 			printf("Seen Go..\n");
-			ParseGo(line, info, pos);
+			Parse_Go(line, info, board);
 		}
 		else if (!strncmp(line, "quit", 4)) {
 			info->quit = 1;
@@ -159,7 +159,7 @@ void Uci_Loop(BOARD_STRUCT *pos, SEARCH_INFO_STRUCT *info) {
 			printf("uciok\n");
 		}
 		else if (!strncmp(line, "debug", 4)) {
-			//DebugAnalysisTest(pos, info);
+			//DebugAnalysisTest(debug, info);
 			break;
 		}
 		/*
@@ -176,7 +176,7 @@ void Uci_Loop(BOARD_STRUCT *pos, SEARCH_INFO_STRUCT *info) {
 }
 
 //Parses a move from the uci and returns the move integer
-int ParseMove(char *ptrChar, BOARD_STRUCT *board) {
+int Parse_Move(char *ptrChar, BOARD_STRUCT *board) {
 
 	Check_Board(board);
 

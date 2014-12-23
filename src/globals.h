@@ -5,11 +5,10 @@
 #include "math.h"
 #include <iostream>
 #include "move_macros.h"
-//#include "stdafx.h"
 
 /***** Global Macros *****/
 
-#define DEBUG //Define debug mode for full assert function
+//#define DEBUG //Define debug mode for full assert function
 
 #define PROGRAM_NAME "Chess-AI"
 #define AUTHOR	"Theo Kanning"
@@ -280,8 +279,8 @@ extern int Search_Position(BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info);
 extern int Get_Time_Ms(void);
 
 //uci
-extern void ParseGo(char* line, SEARCH_INFO_STRUCT *info, BOARD_STRUCT *board);
-extern void ParsePosition(char* lineIn, BOARD_STRUCT *board);
-extern int ParseMove(char *ptrChar, BOARD_STRUCT *board);
+extern void Parse_Go(char* line, SEARCH_INFO_STRUCT *info, BOARD_STRUCT *board);
+extern void Parse_Position(char* lineIn, BOARD_STRUCT *board);
+extern int Parse_Move(char *ptrChar, BOARD_STRUCT *board);
 extern void Uci_Loop(BOARD_STRUCT *pos, SEARCH_INFO_STRUCT *info);
 
