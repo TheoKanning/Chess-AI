@@ -16,6 +16,15 @@ int Search_Position(BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info)
 	PV_LIST_STRUCT pv_list;
 	MOVE_STRUCT best_move;
 
+	//Clear pv list
+	for (int i = 0; i < MAX_SEARCH_DEPTH; i++)
+	{
+		pv_list.list[i].move = 0;
+		pv_list.list[i].score = 0;
+	}
+	pv_list.num = 0;
+
+
 	//Reset stop flag
 	info->stopped = 0;
 	info->nodes = 0;
@@ -103,6 +112,7 @@ int Alpha_Beta(int alpha, int beta, int depth, PV_LIST_STRUCT *pv_list_ptr, BOAR
 	int score = -INF; //Set in case no moves are available
 	int mate = 1; //If no legal moves are found
 	MOVE_LIST_STRUCT move_list;
+	MOVE_STRUCT next_move;
 	PV_LIST_STRUCT pv_list;
 	HASH_ENTRY_STRUCT hash_entry;
 	int valid = 0;
@@ -160,7 +170,7 @@ int Alpha_Beta(int alpha, int beta, int depth, PV_LIST_STRUCT *pv_list_ptr, BOAR
 		{
 			//Store move in pv list
 			move_list.list[0].move = hash_entry.move;
-			Copy_Move(&move_list.list[0 ], &pv_list_ptr->list[0]); //Copy first move into pv list
+			Copy_Move(&move_list.list[0], &pv_list_ptr->list[0]); //Copy first move into pv list
 			pv_list.num = 1;
 			pv_list_ptr->num = pv_list.num + 1;
 			return hash_entry.eval;
@@ -185,11 +195,13 @@ int Alpha_Beta(int alpha, int beta, int depth, PV_LIST_STRUCT *pv_list_ptr, BOAR
 	//If in pv line, find PV move
 	if (pv_list_ptr->in_pv_line) Find_PV_Move(&pv_list_ptr->list[0], &move_list);
 	//Get hash move
-	Sort_Moves(&move_list);
+	//Sort_Moves(&move_list);
 
 	for (move = 0; move < move_list.num; move++) //For all moves in list
 	{
-		if (Make_Move(&move_list.list[move], board)) //If move is successful
+		next_move.move = Get_Next_Move(&move_list);
+		if (next_move.move == 0) break;
+		if (Make_Move(&next_move, board)) //If move is successful
 		{
 			
 			//if move score == PV_SCORE
@@ -197,7 +209,7 @@ int Alpha_Beta(int alpha, int beta, int depth, PV_LIST_STRUCT *pv_list_ptr, BOAR
 			// Set is_pv to 1
 			//Call alpha beta
 			//Reset pv table values for rest of search
-			if (move == 0 && move_list.list[move].score == PV_SCORE)
+			if (move == 0 && next_move.move == pv_list_ptr->list[0].move) //move_list.list[move].score == PV_SCORE)
 			{
 				memcpy(pv_list.list, pv_list_ptr->list + 1, (pv_list_ptr->num - 1)* sizeof(MOVE_STRUCT)); //Copy remaining moves into pointer list
 				pv_list.in_pv_line = 1;
@@ -221,7 +233,7 @@ int Alpha_Beta(int alpha, int beta, int depth, PV_LIST_STRUCT *pv_list_ptr, BOAR
 			if (score >= beta)
 			{
 				//Store hash entry
-				Fill_Hash_Entry(board->age, depth, score, HASH_LOWER, board->hash_key, move_list.list[move].move, &hash_entry);
+				Fill_Hash_Entry(board->age, depth, score, HASH_LOWER, board->hash_key, next_move.move, &hash_entry);
 				Add_Hash_Entry(&hash_entry, info);
 				return beta; //Beta cutoff
 			}
@@ -235,14 +247,14 @@ int Alpha_Beta(int alpha, int beta, int depth, PV_LIST_STRUCT *pv_list_ptr, BOAR
 				pv_list_ptr->num = pv_list.num + 1;
 
 				//Store hash entry
-				Fill_Hash_Entry(board->age, depth, score, HASH_EXACT, board->hash_key, move_list.list[move].move, &hash_entry);
+				Fill_Hash_Entry(board->age, depth, score, HASH_EXACT, board->hash_key, next_move.move, &hash_entry);
 				Add_Hash_Entry(&hash_entry, info);
 			}
 			//Update best score and best move for hash entry later
 			if (score > best_score)
 			{
 				score = best_score;
-				best_move = move_list.list[move].move;
+				best_move = next_move.move;
 			}
 		}
 		//Check upper bound
@@ -271,6 +283,7 @@ int Quiescent_Search(int alpha, int beta, BOARD_STRUCT *board, SEARCH_INFO_STRUC
 {
 	int move;
 	MOVE_LIST_STRUCT move_list;
+	MOVE_STRUCT next_move;
 	int score = Evaluate_Board(board);
 	
 	info->nodes++;
@@ -290,12 +303,16 @@ int Quiescent_Search(int alpha, int beta, BOARD_STRUCT *board, SEARCH_INFO_STRUC
 
 	Generate_Moves(board, &move_list);
 	//If in pv line, find PV move
-	Sort_Moves(&move_list);
-	Get_Capture_Moves(&move_list);
+	//Sort_Moves(&move_list);
+	//Get_Capture_Moves(&move_list);
 
 	for (move = 0; move < move_list.num; move++) //For all moves in list
 	{
-		if (Make_Move(&move_list.list[move], board)) //If move is successful
+		next_move.move = Get_Next_Capture_Move(&move_list);
+
+		if (next_move.move == 0) break; 
+
+		if (Make_Move(&next_move, board)) //If move is successful
 		{
 			score = -Quiescent_Search(-beta, -alpha,  board, info);
 			Take_Move(board);

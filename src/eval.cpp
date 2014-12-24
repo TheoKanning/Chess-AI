@@ -66,7 +66,7 @@ int Get_Board_Piece_Square_Score(BOARD_STRUCT *board)
 		for (piece_num = 0; piece_num < board->piece_num[piece]; piece_num++)
 		{
 			index64 = SQUARE_120_TO_64(board->piece_list120[piece][piece_num]);
-			score += Get_Piece_Square_Score(index64, piece, phase, board);
+			score += Get_Piece_Square_Score(index64, piece, phase);
 		}
 	}
 	/*
@@ -83,7 +83,7 @@ int Get_Board_Piece_Square_Score(BOARD_STRUCT *board)
 }
 
 //Returns the piece square table score of a piece in a given position
-int Get_Piece_Square_Score(int index64, int piece, float phase, BOARD_STRUCT *board)
+int Get_Piece_Square_Score(int index64, int piece, float phase)
 {
 	switch (piece)
 	{

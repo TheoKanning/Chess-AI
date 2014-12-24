@@ -686,62 +686,7 @@ void Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *move_list)
 	}
 
 }
-//Sort moves according to score using comb sort algorithm
-void Sort_Moves(MOVE_LIST_STRUCT *move_list)
-{
-	int width = 10; //Distance between compared values
-	int done = 0; //Records whether or not the list is fully sorted
-	int index; //Index of start point
-	MOVE_STRUCT temp; //Temporary move structure
 
-	while (!done)
-	{
-		if(width == 1) done = 1; //Only enable ending once minimum width is reached
-
-		for (index = 0; index < move_list->num - width; index++)
-		{
-			if (move_list->list[index].score < move_list->list[index + width].score)
-			{
-				//Swap moves
-				Copy_Move(&move_list->list[index], &temp); //1 -> temp
-				Copy_Move(&move_list->list[index+width], &move_list->list[index]); //2 -> 1
-				Copy_Move(&temp, &move_list->list[index+width]); //temp -> 2
-				done = 0;
-			}
-		}
-		if (width > 1) width--;
-	}
-}
-
-
-//Removes all non-captures, returns 0 if no captures are found
-int Get_Capture_Moves(MOVE_LIST_STRUCT *move_list)
-{
-	int index;
-	int count = 0;//Number of captures found
-	for (index = 0; index < move_list->num; index++)
-	{
-		if (move_list->list[index].score >= CAPTURE_SCORE) //If move is a capture
-		{
-			count++;
-		}
-		else
-		{
-			move_list->list[index].score = 0;
-			move_list->list[index].move = 0;
-		}
-	}
-
-	move_list->num = count;
-	if (count == 0) return 0;
-	return 1;
-}
-//Copies move 1 into move 2 pointer
-void Copy_Move(MOVE_STRUCT *move1, MOVE_STRUCT *move2)
-{
-	move2->move = move1->move;
-	move2->score = move1->score;
-}
 
 //Sees if the specified square is under attack by the given side
 //Returns 1 if under attack, else 0

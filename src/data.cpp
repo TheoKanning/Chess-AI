@@ -7,7 +7,8 @@ char* file_names = "abcdefgh";
 char* rank_names = "12345678";
 char* piece_names = " PNBRQKPNBRQK";
 
-int piece_values[13] = { 0, 100, 320, 330, 500, 900, 1000000, 100, 320, 330, 500, 900, 1000000 };
+int piece_values[13
+] = { 0, 100, 320, 330, 500, 900, 1000000, 100, 320, 330, 500, 900, 1000000 };
 
 short pawn_piece_square_table[64] = {
 	0, 0, 0, 0, 0, 0, 0, 0,

@@ -10,7 +10,7 @@
 
 //#define DEBUG //Define debug mode for full assert function
 
-#define PROGRAM_NAME "Chess-AI"
+#define PROGRAM_NAME "Theo"
 #define AUTHOR	"Theo Kanning"
 #define VERSION_NO	1.1
 
@@ -235,14 +235,14 @@ extern int GetTimeMs(void);
 //eval
 extern int Evaluate_Board(BOARD_STRUCT *board);
 extern int Get_Board_Piece_Square_Score(BOARD_STRUCT *board);
-extern int Get_Piece_Square_Score(int index64, int piece, float phase, BOARD_STRUCT *board);
+extern int Get_Piece_Square_Score(int index64, int piece, float phase);
 extern int Get_Pawn_Eval_Score(BOARD_STRUCT *board);
 extern void Init_Pawn_Masks(void);
 
 //hashkeys
 extern void Init_Hashkeys(void);
 extern void Compute_Hash(BOARD_STRUCT *board);
-void Add_Hash_Entry(HASH_ENTRY_STRUCT *hash_ptr, SEARCH_INFO_STRUCT *info);
+extern void Add_Hash_Entry(HASH_ENTRY_STRUCT *hash_ptr, SEARCH_INFO_STRUCT *info);
 extern int Get_Hash_Entry(U64 hash, HASH_ENTRY_STRUCT *hash_ptr);
 extern void Fill_Hash_Entry(int age, int depth, int eval, int flag, U64 hash, int move, HASH_ENTRY_STRUCT *hash_ptr);
  
@@ -258,9 +258,13 @@ extern void Print_Move_List(MOVE_LIST_STRUCT *move_list);
 extern void Generate_Moves(BOARD_STRUCT*, MOVE_LIST_STRUCT*);
 extern int Under_Attack(int target120, int side, BOARD_STRUCT *board);
 extern int In_Check(int side, BOARD_STRUCT *board);
+
+//movelist
 extern void Sort_Moves(MOVE_LIST_STRUCT *move_list);
 extern void Copy_Move(MOVE_STRUCT *move1, MOVE_STRUCT *move2);
 extern int Get_Capture_Moves(MOVE_LIST_STRUCT *move_list);
+extern int Get_Next_Move(MOVE_LIST_STRUCT *move_list);
+extern int Get_Next_Capture_Move(MOVE_LIST_STRUCT *move_list);
 
 //perft
 extern int Perft_Test(char *fen, int depth, BOARD_STRUCT *board);

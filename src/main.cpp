@@ -21,6 +21,7 @@ SEARCH_INFO_STRUCT info;
 
 int move_num = 0;
 int done = 0;
+int index;
 
 int main()
 {
@@ -33,9 +34,6 @@ int main()
 
 	setvbuf(stdin, NULL, _IONBF, NULL);
 	setvbuf(stdout, NULL, _IONBF, NULL);
-	
-	Parse_Position("position startpos", &board);
-	Parse_Go("go wtime 100000 btime 100000 winc 0 binc 0", &info, &board);
 
 	while (1) {
 		memset(&line[0], 0, sizeof(line));
@@ -61,10 +59,10 @@ int main()
 	Iterative_Deepening(9, &board, &info);
 	//Iterative_Deepening(7, &board, &info);
 	
-	
 	while (!done)
 	{
 		Generate_Moves(&board, &move_list);
+		Sort_Moves(&move_list);
 		Print_Move_List(&move_list);
 
 		cin >> move_num;
@@ -81,6 +79,7 @@ int main()
 			Make_Move(&move_list.list[move_num], &board); //Make first move
 		}
 		//Take_Move(&board);
+		board.eval_score = Evaluate_Board(&board);
 		Print_Board(&board);
 	}
 	
