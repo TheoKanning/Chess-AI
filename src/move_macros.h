@@ -86,6 +86,7 @@ const int KING_MOVES[8] = { -11, -10, -9, -1, 1, 9, 10, 11 };
 #define HASH_IN(x,y)			(x^=y)//Keep separate macros for readability later
 #define HASH_OUT(x,y)			(x^=y)
 
-#define HASH_EXACT				0
-#define HASH_LOWER				1
-#define HASH_UPPER				2
+#define HASH_EMPTY				0
+#define HASH_EXACT				1
+#define HASH_LOWER				2
+#define HASH_UPPER				3

@@ -121,6 +121,8 @@ void Parse_Fen(char *fen, BOARD_STRUCT *board)
 	int index, rank, file;
 	int square = 1; //Square being parsed
 
+	Clear_Undo_List(board);
+
 	//Empty board_array64
 	for (index = 0; index < 64; index++)
 	{
@@ -413,7 +415,7 @@ void Clear_Undo_List(BOARD_STRUCT *board)
 int Is_Threefold_Repetition(BOARD_STRUCT *board)
 {
 	int count = 1; //Number of times current hash has occured, starts at 1
-	int index = 1;
+	int index = 0;
 	int start = board->undo_list.num - 1;
 	U64 hash = board->hash_key; //Hash key to search for
 
@@ -425,6 +427,8 @@ int Is_Threefold_Repetition(BOARD_STRUCT *board)
 	//could probably be index < move counter, but I'd rather be safe than worry about it
 	for (index = 0; index <= board->move_counter; index++)
 	{
+		if (start - index < 0) return 0;
+
 		if (board->undo_list.list[start - index].hash == hash)//if match is found
 		{
 			count++;
@@ -533,7 +537,7 @@ void Print_Board(BOARD_STRUCT *board)
 {
 	int rank, file;
 
-	Clear_Undo_List(board);
+	//Clear_Undo_List(board);
 
 	//Print board
 	cout << endl << "    A B C D E F G H" << endl;

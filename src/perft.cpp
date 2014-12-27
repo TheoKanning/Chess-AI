@@ -51,7 +51,7 @@ int Search(BOARD_STRUCT *board, int depth)
 	//For each move
 	for (index = 0; index < move_list.num; index++)
 	{
-		if (Make_Move(&move_list.list[index], board)) //If make move is successful
+		if (Make_Move(move_list.list[index].move, board)) //If make move is successful
 		{
 			Search(board, depth - 1);
 			Take_Move(board);

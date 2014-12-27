@@ -33,10 +33,11 @@ bit  [22:24] Special flags
 	1 1 1 Promote to knight
 */
 
-int Make_Move(MOVE_STRUCT *move, BOARD_STRUCT *board)
+int Make_Move(int move_num, BOARD_STRUCT *board)
 {
 	int from120, to120, from64, to64, piece, capture, side, castle_temp, ep_capture120;
-	int move_num = move->move;
+	
+	if (move_num == 0) return 0;
 
 	from120 = GET_FROM_SQ(move_num);
 	to120 = GET_TO_SQ(move_num);

@@ -10,7 +10,7 @@
 
 //#define DEBUG //Define debug mode for full assert function
 
-#define PROGRAM_NAME "Theo"
+#define PROGRAM_NAME "Chess-AI"
 #define AUTHOR	"Theo Kanning"
 #define VERSION_NO	1.1
 
@@ -36,12 +36,17 @@
 
 #define START_FEN		"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 
-#define ON_BOARD_120(x)				((21 <= x && x <= 28) || (31 <= x && x <= 38) || (41 <= x && x <= 48) || (51 <= x && x <= 58) || \
-									 (61 <= x && x <= 68) || (71 <= x && x <= 78) || (81 <= x && x <= 88) || (91 <= x && x <= 98))
+//#define ON_BOARD_120(x)				((21 <= x && x <= 28) || (31 <= x && x <= 38) || (41 <= x && x <= 48) || (51 <= x && x <= 58) || \
+//									 (61 <= x && x <= 68) || (71 <= x && x <= 78) || (81 <= x && x <= 88) || (91 <= x && x <= 98))
+#define ON_BOARD_120(x)				(ON_BOARD_64(SQUARE_120_TO_64(x)))
 #define ON_BOARD_64(x)				(x >= 0 && x < 64)
 
-#define SQUARE_120_TO_64(x)			((x%10 -1 + 8*((x-21)/10)))
-#define SQUARE_64_TO_120(x)			((x + 21 + 2*((x/8))))
+//#define SQUARE_120_TO_64(x)			((x%10 -1 + 8*((x-21)/10)))
+//#define SQUARE_64_TO_120(x)			((x + 21 + 2*((x/8))))
+
+
+#define SQUARE_120_TO_64(x)			(square_120_to_64[x])
+#define SQUARE_64_TO_120(x)			(square_64_to_120[x])
 
 #define RANK_FILE_TO_SQUARE_64(r,f)	(f+8*r)
 #define GET_RANK_64(x)				(x>>3)
@@ -220,6 +225,8 @@ extern void Print_Board(BOARD_STRUCT *board);
 extern void Print_Bitboards(BOARD_STRUCT *board);
 
 //data
+extern int square_120_to_64[120];
+extern int square_64_to_120[64];
 extern char* file_names;
 extern char* rank_names;
 extern char* piece_names;
@@ -241,13 +248,15 @@ extern void Init_Pawn_Masks(void);
 
 //hashkeys
 extern void Init_Hashkeys(void);
+extern void Init_Hash_Table(void);
 extern void Compute_Hash(BOARD_STRUCT *board);
 extern void Add_Hash_Entry(HASH_ENTRY_STRUCT *hash_ptr, SEARCH_INFO_STRUCT *info);
+extern void Remove_Hash_Entry(U64 hash);
 extern int Get_Hash_Entry(U64 hash, HASH_ENTRY_STRUCT *hash_ptr);
 extern void Fill_Hash_Entry(int age, int depth, int eval, int flag, U64 hash, int move, HASH_ENTRY_STRUCT *hash_ptr);
- 
+
 //makemove
-extern int Make_Move(MOVE_STRUCT *move, BOARD_STRUCT *board);
+extern int Make_Move(int move_num, BOARD_STRUCT *board);
 extern void Take_Move(BOARD_STRUCT *board);
 extern void Add_Move(MOVE_LIST_STRUCT *move_list, int from, int to, int piece, int capture, int special, int score);
 extern void Print_Move(MOVE_STRUCT *move);
@@ -272,12 +281,13 @@ extern int Search(BOARD_STRUCT *board, int depth);
 
 //pv_table
 extern void Clear_PV_List(PV_LIST_STRUCT *pv);
-extern int Find_PV_Move(MOVE_STRUCT *move, MOVE_LIST_STRUCT *move_list);
+extern int Find_PV_Move(int move_num, MOVE_LIST_STRUCT *move_list);
 extern void Print_PV_List(PV_LIST_STRUCT *pv_list);
+extern void Get_PV_Line(PV_LIST_STRUCT *pv_list, BOARD_STRUCT *board);
 
 //search
 extern int Iterative_Deepening(int depth, BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info);
-extern int Alpha_Beta(int alpha, int beta, int depth, PV_LIST_STRUCT *list, BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info);
+extern int Alpha_Beta(int alpha, int beta, int depth, BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info);
 extern int Quiescent_Search(int alpha, int beta, BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info);
 extern int Search_Position(BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info);
 extern int Get_Time_Ms(void);

@@ -98,18 +98,19 @@ void Parse_Position(char* lineIn, BOARD_STRUCT *board) {
 	}
 	//Adding additional moves
 	ptrChar = strstr(lineIn, "moves");
-	MOVE_STRUCT parsed_move;
+	int parsed_move;
 	if (ptrChar != NULL) {
 		ptrChar += 6;
 		while (*ptrChar) {
-			parsed_move.move = Parse_Move(ptrChar, board);
-			if (parsed_move.move == 0) break;
-			Make_Move(&parsed_move, board);
-			board->hply = 0;
+			parsed_move = Parse_Move(ptrChar, board);
+			if (parsed_move == 0) break;
+			Make_Move(parsed_move, board);
 			while (*ptrChar && *ptrChar != ' ') ptrChar++;
 			ptrChar++;
 		}
 	}
+
+	board->hply = 0;
 }
 
 void Uci_Loop(BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info) {
