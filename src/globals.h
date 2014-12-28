@@ -283,7 +283,7 @@ extern int Search(BOARD_STRUCT *board, int depth);
 extern void Clear_PV_List(PV_LIST_STRUCT *pv);
 extern int Find_PV_Move(int move_num, MOVE_LIST_STRUCT *move_list);
 extern void Print_PV_List(PV_LIST_STRUCT *pv_list);
-extern void Get_PV_Line(PV_LIST_STRUCT *pv_list, BOARD_STRUCT *board);
+extern void Get_PV_Line(int depth, PV_LIST_STRUCT *pv_list, BOARD_STRUCT *board);
 
 //search
 extern int Iterative_Deepening(int depth, BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info);

@@ -7,23 +7,18 @@
 using namespace std;
 
 //Gets pv line by moving through hash table
-void Get_PV_Line(PV_LIST_STRUCT *pv_list, BOARD_STRUCT *board)
+void Get_PV_Line(int depth, PV_LIST_STRUCT *pv_list, BOARD_STRUCT *board)
 {
 	HASH_ENTRY_STRUCT hash_entry;
 	int valid = 0;
-	//Clear PV list
-	for (int i = 0; i < MAX_SEARCH_DEPTH; i++)
-	{
-		pv_list->list[i].move = 0;
-		pv_list->list[i].score = 0;
-	}
-	pv_list->num = 0;
+	
+	Clear_PV_List(pv_list);
 
 	Get_Hash_Entry(board->hash_key, &hash_entry);
 	int move = hash_entry.move;
 	int count = 0;
 
-	while ((move != 0) && (hash_entry.flag == HASH_EXACT) && (count < MAX_SEARCH_DEPTH)) {
+	while ((move != 0) && (hash_entry.flag == HASH_EXACT) && (count < depth)) {
 
 		ASSERT(count < MAX_SEARCH_DEPTH);
 
@@ -52,7 +47,7 @@ void Clear_PV_List(PV_LIST_STRUCT *pv)
 {
 	int index;
 
-	for (index = 0; index < pv->num; index++)
+	for (index = 0; index < MAX_SEARCH_DEPTH; index++)
 	{
 		pv->list[index].move = 0;
 		pv->list[index].score = 0;
@@ -89,3 +84,4 @@ void Print_PV_List(PV_LIST_STRUCT *pv_list)
 		cout << " ";
 	}
 }
+

@@ -111,12 +111,13 @@ void Add_Hash_Entry(HASH_ENTRY_STRUCT *hash_ptr, SEARCH_INFO_STRUCT *info)
 {
 	int hash_index = hash_ptr->hash % HASH_SIZE;
 
-	//Always replace
-	Copy_Hash_Entry(hash_ptr, &hash_table[hash_index]);
-	return;
+	/*
+	if (hash_ptr->flag == HASH_UPPER || hash_ptr->flag == HASH_LOWER)
+	{
+		return;
+	}
+	*/
 
-	//Check criteria and return if one is not met
-	
 	//If stored entry is empty, replace
 	if (hash_table[hash_index].hash == 0)
 	{
@@ -124,31 +125,41 @@ void Add_Hash_Entry(HASH_ENTRY_STRUCT *hash_ptr, SEARCH_INFO_STRUCT *info)
 		return;
 	}
 
-
 	//If stored entry is too old, replace
-	if (hash_table[hash_index].age < info->age)
+	if (hash_table[hash_index].age + 5 < info->age)
 	{
 		Copy_Hash_Entry(hash_ptr, &hash_table[hash_index]);
 		return;
 	}
-
-	//If both entries are exact, keep entry with higher depth
-	if ((hash_table[hash_index].flag == HASH_EXACT) && (hash_ptr->flag == HASH_EXACT))
+	
+	//If new entry is exact
+	if (hash_ptr->flag == HASH_EXACT)
 	{
-		//Copy if stored entry has lower or equal depth, copy then return
-		if (hash_table[hash_index].depth <= hash_ptr->depth)
+		//If both are exact and have the same hash, keep deeper entry
+		if ((hash_table[hash_index].flag == HASH_EXACT))
 		{
+			if (hash_ptr->hash == hash_table[hash_index].hash)
+			{
+				if (hash_ptr->depth >= hash_table[hash_index].depth)
+				{
+					Copy_Hash_Entry(hash_ptr, &hash_table[hash_index]);
+					return;
+				}
+			}
+			else //Hashes not identical
+			{
+				Copy_Hash_Entry(hash_ptr, &hash_table[hash_index]);
+				return;
+			}
+		}
+		else
+		{
+			//If new entry is exact and stored is not, replace
 			Copy_Hash_Entry(hash_ptr, &hash_table[hash_index]);
 			return;
 		}
 	}
 
-	//If new entry is exact and stored is not, replace
-	if ((hash_ptr->age == HASH_EXACT))
-	{
-		Copy_Hash_Entry(hash_ptr, &hash_table[hash_index]);
-		return;
-	}
 	
 	//Return if stored is exact and new is not
 	if (hash_table[hash_index].flag == HASH_EXACT) return;
@@ -202,7 +213,7 @@ void Remove_Hash_Entry(U64 hash)
 	hash_table[hash_index].age = 0;
 	hash_table[hash_index].depth = 0;
 	hash_table[hash_index].eval = 0;
-	hash_table[hash_index].flag = 0;
+	hash_table[hash_index].flag = HASH_EMPTY;
 	hash_table[hash_index].hash = 0;
 	hash_table[hash_index].move = 0;
 }
