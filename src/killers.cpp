@@ -49,7 +49,7 @@ void Find_Killer_Moves(MOVE_LIST_STRUCT *move_list, BOARD_STRUCT *board)
 		//Get killer move from board array
 		killer_move = board->the_killers[ply][killer_index].move;
 
-		if (killer_move == 0) return; //End if no more killer moves are available
+		if (killer_move == 0) break; //End first loop if no more killer moves are available
 
 		for (move_index = 0; move_index < move_list->num; move_index++)
 		{
@@ -57,6 +57,27 @@ void Find_Killer_Moves(MOVE_LIST_STRUCT *move_list, BOARD_STRUCT *board)
 			if (move_list->list[move_index].move == killer_move && move_list->list[move_index].score < KILLER_MOVE_SCORE)
 			{
 				move_list->list[move_index].score = KILLER_MOVE_SCORE - killer_index; //Subtract killer index to give previous killer priority
+				break;
+			}
+		}
+	}
+	//Check for killer moves at ply -2
+	ply -= 2;
+	if (ply < 0) return;
+	//Loop through each killer move, subtracting the move index from the final score to weight first killers higher
+	for (killer_index = 0; killer_index < 2; killer_index++)
+	{
+		//Get killer move from board array
+		killer_move = board->the_killers[ply][killer_index].move;
+
+		if (killer_move == 0) return; //End if no more killer moves are available
+
+		for (move_index = 0; move_index < move_list->num; move_index++)
+		{
+			//If the move found matches the killer move and is not already scored higher
+			if (move_list->list[move_index].move == killer_move && move_list->list[move_index].score < KILLER_MOVE_SCORE - 2)
+			{
+				move_list->list[move_index].score = KILLER_MOVE_SCORE - killer_index - 2; //Subtract killer index to give previous killer priority
 				break;
 			}
 		}

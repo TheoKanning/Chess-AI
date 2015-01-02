@@ -12,7 +12,7 @@
 
 #define PROGRAM_NAME "Chess-AI"
 #define AUTHOR	"Theo Kanning"
-#define VERSION_NO	1.1
+#define VERSION_NO	1.23
 
 #ifndef DEBUG
         #define ASSERT(x)
@@ -280,7 +280,7 @@ extern int In_Check(int side, BOARD_STRUCT *board);
 extern void Sort_Moves(MOVE_LIST_STRUCT *move_list);
 extern void Copy_Move(MOVE_STRUCT *move1, MOVE_STRUCT *move2);
 extern int Get_Capture_Moves(MOVE_LIST_STRUCT *move_list);
-extern int Get_Next_Move(MOVE_LIST_STRUCT *move_list);
+extern int Get_Next_Move(MOVE_LIST_STRUCT *move_list, int* score_ptr);
 extern int Get_Next_Capture_Move(MOVE_LIST_STRUCT *move_list);
 extern void Add_Move(MOVE_LIST_STRUCT *move_list, int from, int to, int piece, int capture, int special, int score);
 extern void Print_Move_List(MOVE_LIST_STRUCT *move_list);

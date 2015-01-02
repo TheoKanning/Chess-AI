@@ -110,7 +110,8 @@ int Alpha_Beta(int alpha, int beta, int depth, BOARD_STRUCT *board, SEARCH_INFO_
 	int score = -INF; //Set in case no moves are available
 	int mate = 1; //If no legal moves are found
 	MOVE_LIST_STRUCT move_list;
-	int next_move;
+	int current_move;
+	int current_move_score;
 	HASH_ENTRY_STRUCT hash_entry;
 	hash_entry.move = 0;
 	int valid = 0;
@@ -207,11 +208,11 @@ int Alpha_Beta(int alpha, int beta, int depth, BOARD_STRUCT *board, SEARCH_INFO_
 
 	for (move = 0; move < move_list.num; move++) //For all moves in list
 	{
-		next_move = Get_Next_Move(&move_list);
+		current_move = Get_Next_Move(&move_list, &current_move_score);
 
-		if (next_move == 0) break;
+		if (current_move == 0) break;
 
-		if (Make_Move(next_move, board)) //If move is successful
+		if (Make_Move(current_move, board)) //If move is successful
 		{
 			score = -Alpha_Beta(-beta, -alpha, depth - 1, board, info);
 			
@@ -227,11 +228,11 @@ int Alpha_Beta(int alpha, int beta, int depth, BOARD_STRUCT *board, SEARCH_INFO_
 			if (score >= beta)
 			{
 				//Store hash entry
-				Fill_Hash_Entry(info->age, depth, score, HASH_LOWER, board->hash_key, next_move, &hash_entry);
+				Fill_Hash_Entry(info->age, depth, score, HASH_LOWER, board->hash_key, current_move, &hash_entry);
 				Add_Hash_Entry(&hash_entry, info);
 
-				//Store killer move if move is not a capture
-				if (GET_CAPTURE(next_move) == 0) Add_Killer_Move(next_move, board);
+				//Store killer move if move is not a capture or promotion
+				if (current_move_score <= KILLER_MOVE_SCORE) Add_Killer_Move(current_move, board);
 
 				return beta; //Beta cutoff
 			}
@@ -244,7 +245,7 @@ int Alpha_Beta(int alpha, int beta, int depth, BOARD_STRUCT *board, SEARCH_INFO_
 			if (score > best_score)
 			{
 				best_score = score;
-				best_move = next_move;
+				best_move = current_move;
 			}
 		}
 	}
@@ -340,6 +341,7 @@ int Get_Time_Ms(void)
 int Draw_Error_Found(int move, BOARD_STRUCT *board)
 {
 	int count, next_move;
+	int null_ptr;
 	int draw = 0;
 	MOVE_LIST_STRUCT move_list;
 	HASH_ENTRY_STRUCT hash_entry;
@@ -370,7 +372,7 @@ int Draw_Error_Found(int move, BOARD_STRUCT *board)
 
 	while( count < move_list.num && !draw)
 	{
-		next_move = Get_Next_Move(&move_list);
+		next_move = Get_Next_Move(&move_list, &null_ptr);
 		if (Make_Move(next_move, board))
 		{
 

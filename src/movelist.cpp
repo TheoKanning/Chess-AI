@@ -8,7 +8,7 @@
 using namespace std;
 
 //Finds highest scoring move in list, sets its score to -1, then returns its move integer
-int Get_Next_Move(MOVE_LIST_STRUCT *move_list)
+int Get_Next_Move(MOVE_LIST_STRUCT *move_list, int *score_ptr)
 {
 	int high_score = -1;
 	int high_score_index = -1;
@@ -27,6 +27,7 @@ int Get_Next_Move(MOVE_LIST_STRUCT *move_list)
 	//Return integer and clear move from list
 	if (high_score_index != -1) //If move found
 	{
+		*score_ptr = move_list->list[high_score_index].score;
 		move_list->list[high_score_index].score = -1; //Clear score so move can't be found again
 		return move_list->list[high_score_index].move;
 	}
