@@ -48,9 +48,9 @@ void Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *move_list)
 				if (GET_RANK_120(to120) == RANK_8)
 				{
 					Add_Move(move_list, from120, to120, wP, 0, QUEEN_PROMOTE, QUEEN_PROMOTE_SCORE);
-					Add_Move(move_list, from120, to120, wP, 0, ROOK_PROMOTE, KNIGHT_PROMOTE_SCORE);
-					Add_Move(move_list, from120, to120, wP, 0, BISHOP_PROMOTE, KNIGHT_PROMOTE_SCORE);
-					Add_Move(move_list, from120, to120, wP, 0, KNIGHT_PROMOTE, KNIGHT_PROMOTE_SCORE);
+					Add_Move(move_list, from120, to120, wP, 0, ROOK_PROMOTE, UNDER_PROMOTE_SCORE);
+					Add_Move(move_list, from120, to120, wP, 0, BISHOP_PROMOTE, UNDER_PROMOTE_SCORE);
+					Add_Move(move_list, from120, to120, wP, 0, KNIGHT_PROMOTE, UNDER_PROMOTE_SCORE);
 				}
 				else //If not a promotion
 				{
@@ -78,9 +78,9 @@ void Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *move_list)
 					if (GET_RANK_120(to120) == RANK_8) //If capturing into promotion
 					{
 						Add_Move(move_list, from120, to120, wP, capture, QUEEN_PROMOTE, QUEEN_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, wP));
-						Add_Move(move_list, from120, to120, wP, capture, ROOK_PROMOTE, KNIGHT_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, wP));
-						Add_Move(move_list, from120, to120, wP, capture, BISHOP_PROMOTE, KNIGHT_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, wP));
-						Add_Move(move_list, from120, to120, wP, capture, KNIGHT_PROMOTE, KNIGHT_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, wP));
+						Add_Move(move_list, from120, to120, wP, capture, ROOK_PROMOTE, UNDER_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, wP));
+						Add_Move(move_list, from120, to120, wP, capture, BISHOP_PROMOTE, UNDER_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, wP));
+						Add_Move(move_list, from120, to120, wP, capture, KNIGHT_PROMOTE, UNDER_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, wP));
 					}
 					else
 					{
@@ -104,9 +104,9 @@ void Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *move_list)
 					if (GET_RANK_120(to120) == RANK_8) //If capturing into promotion
 					{
 						Add_Move(move_list, from120, to120, wP, capture, QUEEN_PROMOTE, QUEEN_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, wP));
-						Add_Move(move_list, from120, to120, wP, capture, ROOK_PROMOTE, KNIGHT_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, wP));
-						Add_Move(move_list, from120, to120, wP, capture, BISHOP_PROMOTE, KNIGHT_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, wP));
-						Add_Move(move_list, from120, to120, wP, capture, KNIGHT_PROMOTE, KNIGHT_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, wP));
+						Add_Move(move_list, from120, to120, wP, capture, ROOK_PROMOTE, UNDER_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, wP));
+						Add_Move(move_list, from120, to120, wP, capture, BISHOP_PROMOTE, UNDER_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, wP));
+						Add_Move(move_list, from120, to120, wP, capture, KNIGHT_PROMOTE, UNDER_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, wP));
 					}
 					else
 					{
@@ -379,9 +379,9 @@ void Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *move_list)
 				if (GET_RANK_120(to120) == RANK_1)
 				{
 					Add_Move(move_list, from120, to120, bP, 0, QUEEN_PROMOTE, QUEEN_PROMOTE_SCORE);
-					Add_Move(move_list, from120, to120, bP, 0, ROOK_PROMOTE, KNIGHT_PROMOTE_SCORE);
-					Add_Move(move_list, from120, to120, bP, 0, BISHOP_PROMOTE, KNIGHT_PROMOTE_SCORE);
-					Add_Move(move_list, from120, to120, bP, 0, KNIGHT_PROMOTE, KNIGHT_PROMOTE_SCORE);
+					Add_Move(move_list, from120, to120, bP, 0, ROOK_PROMOTE, UNDER_PROMOTE_SCORE);
+					Add_Move(move_list, from120, to120, bP, 0, BISHOP_PROMOTE, UNDER_PROMOTE_SCORE);
+					Add_Move(move_list, from120, to120, bP, 0, KNIGHT_PROMOTE, UNDER_PROMOTE_SCORE);
 				}
 				else //If not a promotion
 				{
@@ -409,9 +409,9 @@ void Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *move_list)
 					if (GET_RANK_120(to120) == RANK_1) //If capturing into promotion
 					{
 						Add_Move(move_list, from120, to120, bP, capture, QUEEN_PROMOTE, QUEEN_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, bP));
-						Add_Move(move_list, from120, to120, bP, capture, ROOK_PROMOTE, KNIGHT_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, bP));
-						Add_Move(move_list, from120, to120, bP, capture, BISHOP_PROMOTE, KNIGHT_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, bP));
-						Add_Move(move_list, from120, to120, bP, capture, KNIGHT_PROMOTE, KNIGHT_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, bP));
+						Add_Move(move_list, from120, to120, bP, capture, ROOK_PROMOTE, UNDER_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, bP));
+						Add_Move(move_list, from120, to120, bP, capture, BISHOP_PROMOTE, UNDER_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, bP));
+						Add_Move(move_list, from120, to120, bP, capture, KNIGHT_PROMOTE, UNDER_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, bP));
 					}
 					else
 					{
@@ -435,9 +435,9 @@ void Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *move_list)
 					if (GET_RANK_120(to120) == RANK_1) //If capturing into promotion
 					{
 						Add_Move(move_list, from120, to120, bP, capture, QUEEN_PROMOTE, QUEEN_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, bP));
-						Add_Move(move_list, from120, to120, bP, capture, ROOK_PROMOTE, KNIGHT_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, bP));
-						Add_Move(move_list, from120, to120, bP, capture, BISHOP_PROMOTE, KNIGHT_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, bP));
-						Add_Move(move_list, from120, to120, bP, capture, KNIGHT_PROMOTE, KNIGHT_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, bP));
+						Add_Move(move_list, from120, to120, bP, capture, ROOK_PROMOTE, UNDER_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, bP));
+						Add_Move(move_list, from120, to120, bP, capture, BISHOP_PROMOTE, UNDER_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, bP));
+						Add_Move(move_list, from120, to120, bP, capture, KNIGHT_PROMOTE, UNDER_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, bP));
 					}
 					else
 					{

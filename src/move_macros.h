@@ -62,9 +62,9 @@
 
 //Moves scores
 #define PV_SCORE				10000
+#define QUEEN_PROMOTE_SCORE		2000
 #define CAPTURE_SCORE			1000	//Number to add to make capture scores higher or lower than other heuristics
-#define QUEEN_PROMOTE_SCORE		600
-#define KNIGHT_PROMOTE_SCORE	500
+#define UNDER_PROMOTE_SCORE		500
 #define KILLER_MOVE_SCORE		300
 #define GET_MMVLVA_SCORE(x,y)	(CAPTURE_SCORE + MMV_SCORES[x] + LVA_SCORES[y])
 
