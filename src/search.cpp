@@ -24,6 +24,8 @@ int Search_Position(BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info)
 	info->stopped = 0;
 	info->nodes = 0;
 
+	info->null_available = 1;
+
 	for (currentDepth = 1; currentDepth <= info->depth; ++currentDepth) 
 	{		
 		score = Alpha_Beta(-INF, INF, currentDepth, board, info);
@@ -34,25 +36,20 @@ int Search_Position(BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info)
 
 		Get_PV_Line(currentDepth, &pv_list, board);
 
-		Copy_Move(&pv_list.list[0], &best_move); //Store best move found
+		if (pv_list.list[0].move != 0) Copy_Move(&pv_list.list[0], &best_move); //Store best move found
 
 		//Print search info
 			printf("info score cp %d depth %d nodes %ld time %d ",
 				score, currentDepth, info->nodes, Get_Time_Ms() - info->start_time);
 		
 		//Print current pv line
-		
 		printf("pv ");
 		Print_PV_List(&pv_list);
 		printf("\n");
-		
-		if (pv_list.num < currentDepth)
-		{
-			Get_PV_Line(currentDepth, &pv_list, board);
-		}
 
-		//printf("Hits:%d Overwrite:%d NewWrite:%d Cut:%d\nOrdering %.2f NullCut:%d\n",pos->HashTable->hit,pos->HashTable->overWrite,pos->HashTable->newWrite,pos->HashTable->cut,
-		//(info->fhf/info->fh)*100,info->nullCut);
+		//End if time is one third gone because next depth is unlikely to finish
+		if ((Get_Time_Ms() - info->start_time) >= ((info->stop_time - info->start_time) / 3.0)) info->stopped = 1;
+
 	}
 
 	
@@ -118,7 +115,6 @@ int Alpha_Beta(int alpha, int beta, int depth, BOARD_STRUCT *board, SEARCH_INFO_
 	hash_entry.move = 0;
 	int valid = 0;
 
-
 	info->nodes++;
 	//Check for timeout
 	if ((info->nodes % 5000) == 0) //every 5000 nodes
@@ -130,16 +126,20 @@ int Alpha_Beta(int alpha, int beta, int depth, BOARD_STRUCT *board, SEARCH_INFO_
 		}
 	}
 
-	//Check for 50 move rule and threefold repetition
+	/***** Draw Detection *****/
 	if (board->move_counter >= 100 || Is_Threefold_Repetition(board) || (board->total_material == 0))
 	{
 		return 0;
 	}
 
+	/***** Check Test *****/
+	int in_check = In_Check(board->side, board);
+
+	/***** Leaf Node Response *****/
 	//If at depth 0, extend if in check, start quiescent search if not
-	if (depth == 0)
+	if (depth <= 0)
 	{
-		if (In_Check(board->side, board))
+		if (in_check)
 		{
 			depth++;
 		}
@@ -150,19 +150,14 @@ int Alpha_Beta(int alpha, int beta, int depth, BOARD_STRUCT *board, SEARCH_INFO_
 	}
 
 
-	//Check hash table 
+	/***** Check hash table *****/
 	valid = Get_Hash_Entry(board->hash_key, &hash_entry);
 	//If match is found and at greater depth
 	if (valid && (hash_entry.depth > depth))
 	{
-		//Check if stored move results in a draw
-		//Check for draw
-		if (Make_Move(hash_entry.move, board))
+		if (hash_entry.eval > 100) //Check for draw error only if winning
 		{
-			int three_rep = Is_Threefold_Repetition(board);
-			Take_Move(board); //take move before removing entry
-			
-			if(three_rep)
+			if (Draw_Error_Found(hash_entry.move, board))
 			{
 				//Remove hash entry from table
 				Remove_Hash_Entry(board->hash_key);
@@ -193,10 +188,22 @@ int Alpha_Beta(int alpha, int beta, int depth, BOARD_STRUCT *board, SEARCH_INFO_
 		}
 	}
 
+	/***** Null Move *****/
+	if (depth >= 4 && info->null_available && board->hply && !in_check && board->total_material >= 2000)
+	{
+		info->null_available = 0;
+		Make_Null_Move(board);
+		score = -Alpha_Beta(-beta, -beta + 1, depth - 3, board, info); //Subtract an additional 2 ply from depth
+		Take_Null_Move(board);
+		info->null_available = 1;
+
+		if (score >= beta) return score;
+	}
+
 
 	Generate_Moves(board, &move_list);
-	//Find hash move if available
-	Find_PV_Move(hash_entry.move, &move_list);
+	Find_PV_Move(hash_entry.move, &move_list); //Find hash move if available
+	Find_Killer_Moves(&move_list, board); //Find killer moves
 
 	for (move = 0; move < move_list.num; move++) //For all moves in list
 	{
@@ -222,6 +229,10 @@ int Alpha_Beta(int alpha, int beta, int depth, BOARD_STRUCT *board, SEARCH_INFO_
 				//Store hash entry
 				Fill_Hash_Entry(info->age, depth, score, HASH_LOWER, board->hash_key, next_move, &hash_entry);
 				Add_Hash_Entry(&hash_entry, info);
+
+				//Store killer move if move is not a capture
+				if (GET_CAPTURE(next_move) == 0) Add_Killer_Move(next_move, board);
+
 				return beta; //Beta cutoff
 			}
 			//Update alpha, storing hash if improvement is found
@@ -241,7 +252,7 @@ int Alpha_Beta(int alpha, int beta, int depth, BOARD_STRUCT *board, SEARCH_INFO_
 	/***** Mate detection *****/
 	if (mate) //No moves found
 	{
-		if (In_Check(board->side, board))
+		if (in_check)
 		{
 			return -INF + board->hply; //Losing checkmate
 		}
@@ -323,4 +334,60 @@ int Quiescent_Search(int alpha, int beta, BOARD_STRUCT *board, SEARCH_INFO_STRUC
 int Get_Time_Ms(void)
 {
 	return clock() * 1000 / CLOCKS_PER_SEC;
+}
+
+//Performs the given move at a position, checks for a draw, the performs all moves at that position and checks for draws
+int Draw_Error_Found(int move, BOARD_STRUCT *board)
+{
+	int count, next_move;
+	int draw = 0;
+	MOVE_LIST_STRUCT move_list;
+	HASH_ENTRY_STRUCT hash_entry;
+	int ply = board->hply;
+	U64 hash = board->hash_key;
+
+	//Make hash move
+	Make_Move(move, board);
+	//Check first ply
+
+	if (board->move_counter >= 100 || Is_Threefold_Repetition(board))
+	{
+		Take_Move(board);
+		ASSERT(ply == board->hply);
+		ASSERT(hash == board->hash_key);
+		return 1;
+	}
+
+	//Check all possible opponent moves for draws, starting with hash move
+	Generate_Moves(board, &move_list);
+	//Find hash move
+	Get_Hash_Entry(board->hash_key, &hash_entry);
+	Find_PV_Move(hash_entry.move, &move_list);
+	Find_Killer_Moves(&move_list, board);
+
+	//Search all moves in sorted order, return 1 if draw is found
+	count = 0;
+
+	while( count < move_list.num && !draw)
+	{
+		next_move = Get_Next_Move(&move_list);
+		if (Make_Move(next_move, board))
+		{
+
+			if (board->move_counter >= 100 || Is_Threefold_Repetition(board))
+			{
+				draw = 1;
+			}
+
+			Take_Move(board);
+		}
+		count++;
+	}
+
+	Take_Move(board);
+
+	ASSERT(ply == board->hply);
+	ASSERT(hash == board->hash_key);
+
+	return draw;
 }

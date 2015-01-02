@@ -9,11 +9,13 @@
 
 #define PASSED_PAWN_SCORE 20
 #define ISOLATED_PAWN_SCORE	-15
+#define DOUBLED_PAWN_SCORE 5 //This is counted once for each pawn
 
 //Pawn evaluation masks
 U64 white_passed_masks[64];
 U64 black_passed_masks[64];
 U64 isolated_masks[64];
+U64 doubled_masks[64];
 
 int Evaluate_Board(BOARD_STRUCT *board)
 {
@@ -138,6 +140,9 @@ int Get_Pawn_Eval_Score(BOARD_STRUCT *board)
 		//if no white pawns in isolated mask area
 		if ((board->pawn_bitboards[WHITE] & isolated_masks[sq64]) == 0) score += ISOLATED_PAWN_SCORE;
 
+		//If a white pawn is found in the same file
+		if ((board->pawn_bitboards[WHITE] & doubled_masks[sq64]) != 0) score -= DOUBLED_PAWN_SCORE;
+
 	}
 
 
@@ -151,6 +156,9 @@ int Get_Pawn_Eval_Score(BOARD_STRUCT *board)
 
 		//if no black pawns in isolated mask area
 		if ((board->pawn_bitboards[BLACK] & isolated_masks[sq64]) == 0) score -= ISOLATED_PAWN_SCORE;
+
+		//If a black pawn is found in the same file
+		if ((board->pawn_bitboards[BLACK] & doubled_masks[sq64]) != 0) score += DOUBLED_PAWN_SCORE;
 	}
 
 	//Store in hash table (added later)
@@ -169,6 +177,7 @@ void Init_Pawn_Masks(void)
 		white_passed_masks[index] = 0;
 		black_passed_masks[index] = 0;
 		isolated_masks[index] = 0;
+		doubled_masks[index] = 0;
 	}
 
 	//For each square on the board
@@ -199,6 +208,13 @@ void Init_Pawn_Masks(void)
 				if (abs(file - file_index) <= 1 && (file != file_index || rank != rank_index))
 				{
 					SET_BIT(isolated_masks[index], RANK_FILE_TO_SQUARE_64(rank_index, file_index));
+				}
+
+				//Doubled mask
+				//If file is the same and rank is different
+				if (file == file_index && rank != rank_index)
+				{
+					SET_BIT(doubled_masks[index], RANK_FILE_TO_SQUARE_64(rank_index, file_index));
 				}
 			}
 		}

@@ -154,6 +154,7 @@ typedef struct
 	int nodes;
 
 	int depth;
+	int null_available;
 
 	int age; //Number of irreversible moves made
 	int hash_hits;
@@ -202,6 +203,8 @@ typedef struct
 	U64 pawn_bitboards[3]; //One for white, black, and both
 
 	UNDO_LIST_STRUCT undo_list;
+
+	MOVE_STRUCT the_killers[MAX_SEARCH_DEPTH][2];
 
 	U64 hash_key;
 	U64 pawn_hash_key;
@@ -255,13 +258,18 @@ extern void Remove_Hash_Entry(U64 hash);
 extern int Get_Hash_Entry(U64 hash, HASH_ENTRY_STRUCT *hash_ptr);
 extern void Fill_Hash_Entry(int age, int depth, int eval, int flag, U64 hash, int move, HASH_ENTRY_STRUCT *hash_ptr);
 
+//killers
+extern void Find_Killer_Moves(MOVE_LIST_STRUCT *move_list, BOARD_STRUCT *board);
+extern void Add_Killer_Move(int move, BOARD_STRUCT *board);
+
 //makemove
 extern int Make_Move(int move_num, BOARD_STRUCT *board);
 extern void Take_Move(BOARD_STRUCT *board);
-extern void Add_Move(MOVE_LIST_STRUCT *move_list, int from, int to, int piece, int capture, int special, int score);
+extern int Make_Null_Move(BOARD_STRUCT *board);
+extern void Take_Null_Move(BOARD_STRUCT *board);
 extern void Print_Move(MOVE_STRUCT *move);
 extern char* UCI_Move_String(MOVE_STRUCT *move);
-extern void Print_Move_List(MOVE_LIST_STRUCT *move_list);
+
 
 //movegen
 extern void Generate_Moves(BOARD_STRUCT*, MOVE_LIST_STRUCT*);
@@ -274,6 +282,8 @@ extern void Copy_Move(MOVE_STRUCT *move1, MOVE_STRUCT *move2);
 extern int Get_Capture_Moves(MOVE_LIST_STRUCT *move_list);
 extern int Get_Next_Move(MOVE_LIST_STRUCT *move_list);
 extern int Get_Next_Capture_Move(MOVE_LIST_STRUCT *move_list);
+extern void Add_Move(MOVE_LIST_STRUCT *move_list, int from, int to, int piece, int capture, int special, int score);
+extern void Print_Move_List(MOVE_LIST_STRUCT *move_list);
 
 //perft
 extern int Perft_Test(char *fen, int depth, BOARD_STRUCT *board);
@@ -291,6 +301,7 @@ extern int Alpha_Beta(int alpha, int beta, int depth, BOARD_STRUCT *board, SEARC
 extern int Quiescent_Search(int alpha, int beta, BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info);
 extern int Search_Position(BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info);
 extern int Get_Time_Ms(void);
+extern int Draw_Error_Found(int move, BOARD_STRUCT *board);
 
 //uci
 extern void Parse_Go(char* line, SEARCH_INFO_STRUCT *info, BOARD_STRUCT *board);

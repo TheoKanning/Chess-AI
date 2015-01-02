@@ -28,7 +28,7 @@ int main()
 	Init_Pawn_Masks();
 	Init_Board(&board);
 	char line[256];
-
+	
 	setvbuf(stdin, NULL, _IONBF, NULL);
 	setvbuf(stdout, NULL, _IONBF, NULL);
 
@@ -53,7 +53,7 @@ int main()
 	}
 	Parse_Position(DRAW_ERROR_FEN, &board);
 	info.stop_time = 1000000;
-	info.depth = 8;
+	info.depth = 10;
 	Search_Position(&board, &info);
 	PV_LIST_STRUCT pv_list;
 	Get_PV_Line(10, &pv_list, &board);

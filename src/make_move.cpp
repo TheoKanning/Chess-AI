@@ -36,7 +36,7 @@ bit  [22:24] Special flags
 int Make_Move(int move_num, BOARD_STRUCT *board)
 {
 	int from120, to120, from64, to64, piece, capture, side, castle_temp, ep_capture120;
-	
+
 	if (move_num == 0) return 0;
 
 	from120 = GET_FROM_SQ(move_num);
@@ -72,8 +72,8 @@ int Make_Move(int move_num, BOARD_STRUCT *board)
 	if (IS_NOT_SPECIAL(move_num))
 	{
 		Move_Piece(from120, to120, board);
-		
-		
+
+
 		if (piece == wP)
 		{
 			if (from120 + 20 == to120) board->ep = from120 + 10; //If double push
@@ -86,7 +86,7 @@ int Make_Move(int move_num, BOARD_STRUCT *board)
 	}
 	else if (IS_EP_CAPTURE(move_num))
 	{
-		
+
 
 		if (side == WHITE)
 		{
@@ -102,7 +102,7 @@ int Make_Move(int move_num, BOARD_STRUCT *board)
 		ASSERT(board->board_array120[from120] == piece);
 		ASSERT(board->board_array120[to120] == EMPTY);
 		ASSERT(board->board_array120[ep_capture120] == capture);
-		
+
 		Move_Piece(from120, to120, board); //Move active pawn
 		Remove_Piece(ep_capture120, board); //Remove captured pawn
 
@@ -201,7 +201,7 @@ int Make_Move(int move_num, BOARD_STRUCT *board)
 			ASSERT(GET_RANK_64(from64) == RANK_7);
 			ASSERT(GET_RANK_64(to64) == RANK_8);
 			ASSERT(piece == wP);
-			
+
 			//Remove pawn
 			Remove_Piece(from120, board);
 
@@ -241,12 +241,12 @@ int Make_Move(int move_num, BOARD_STRUCT *board)
 	/***** Updates regardless of move type *****/
 
 	//side (Incremented at end of function)
-	HASH_OUT(board->hash_key,side_keys[board->side]);
+	HASH_OUT(board->hash_key, side_keys[board->side]);
 	board->side ^= 1; //Toggle
 	HASH_IN(board->hash_key, side_keys[board->side]);
 
 	//Re add ep key
-	HASH_IN(board->hash_key, ep_keys[board->ep]); 
+	HASH_IN(board->hash_key, ep_keys[board->ep]);
 
 	//hply; //total moves taken so far
 	board->hply++;
@@ -263,7 +263,7 @@ int Make_Move(int move_num, BOARD_STRUCT *board)
 
 	//castle_rights;
 	//Check if rights are available, then test conditions to prevent hashing twice
-	if (board->castle_rights & WK_CASTLE )
+	if (board->castle_rights & WK_CASTLE)
 	{
 		if (piece == wK || board->board_array120[H1] != wR)
 		{
@@ -306,12 +306,12 @@ int Make_Move(int move_num, BOARD_STRUCT *board)
 
 	/***** Check test *****/
 	//If king under attack
-	if (In_Check(side,board)) 
+	if (In_Check(side, board))
 	{
-			Take_Move(board);
-			return 0;
+		Take_Move(board);
+		return 0;
 	}
-	
+
 
 #ifdef DEBUG
 	Check_Board(board);
@@ -326,11 +326,11 @@ void Take_Move(BOARD_STRUCT *board)
 	int from120, to120, from64, to64, piece, capture, side, ep_capture120;
 
 	//Read data from undo struct
-	int move_num = board->undo_list.list[board->undo_list.num-1].move_num;
-	int move_counter = board->undo_list.list[board->undo_list.num-1].move_counter;
-	int ep = board->undo_list.list[board->undo_list.num-1].ep;
-	int castle = board->undo_list.list[board->undo_list.num-1].castle;
-	U64 hash = board->undo_list.list[board->undo_list.num-1].hash;
+	int move_num = board->undo_list.list[board->undo_list.num - 1].move_num;
+	int move_counter = board->undo_list.list[board->undo_list.num - 1].move_counter;
+	int ep = board->undo_list.list[board->undo_list.num - 1].ep;
+	int castle = board->undo_list.list[board->undo_list.num - 1].castle;
+	U64 hash = board->undo_list.list[board->undo_list.num - 1].hash;
 
 
 
@@ -360,7 +360,7 @@ void Take_Move(BOARD_STRUCT *board)
 		Move_Piece(to120, from120, board);
 		if (capture != EMPTY) Add_Piece(capture, to120, board);
 	}
-	
+
 	else if (IS_EP_CAPTURE(move_num))
 	{
 
@@ -437,6 +437,89 @@ void Take_Move(BOARD_STRUCT *board)
 	/***** Updates regardless of move type *****/
 
 	//side changed at beginning of function
+
+	//hply; //total moves taken so far
+	board->hply--;
+
+	//move_counter; //100 move counter
+	board->move_counter = move_counter;
+
+	//Ep square
+	HASH_OUT(board->hash_key, ep_keys[board->ep]);
+	board->ep = ep; //Enter value from undo
+	HASH_IN(board->hash_key, ep_keys[board->ep]);
+
+	//castle_rights;
+	HASH_OUT(board->hash_key, castle_keys[board->castle_rights]);
+	board->castle_rights = castle;
+	HASH_IN(board->hash_key, castle_keys[board->castle_rights]);
+
+	ASSERT(board->hash_key == hash);
+
+	//Remove undo structure from list
+	board->undo_list.list[board->undo_list.num - 1].move_num = 0;
+	board->undo_list.list[board->undo_list.num - 1].move_counter = 0;
+	board->undo_list.list[board->undo_list.num - 1].ep = 0;
+	board->undo_list.list[board->undo_list.num - 1].castle = 0;
+	board->undo_list.list[board->undo_list.num - 1].hash = 0;
+	board->undo_list.num--;
+
+
+#ifdef DEBUG
+	Check_Board(board);
+#endif
+}
+
+//Switches side without moving a piece
+int Make_Null_Move(BOARD_STRUCT *board)
+{	
+
+	/***** Update Undo Move Structure *****/
+	board->undo_list.list[board->undo_list.num].move_num = 0;
+	board->undo_list.list[board->undo_list.num].move_counter = board->move_counter;
+	board->undo_list.list[board->undo_list.num].ep = board->ep;
+	board->undo_list.list[board->undo_list.num].castle = board->castle_rights;
+	board->undo_list.list[board->undo_list.num].hash = board->hash_key;
+	board->undo_list.num++;
+
+	/***** En Passant Square *****/
+	HASH_OUT(board->hash_key, ep_keys[board->ep]); 
+	board->ep = NO_SQUARE;
+	HASH_IN(board->hash_key, ep_keys[board->ep]);
+
+	//side 
+	HASH_OUT(board->hash_key,side_keys[board->side]);
+	board->side ^= 1; //Toggle
+	HASH_IN(board->hash_key, side_keys[board->side]);
+
+	//hply; //total moves taken so far
+	board->hply++;
+
+	board->move_counter++;	
+
+#ifdef DEBUG
+	Check_Board(board);
+#endif
+
+	return 1;
+}
+
+//Undoes null move
+void Take_Null_Move(BOARD_STRUCT *board)
+{
+	//Read data from undo struct
+	ASSERT(board->undo_list.list[board->undo_list.num - 1].move_num == 0);
+
+	int move_counter = board->undo_list.list[board->undo_list.num-1].move_counter;
+	int ep = board->undo_list.list[board->undo_list.num-1].ep;
+	int castle = board->undo_list.list[board->undo_list.num-1].castle;
+	U64 hash = board->undo_list.list[board->undo_list.num-1].hash;
+
+
+	//Side
+	HASH_OUT(board->hash_key, side_keys[board->side]);
+	board->side ^= 1; //Toggle
+	HASH_IN(board->hash_key, side_keys[board->side]);
 	
 	//hply; //total moves taken so far
 	board->hply--;
@@ -595,48 +678,6 @@ void Add_Piece(int piece, int index120, BOARD_STRUCT *board)
 	if (IS_PAWN(piece) || IS_KNIGHT(piece))
 	{
 		HASH_IN(board->pawn_hash_key, piece_keys[piece][index64]);
-	}
-}
-
-//Creates integer from move data and stores in move_list
-void Add_Move(MOVE_LIST_STRUCT *move_list, int from, int to, int piece, int capture, int special, int score)
-{
-	int temp = 0;
-	
-	//Check all fields within bounds
-	ASSERT(ON_BOARD_120(from));
-	ASSERT(ON_BOARD_120(to));
-	ASSERT((piece >= wP) && (piece <= bK)); //Piece is not empty
-	ASSERT((piece >= EMPTY) && (piece <= bK)); //Piece can be empty
-	ASSERT((special >= NOT_SPECIAL) && (special <= KNIGHT_PROMOTE));
-
-	//Set all fields
-	SET_FROM_SQ(temp, from);
-	SET_TO_SQ(temp, to);
-	SET_PIECE(temp, piece);
-	SET_CAPTURE(temp, capture);
-	SET_SPECIAL(temp, special);
-
-	//Store in list and update counter
-	move_list->list[move_list->num].move = temp; 
-	move_list->list[move_list->num].score = score;
-	move_list->num++; //Increment counter
-}
-
-//Prints all moves in standard chess format
-void Print_Move_List(MOVE_LIST_STRUCT *move_list)
-{
-	int index;
-
-	cout << endl << "Move List: " << endl;
-	cout << "Moves found: " << move_list->num << endl;
-
-	for (index = 0; index < move_list->num; index++) //Iterate through all moves stored
-	{
-		cout << index << " ";
-		Print_Move(&move_list->list[index]);
-		
-		cout << " Score: " << move_list->list[index].score << endl;
 	}
 }
 

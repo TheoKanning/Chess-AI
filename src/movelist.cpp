@@ -5,6 +5,8 @@
 
 #include "globals.h"
 
+using namespace std;
+
 //Finds highest scoring move in list, sets its score to -1, then returns its move integer
 int Get_Next_Move(MOVE_LIST_STRUCT *move_list)
 {
@@ -63,6 +65,9 @@ int Get_Next_Capture_Move(MOVE_LIST_STRUCT *move_list)
 	}
 }
 
+
+
+
 //Sort moves according to score using comb sort algorithm
 void Sort_Moves(MOVE_LIST_STRUCT *move_list)
 {
@@ -118,4 +123,46 @@ void Copy_Move(MOVE_STRUCT *move1, MOVE_STRUCT *move2)
 {
 	move2->move = move1->move;
 	move2->score = move1->score;
+}
+
+//Creates integer from move data and stores in move_list
+void Add_Move(MOVE_LIST_STRUCT *move_list, int from, int to, int piece, int capture, int special, int score)
+{
+	int temp = 0;
+
+	//Check all fields within bounds
+	ASSERT(ON_BOARD_120(from));
+	ASSERT(ON_BOARD_120(to));
+	ASSERT((piece >= wP) && (piece <= bK)); //Piece is not empty
+	ASSERT((piece >= EMPTY) && (piece <= bK)); //Piece can be empty
+	ASSERT((special >= NOT_SPECIAL) && (special <= KNIGHT_PROMOTE));
+
+	//Set all fields
+	SET_FROM_SQ(temp, from);
+	SET_TO_SQ(temp, to);
+	SET_PIECE(temp, piece);
+	SET_CAPTURE(temp, capture);
+	SET_SPECIAL(temp, special);
+
+	//Store in list and update counter
+	move_list->list[move_list->num].move = temp;
+	move_list->list[move_list->num].score = score;
+	move_list->num++; //Increment counter
+}
+
+//Prints all moves in standard chess format
+void Print_Move_List(MOVE_LIST_STRUCT *move_list)
+{
+	int index;
+
+	cout << endl << "Move List: " << endl;
+	cout << "Moves found: " << move_list->num << endl;
+
+	for (index = 0; index < move_list->num; index++) //Iterate through all moves stored
+	{
+		cout << index << " ";
+		Print_Move(&move_list->list[index]);
+
+		cout << " Score: " << move_list->list[index].score << endl;
+	}
 }
