@@ -39,8 +39,8 @@ int Search_Position(BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info)
 		if (pv_list.list[0].move != 0) Copy_Move(&pv_list.list[0], &best_move); //Store best move found
 
 		//Print search info
-			printf("info score cp %d depth %d nodes %ld time %d ",
-				score, currentDepth, info->nodes, Get_Time_Ms() - info->start_time);
+			printf("info score cp %d depth %d nodes %ld time %d nps %d ",
+				score, currentDepth, info->nodes, Get_Time_Ms() - info->start_time, (int)(info->nodes / ((Get_Time_Ms() - info->start_time) / 1000.0)));
 		
 		//Print current pv line
 		printf("pv ");
@@ -156,17 +156,14 @@ int Alpha_Beta(int alpha, int beta, int depth, BOARD_STRUCT *board, SEARCH_INFO_
 	//If match is found and at greater depth
 	if (valid && (hash_entry.depth > depth))
 	{
-		if (hash_entry.eval > 100) //Check for draw error only if winning
+		if (Draw_Error_Found(hash_entry.move, board))
 		{
-			if (Draw_Error_Found(hash_entry.move, board))
-			{
-				//Remove hash entry from table
-				Remove_Hash_Entry(board->hash_key);
+			//Remove hash entry from table
+			Remove_Hash_Entry(board->hash_key);
 
-				//Clear local hash entry
-				hash_entry.move = 0;
-				hash_entry.flag = HASH_EMPTY;
-			}
+			//Clear local hash entry
+			hash_entry.move = 0;
+			hash_entry.flag = HASH_EMPTY;
 		}
 
 		info->hash_hits++;
@@ -212,50 +209,66 @@ int Alpha_Beta(int alpha, int beta, int depth, BOARD_STRUCT *board, SEARCH_INFO_
 
 		if (current_move == 0) break;
 
-		if (Make_Move(current_move, board)) //If move is successful
+		if (!Make_Move(current_move, board)) continue;//If move is unsuccessful
+
+		mate = 0; //A move has been made
+
+		/***** Principal Variation Search *****/
+		if (move != 0) //If not first move
+		{
+			score = -Alpha_Beta(-alpha - 1, -alpha, depth - 1, board, info); //Null window search
+
+			//If move improves alpha but does not cause a cutoff, and if not in a null search already
+			if (alpha < score && beta > score && (beta - alpha > 1)) 
+			{
+				score = -Alpha_Beta(-beta, -alpha, depth - 1, board, info);
+			}
+		}
+		else //If first move, use full window
 		{
 			score = -Alpha_Beta(-beta, -alpha, depth - 1, board, info);
-			
-			mate = 0; //A move has been made
-			Take_Move(board);
+		}
 
-			if (info->stopped)
-			{
-				return 0;
-			}
+		Take_Move(board);
 
-			//Update beta, storing hash entry if cutoff is found
-			if (score >= beta)
-			{
-				//Store hash entry
-				Fill_Hash_Entry(info->age, depth, score, HASH_LOWER, board->hash_key, current_move, &hash_entry);
-				Add_Hash_Entry(&hash_entry, info);
+		//Check if search ended while searching
+		if (info->stopped)
+		{
+			return 0;
+		}
 
-				//Store killer move if move is not a capture or promotion
-				if (current_move_score <= KILLER_MOVE_SCORE) Add_Killer_Move(current_move, board);
+		//Update beta, storing hash entry if cutoff is found
+		if (score >= beta)
+		{
+			//Store hash entry
+			Fill_Hash_Entry(info->age, depth, score, HASH_LOWER, board->hash_key, current_move, &hash_entry);
+			Add_Hash_Entry(&hash_entry, info);
 
-				return beta; //Beta cutoff
-			}
-			//Update alpha, storing hash if improvement is found
+			//Store killer move if move is not a capture or promotion
+			if (current_move_score <= KILLER_MOVE_SCORE) Add_Killer_Move(current_move, board);
+
+			return score; //Beta cutoff
+		}
+		//Update best score and best move for hash entry later
+		if (score > best_score)
+		{
+			//Update alpha
 			if (score > alpha)
 			{
 				alpha = score;
 			}
-			//Update best score and best move for hash entry later
-			if (score > best_score)
-			{
-				best_score = score;
-				best_move = current_move;
-			}
+			best_score = score;
+			best_move = current_move;
 		}
-	}
+
+	} //End looping through all moves
 
 	/***** Mate detection *****/
 	if (mate) //No moves found
 	{
 		if (in_check)
 		{
-			return -INF + board->hply; //Losing checkmate
+			return -MATE_SCORE + board->hply; //Losing checkmate
 		}
 		return 0; //Draw
 	}
@@ -274,7 +287,6 @@ int Alpha_Beta(int alpha, int beta, int depth, BOARD_STRUCT *board, SEARCH_INFO_
 		Add_Hash_Entry(&hash_entry, info);
 	}
 
-	
 	return alpha;
 }
 

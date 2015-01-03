@@ -53,10 +53,8 @@ int main()
 	}
 	Parse_Position(DRAW_ERROR_FEN, &board);
 	info.stop_time = 1000000;
-	info.depth = 10;
+	info.depth = 11;
 	Search_Position(&board, &info);
-	PV_LIST_STRUCT pv_list;
-	Get_PV_Line(10, &pv_list, &board);
 	Parse_Position(DRAW_ERROR_FEN2, &board);
 	info.depth = 7;
 	Search_Position(&board, &info);

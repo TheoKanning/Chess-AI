@@ -33,6 +33,7 @@
 #define MAX_SEARCH_DEPTH			64   //Max search depth, arbitrary
 #define MAX_MOVE_LIST_LENGTH		218 //Maximum moves in any position
 #define INF							10000000 //Large enough number to be infinite
+#define MATE_SCORE					10000
 
 #define START_FEN		"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 
