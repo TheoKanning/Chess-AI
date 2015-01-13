@@ -602,7 +602,7 @@ void Move_Piece(int from120, int to120, BOARD_STRUCT *board)
 	}
 
 	//Update pawn_hash_key
-	if (IS_PAWN(piece) || IS_KNIGHT(piece))
+	if (IS_PAWN(piece) || IS_KING(piece))
 	{
 		HASH_OUT(board->pawn_hash_key, piece_keys[piece][from64]);
 		HASH_IN(board->pawn_hash_key, piece_keys[piece][to64]);
@@ -640,7 +640,7 @@ void Remove_Piece(int index120, BOARD_STRUCT *board)
 	}
 
 	//Update pawn_hash_key
-	if (IS_PAWN(piece) || IS_KNIGHT(piece))
+	if (IS_PAWN(piece) || IS_KING(piece))
 	{
 		HASH_OUT(board->pawn_hash_key, piece_keys[piece][index64]);
 	}
@@ -675,7 +675,7 @@ void Add_Piece(int piece, int index120, BOARD_STRUCT *board)
 	}
 
 	//Update pawn_hash_key
-	if (IS_PAWN(piece) || IS_KNIGHT(piece))
+	if (IS_PAWN(piece) || IS_KING(piece))
 	{
 		HASH_IN(board->pawn_hash_key, piece_keys[piece][index64]);
 	}

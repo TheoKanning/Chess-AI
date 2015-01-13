@@ -66,6 +66,7 @@
 #define CAPTURE_SCORE			1000	//Number to add to make capture scores higher or lower than other heuristics
 #define UNDER_PROMOTE_SCORE		500
 #define KILLER_MOVE_SCORE		300
+#define HISTORY_SCORE_MAX		100
 #define GET_MMVLVA_SCORE(x,y)	(CAPTURE_SCORE + MMV_SCORES[x] + LVA_SCORES[y])
 
 const int MMV_SCORES[13] = { 0, 10, 20, 20, 30, 40, 50, 10, 20, 20, 30, 40, 50 }; //MVV Scores are multiples of ten

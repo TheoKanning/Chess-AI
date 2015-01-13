@@ -11,8 +11,8 @@ void Add_Killer_Move(int move, BOARD_STRUCT *board)
 	int ply = board->hply;
 	//Automatically shift
 	//board->the_killers[ply][2].move = board->the_killers[ply][1].move;
-	board->the_killers[ply][1].move = board->the_killers[ply][0].move;
-	board->the_killers[ply][0].move = move;
+	board->the_killers[ply][1] = board->the_killers[ply][0];
+	board->the_killers[ply][0] = move;
 	return;
 	
 
@@ -47,7 +47,7 @@ void Find_Killer_Moves(MOVE_LIST_STRUCT *move_list, BOARD_STRUCT *board)
 	for (killer_index = 0; killer_index < 2; killer_index++)
 	{
 		//Get killer move from board array
-		killer_move = board->the_killers[ply][killer_index].move;
+		killer_move = board->the_killers[ply][killer_index];
 
 		if (killer_move == 0) break; //End first loop if no more killer moves are available
 
@@ -68,7 +68,7 @@ void Find_Killer_Moves(MOVE_LIST_STRUCT *move_list, BOARD_STRUCT *board)
 	for (killer_index = 0; killer_index < 2; killer_index++)
 	{
 		//Get killer move from board array
-		killer_move = board->the_killers[ply][killer_index].move;
+		killer_move = board->the_killers[ply][killer_index];
 
 		if (killer_move == 0) return; //End if no more killer moves are available
 

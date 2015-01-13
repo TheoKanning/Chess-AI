@@ -95,9 +95,21 @@ int Get_Hash_Entry(U64 hash, HASH_ENTRY_STRUCT *hash_ptr)
 	//See if hash is a match, if not, end and return zero
 	if (hash_table[hash_index].hash != hash)
 	{
-		//Remove move field from pointer
-		hash_ptr->move = 0;
-		return 0;
+		//Check next index
+		hash_index++;
+		if (hash_index >= HASH_SIZE) hash_index = 0;
+
+		if (hash_table[hash_index].hash == hash)
+		{
+			Copy_Hash_Entry(&hash_table[hash_index], hash_ptr);
+			return 1;
+		}
+		else
+		{
+			//Remove move field from pointer
+			hash_ptr->move = 0;
+			return 0;
+		}
 	}
 
 	//Fill hash_ptr and return 1
@@ -111,13 +123,6 @@ void Add_Hash_Entry(HASH_ENTRY_STRUCT *hash_ptr, SEARCH_INFO_STRUCT *info)
 {
 	int hash_index = hash_ptr->hash % HASH_SIZE;
 
-	/*
-	if (hash_ptr->flag == HASH_UPPER || hash_ptr->flag == HASH_LOWER)
-	{
-		return;
-	}
-	*/
-
 	//If stored entry is empty, replace
 	if (hash_table[hash_index].hash == 0)
 	{
@@ -126,7 +131,7 @@ void Add_Hash_Entry(HASH_ENTRY_STRUCT *hash_ptr, SEARCH_INFO_STRUCT *info)
 	}
 
 	//If stored entry is too old, replace
-	if (hash_table[hash_index].age + 5 < info->age)
+	if (hash_table[hash_index].age + 3 < info->age)
 	{
 		Copy_Hash_Entry(hash_ptr, &hash_table[hash_index]);
 		return;
@@ -146,10 +151,32 @@ void Add_Hash_Entry(HASH_ENTRY_STRUCT *hash_ptr, SEARCH_INFO_STRUCT *info)
 					return;
 				}
 			}
-			else //Hashes not identical
+			else //Hashes not identical, store in index above if empty
 			{
-				Copy_Hash_Entry(hash_ptr, &hash_table[hash_index]);
-				return;
+				//Increment index
+				hash_index++;
+				if (hash_index >= HASH_SIZE) hash_index = 0;
+
+				//If spot above is not exact
+				if (hash_table[hash_index].flag != HASH_EXACT)
+				{
+					Copy_Hash_Entry(hash_ptr, &hash_table[hash_index]);
+					return;
+				}
+
+				//If spot above is old
+				if (hash_table[hash_index].age + 3 < info->age)
+				{
+					Copy_Hash_Entry(hash_ptr, &hash_table[hash_index]);
+					return;
+				}
+
+				//If hash is identical, and depth is greater or equal
+				if (hash_ptr->hash == hash_table[hash_index].hash && hash_ptr->depth >= hash_table[hash_index].depth)
+				{
+					Copy_Hash_Entry(hash_ptr, &hash_table[hash_index]);
+					return;
+				}
 			}
 		}
 		else

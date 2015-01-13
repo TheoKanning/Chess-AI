@@ -127,7 +127,7 @@ void Copy_Move(MOVE_STRUCT *move1, MOVE_STRUCT *move2)
 }
 
 //Creates integer from move data and stores in move_list
-void Add_Move(MOVE_LIST_STRUCT *move_list, int from, int to, int piece, int capture, int special, int score)
+void Add_Move(MOVE_LIST_STRUCT *move_list, int from, int to, int piece, int capture, int special, int score, BOARD_STRUCT *board)
 {
 	int temp = 0;
 
@@ -147,7 +147,35 @@ void Add_Move(MOVE_LIST_STRUCT *move_list, int from, int to, int piece, int capt
 
 	//Store in list and update counter
 	move_list->list[move_list->num].move = temp;
-	move_list->list[move_list->num].score = score;
+	
+	//Update score using killer and history heuristics
+	if (score != 0) //Skip if move has an MVVLVA or promote score
+	{
+		move_list->list[move_list->num].score = score;
+	}
+
+	else if (temp == board->the_killers[board->hply][0])//if move matches first killer move
+	{
+		move_list->list[move_list->num].score = KILLER_MOVE_SCORE;
+	}
+	else if (temp == board->the_killers[board->hply][1])//if move matches second killer move
+	{
+		move_list->list[move_list->num].score = KILLER_MOVE_SCORE - 1;
+	}
+	else //If nothing else, add score of zero
+	{
+		move_list->list[move_list->num].score = 0;
+	}
+	/*
+	else if (board->history_max > 0)//Add history score 
+	{
+		move_list->list[move_list->num].score = board->history[from][to] * HISTORY_SCORE_MAX / (1.0 * board->history_max);
+		if (move_list->list[move_list->num].score > HISTORY_SCORE_MAX)
+		{
+			printf("Higher than bound score: %d history val:%d max:%d\n\r", move_list->list[move_list->num].score, board->history[from][to], board->history_max);
+		}
+	}
+	*/
 	move_list->num++; //Increment counter
 }
 

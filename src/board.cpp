@@ -287,8 +287,18 @@ void Add_To_Piecelists(int piece, int index120, BOARD_STRUCT *board)
 		board->piece_num[piece]++;
 	}
 
-	if (IS_WHITE_PIECE(piece)) board->material += piece_values[piece];
-	if (IS_BLACK_PIECE(piece)) board->material -= piece_values[piece];
+	if (IS_WHITE_PIECE(piece))
+	{
+		board->material += piece_values[piece];
+		board->middle_piece_square_score += middle_piece_square_tables[piece][SQUARE_120_TO_64(index120)];
+		board->end_piece_square_score += end_piece_square_tables[piece][SQUARE_120_TO_64(index120)];
+	}
+	if (IS_BLACK_PIECE(piece))
+	{
+		board->material -= piece_values[piece];
+		board->middle_piece_square_score -= middle_piece_square_tables[piece][SQUARE_120_TO_64(index120)];
+		board->end_piece_square_score -= end_piece_square_tables[piece][SQUARE_120_TO_64(index120)];
+	}
 	if ((piece != wK) && (piece != bK))	board->total_material += piece_values[piece];
 }
 
@@ -317,8 +327,18 @@ void Remove_From_Piecelists(int piece, int index120, BOARD_STRUCT *board)
 		board->piece_num[piece]--;
 	}
 
-	if (IS_WHITE_PIECE(piece)) board->material -= piece_values[piece];
-	if (IS_BLACK_PIECE(piece)) board->material += piece_values[piece];
+	if (IS_WHITE_PIECE(piece))
+	{
+		board->material -= piece_values[piece];
+		board->middle_piece_square_score -= middle_piece_square_tables[piece][SQUARE_120_TO_64(index120)];
+		board->end_piece_square_score -= end_piece_square_tables[piece][SQUARE_120_TO_64(index120)];
+	}
+	if (IS_BLACK_PIECE(piece))
+	{
+		board->material += piece_values[piece];
+		board->middle_piece_square_score += middle_piece_square_tables[piece][SQUARE_120_TO_64(index120)];
+		board->end_piece_square_score += end_piece_square_tables[piece][SQUARE_120_TO_64(index120)];
+	}
 	if ((piece != wK) && (piece != bK))	board->total_material -= piece_values[piece];
 }
 
@@ -331,6 +351,8 @@ void Update_Piece_Lists(BOARD_STRUCT *board)
 	//Reset material and piece square count to 0
 	board->material = 0;
 	board->total_material = 0;
+	board->end_piece_square_score = 0;
+	board->middle_piece_square_score = 0;
 
 	//Set all values to zero
 	for (piece = 0; piece <= bK; piece++)
@@ -351,8 +373,18 @@ void Update_Piece_Lists(BOARD_STRUCT *board)
 			board->piece_list120[piece][board->piece_num[piece]] = SQUARE_64_TO_120(index); //Store 10x12 index in list
 			board->piece_num[piece]++; //Increment piece count
 
-			if (IS_WHITE_PIECE(piece)) board->material += piece_values[piece];
-			if (IS_BLACK_PIECE(piece)) board->material -= piece_values[piece];
+			if (IS_WHITE_PIECE(piece))
+			{
+				board->material += piece_values[piece];
+				board->middle_piece_square_score += middle_piece_square_tables[piece][index];
+				board->end_piece_square_score += end_piece_square_tables[piece][index];
+			}
+			if (IS_BLACK_PIECE(piece))
+			{
+				board->material -= piece_values[piece];
+				board->middle_piece_square_score -= middle_piece_square_tables[piece][index];
+				board->end_piece_square_score -= end_piece_square_tables[piece][index];
+			}
 			if ((piece != wK) && (piece != bK))	board->total_material += piece_values[piece];
 		}
 	}
@@ -449,10 +481,13 @@ void Check_Board(BOARD_STRUCT *board)
 	int index64, index120, piece, i, j;
 	int material_temp = 0;
 	int total_material_temp = 0;
+	int middle_piece_square_temp = 0;
+	int end_piece_square_temp = 0;
 	int piece_square_temp = 0;
 	int piecelist_temp[13][10] = { 0 };
 	int piece_num_temp[13] = { 0 };
 	U64 hash_temp = 0;
+	U64 pawn_hash_temp = 0;
 	U64 pawn_bitboards_temp[3] = { 0 };
 
 	//Check board arrays for consistency
@@ -478,8 +513,18 @@ void Check_Board(BOARD_STRUCT *board)
 			SET_BIT(pawn_bitboards_temp[BLACK], index64);
 			SET_BIT(pawn_bitboards_temp[BOTH], index64);
 		}
-		if (IS_WHITE_PIECE(piece)) material_temp += piece_values[piece]; //Update material values
-		if (IS_BLACK_PIECE(piece)) material_temp -= piece_values[piece];
+		if (IS_WHITE_PIECE(piece))
+		{
+			material_temp += piece_values[piece];
+			middle_piece_square_temp += middle_piece_square_tables[piece][index64];
+			end_piece_square_temp += end_piece_square_tables[piece][index64];
+		}
+		if (IS_BLACK_PIECE(piece))
+		{
+			material_temp -= piece_values[piece];
+			middle_piece_square_temp -= middle_piece_square_tables[piece][index64];
+			end_piece_square_temp -= end_piece_square_tables[piece][index64];
+		}
 		if ((piece != wK) && (piece != bK)) total_material_temp += piece_values[piece];
 		
 	}
@@ -521,11 +566,16 @@ void Check_Board(BOARD_STRUCT *board)
 	ASSERT(material_temp == board->material);
 	ASSERT(total_material_temp == board->total_material);
 
+	/***** Piece Saquare Score *****/
+	ASSERT(middle_piece_square_temp == board->middle_piece_square_score);
+	ASSERT(end_piece_square_temp == board->end_piece_square_score);
+
 	/***** Hashkey *****/
 	hash_temp = board->hash_key; //Store previous value
+	pawn_hash_temp = board->pawn_hash_key;
 	Compute_Hash(board); //Recalculate hash
 	ASSERT(board->hash_key == hash_temp); //Make sure they match
-
+	ASSERT(board->pawn_hash_key == pawn_hash_temp);
 	/***** Castling *****/
 
 

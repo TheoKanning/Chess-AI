@@ -9,10 +9,17 @@
 
 using namespace std;
 
+typedef enum
+{
+	NOT_PV,PV
+};
+
+
 //Searches a given position using board and search info 
 int Search_Position(BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info)
 {
 	int currentDepth, score;
+	int previous_node_count = 0;
 	PV_LIST_STRUCT pv_list;
 	MOVE_STRUCT best_move;
 
@@ -26,9 +33,12 @@ int Search_Position(BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info)
 
 	info->null_available = 1;
 
-	for (currentDepth = 1; currentDepth <= info->depth; ++currentDepth) 
+	Clear_History_Data(board);
+
+	for (currentDepth = 1; currentDepth <= info->depth; ++currentDepth)
 	{		
-		score = Alpha_Beta(-INF, INF, currentDepth, board, info);
+		//info->nodes = 0; //Reset node count befor each iteration
+		score = Alpha_Beta(-INF, INF, currentDepth, PV, board, info);
 
 		if (info->stopped == 1) {
 			break;
@@ -42,14 +52,23 @@ int Search_Position(BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info)
 			printf("info score cp %d depth %d nodes %ld time %d nps %d ",
 				score, currentDepth, info->nodes, Get_Time_Ms() - info->start_time, (int)(info->nodes / ((Get_Time_Ms() - info->start_time) / 1000.0)));
 		
+		//Print branching factor
+		if (previous_node_count != 0)
+		{
+			//printf("\n\rBranching factor: %f\n\r", info->nodes / (float)previous_node_count);
+		}
+		previous_node_count = info->nodes;
+
 		//Print current pv line
 		printf("pv ");
 		Print_PV_List(&pv_list);
-		printf("\n");
+		printf("\n\n");
 
 		//End if time is one third gone because next depth is unlikely to finish
 		if ((Get_Time_Ms() - info->start_time) >= ((info->stop_time - info->start_time) / 3.0)) info->stopped = 1;
 
+
+		
 	}
 
 	
@@ -78,7 +97,7 @@ int Iterative_Deepening(int depth, BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info
 		info->nodes = 0;
 		info->hash_hits = 0;
 		time(&start);
-		score = Alpha_Beta(-INF, INF, i, board, info);
+		score = Alpha_Beta(-INF, INF, i, NOT_PV, board, info);
 		time(&stop);
 		
 		//Print Data
@@ -101,7 +120,7 @@ int Iterative_Deepening(int depth, BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info
 }
 
 //Alpha beta implementation in negamax search
-int Alpha_Beta(int alpha, int beta, int depth, BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info)
+int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info)
 {
 	int move;
 	int alpha_orig = alpha;
@@ -153,8 +172,9 @@ int Alpha_Beta(int alpha, int beta, int depth, BOARD_STRUCT *board, SEARCH_INFO_
 
 	/***** Check hash table *****/
 	valid = Get_Hash_Entry(board->hash_key, &hash_entry);
+	
 	//If match is found and at greater depth
-	if (valid && (hash_entry.depth > depth))
+	if (valid && (hash_entry.depth >= depth))
 	{
 		if (Draw_Error_Found(hash_entry.move, board))
 		{
@@ -167,41 +187,45 @@ int Alpha_Beta(int alpha, int beta, int depth, BOARD_STRUCT *board, SEARCH_INFO_
 		}
 
 		info->hash_hits++;
+
+		//Temporary variables to check for cutoff
+		int alpha_temp = alpha;
+		int beta_temp = beta;
+
 		if (hash_entry.flag == HASH_EXACT)
 		{
 			return hash_entry.eval;
 		}
-		else if (hash_entry.flag == HASH_LOWER)
+		else if (hash_entry.flag == HASH_LOWER && !is_pv) //Only return exact values in pv
 		{
-			alpha = max(alpha, hash_entry.eval);
+			alpha_temp = max(alpha, hash_entry.eval);
 		}
-		else if (hash_entry.flag == HASH_UPPER)
+		else if (hash_entry.flag == HASH_UPPER && !is_pv)
 		{
-			beta = min(beta, hash_entry.eval);
+			beta_temp = min(beta, hash_entry.eval);
 		}
 		//Check for cutoff
-		if (alpha >= beta)
+		if (alpha_temp >= beta_temp)
 		{
 			return hash_entry.eval;
 		}
 	}
 
 	/***** Null Move *****/
-	if (depth >= 4 && info->null_available && board->hply && !in_check && board->total_material >= 2000)
+	if (depth >= 4 && info->null_available && !is_pv && board->hply && !in_check && board->total_material >= 2000)
 	{
 		info->null_available = 0;
 		Make_Null_Move(board);
-		score = -Alpha_Beta(-beta, -beta + 1, depth - 3, board, info); //Subtract an additional 2 ply from depth
+		score = -Alpha_Beta(-beta, -beta + 1, depth - 3, NOT_PV, board, info); //Subtract an additional 2 ply from depth
 		Take_Null_Move(board);
 		info->null_available = 1;
 
 		if (score >= beta) return score;
 	}
 
-
+	/***** Move generation and sorting *****/
 	Generate_Moves(board, &move_list);
 	Find_PV_Move(hash_entry.move, &move_list); //Find hash move if available
-	Find_Killer_Moves(&move_list, board); //Find killer moves
 
 	for (move = 0; move < move_list.num; move++) //For all moves in list
 	{
@@ -216,17 +240,17 @@ int Alpha_Beta(int alpha, int beta, int depth, BOARD_STRUCT *board, SEARCH_INFO_
 		/***** Principal Variation Search *****/
 		if (move != 0) //If not first move
 		{
-			score = -Alpha_Beta(-alpha - 1, -alpha, depth - 1, board, info); //Null window search
+			score = -Alpha_Beta(-alpha - 1, -alpha, depth - 1, NOT_PV, board, info); //Null window search
 
 			//If move improves alpha but does not cause a cutoff, and if not in a null search already
 			if (alpha < score && beta > score && (beta - alpha > 1)) 
 			{
-				score = -Alpha_Beta(-beta, -alpha, depth - 1, board, info);
+				score = -Alpha_Beta(-beta, -alpha, depth - 1, NOT_PV, board, info);
 			}
 		}
 		else //If first move, use full window
 		{
-			score = -Alpha_Beta(-beta, -alpha, depth - 1, board, info);
+			score = -Alpha_Beta(-beta, -alpha, depth - 1, (is_pv && (move == 0)), board, info);
 		}
 
 		Take_Move(board);
@@ -244,9 +268,12 @@ int Alpha_Beta(int alpha, int beta, int depth, BOARD_STRUCT *board, SEARCH_INFO_
 			Fill_Hash_Entry(info->age, depth, score, HASH_LOWER, board->hash_key, current_move, &hash_entry);
 			Add_Hash_Entry(&hash_entry, info);
 
-			//Store killer move if move is not a capture or promotion
-			if (current_move_score <= KILLER_MOVE_SCORE) Add_Killer_Move(current_move, board);
-
+			//if move is not a capture or promotion
+			if (current_move_score <= KILLER_MOVE_SCORE)
+			{				 
+				Add_Killer_Move(current_move, board); //Store killer move
+				Add_History_Move(current_move, board); //Store move in history array
+			}
 			return score; //Beta cutoff
 		}
 		//Update best score and best move for hash entry later
@@ -256,6 +283,7 @@ int Alpha_Beta(int alpha, int beta, int depth, BOARD_STRUCT *board, SEARCH_INFO_
 			if (score > alpha)
 			{
 				alpha = score;
+				//Add_History_Move(current_move, board); //Store move in history array
 			}
 			best_score = score;
 			best_move = current_move;

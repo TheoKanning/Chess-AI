@@ -8,7 +8,7 @@
 
 /***** Global Macros *****/
 
-//#define DEBUG //Define debug mode for full assert function
+#define DEBUG //Define debug mode for full assert function
 
 #define PROGRAM_NAME "Chess-AI"
 #define AUTHOR	"Theo Kanning"
@@ -197,7 +197,8 @@ typedef struct
 
 	int material; //Material score
 	int total_material;
-	//int piece_square_score;
+	int middle_piece_square_score;
+	int end_piece_square_score;
 
 	int eval_score; //Overall evaluation score
 
@@ -205,7 +206,10 @@ typedef struct
 
 	UNDO_LIST_STRUCT undo_list;
 
-	MOVE_STRUCT the_killers[MAX_SEARCH_DEPTH][2];
+	int the_killers[MAX_SEARCH_DEPTH][2];
+
+	int history[120][120];
+	int history_max;
 
 	U64 hash_key;
 	U64 pawn_hash_key;
@@ -241,6 +245,8 @@ extern short rook_piece_square_table[64];
 extern short queen_piece_square_table[64];
 extern short king_piece_square_table[64];
 extern short king_endgame_piece_square_table[64];
+extern short middle_piece_square_tables[13][64];
+extern short end_piece_square_tables[13][64];
 extern int GetTimeMs(void);
 
 //eval
@@ -259,6 +265,10 @@ extern void Remove_Hash_Entry(U64 hash);
 extern int Get_Hash_Entry(U64 hash, HASH_ENTRY_STRUCT *hash_ptr);
 extern void Fill_Hash_Entry(int age, int depth, int eval, int flag, U64 hash, int move, HASH_ENTRY_STRUCT *hash_ptr);
 
+//history
+extern void Add_History_Move(int move, BOARD_STRUCT *board);
+extern void Find_History_Moves(MOVE_LIST_STRUCT *move_list, BOARD_STRUCT *board);
+extern void Clear_History_Data(BOARD_STRUCT *board);
 //killers
 extern void Find_Killer_Moves(MOVE_LIST_STRUCT *move_list, BOARD_STRUCT *board);
 extern void Add_Killer_Move(int move, BOARD_STRUCT *board);
@@ -283,7 +293,7 @@ extern void Copy_Move(MOVE_STRUCT *move1, MOVE_STRUCT *move2);
 extern int Get_Capture_Moves(MOVE_LIST_STRUCT *move_list);
 extern int Get_Next_Move(MOVE_LIST_STRUCT *move_list, int* score_ptr);
 extern int Get_Next_Capture_Move(MOVE_LIST_STRUCT *move_list);
-extern void Add_Move(MOVE_LIST_STRUCT *move_list, int from, int to, int piece, int capture, int special, int score);
+extern void Add_Move(MOVE_LIST_STRUCT *move_list, int from, int to, int piece, int capture, int special, int score, BOARD_STRUCT *board);
 extern void Print_Move_List(MOVE_LIST_STRUCT *move_list);
 
 //perft
@@ -298,7 +308,7 @@ extern void Get_PV_Line(int depth, PV_LIST_STRUCT *pv_list, BOARD_STRUCT *board)
 
 //search
 extern int Iterative_Deepening(int depth, BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info);
-extern int Alpha_Beta(int alpha, int beta, int depth, BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info);
+extern int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info);
 extern int Quiescent_Search(int alpha, int beta, BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info);
 extern int Search_Position(BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info);
 extern int Get_Time_Ms(void);

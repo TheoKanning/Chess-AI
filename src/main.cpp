@@ -53,8 +53,9 @@ int main()
 	}
 	Parse_Position(DRAW_ERROR_FEN, &board);
 	info.stop_time = 1000000;
-	info.depth = 11;
+	info.depth = 12;
 	Search_Position(&board, &info);
+	system("PAUSE");
 	Parse_Position(DRAW_ERROR_FEN2, &board);
 	info.depth = 7;
 	Search_Position(&board, &info);
