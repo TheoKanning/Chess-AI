@@ -285,6 +285,7 @@ void Add_To_Piecelists(int piece, int index120, BOARD_STRUCT *board)
 	{
 		board->piece_list120[piece][board->piece_num[piece]] = index120;
 		board->piece_num[piece]++;
+		SET_BIT(board->piece_bitboards[piece], SQUARE_120_TO_64(index120));
 	}
 
 	if (IS_WHITE_PIECE(piece))
@@ -325,6 +326,8 @@ void Remove_From_Piecelists(int piece, int index120, BOARD_STRUCT *board)
 		board->piece_list120[piece][board->piece_num[piece]-1] = 0; //Remove last index
 
 		board->piece_num[piece]--;
+
+		CLR_BIT(board->piece_bitboards[piece], SQUARE_120_TO_64(index120)); //Remove from bitboards
 	}
 
 	if (IS_WHITE_PIECE(piece))
@@ -395,19 +398,33 @@ void Update_Piece_Lists(BOARD_STRUCT *board)
 void Update_Bitboards(BOARD_STRUCT *board)
 {
 	int index;
+	int piece;
 	//Reset bitboards
 	board->pawn_bitboards[WHITE] = 0;
 	board->pawn_bitboards[BLACK] = 0;
 	board->pawn_bitboards[BOTH] = 0;
 
+	for (index = 0; index <= bK; index++) //Clear piece bitboards
+	{
+		board->piece_bitboards[index] = 0;
+	}
+
+	//Loop through all squares and add appropriate data to bitboards
 	for (index = 0; index < 64; index++)
 	{
-		if (board->board_array64[index] == wP) //White pawn
+		piece = board->board_array64[index];
+
+		if (piece != EMPTY)
+		{
+			SET_BIT(board->piece_bitboards[piece], index); //Update bitboard
+		}
+
+		if (piece == wP) //White pawn
 		{
 			SET_BIT(board->pawn_bitboards[WHITE], index); //Update bitboard
 			SET_BIT(board->pawn_bitboards[BOTH], index); //Update bitboard
 		}
-		else if (board->board_array64[index] == bP) //White pawn
+		else if (piece == bP) //White pawn
 		{
 			SET_BIT(board->pawn_bitboards[BLACK], index); //Update bitboard
 			SET_BIT(board->pawn_bitboards[BOTH], index); //Update bitboard
@@ -489,6 +506,7 @@ void Check_Board(BOARD_STRUCT *board)
 	U64 hash_temp = 0;
 	U64 pawn_hash_temp = 0;
 	U64 pawn_bitboards_temp[3] = { 0 };
+	U64 piece_bitboards_temp[13] = { 0 };
 
 	//Check board arrays for consistency
 	for (index64 = 0; index64 < 64; index64++)
@@ -502,6 +520,7 @@ void Check_Board(BOARD_STRUCT *board)
 		{
 			piecelist_temp[piece][piece_num_temp[piece]] = index120; //Store index
 			piece_num_temp[piece]++; //Increment count
+			SET_BIT(piece_bitboards_temp[piece], index64); //Update bitboard
 		}
 		if (piece == wP)
 		{
@@ -561,12 +580,16 @@ void Check_Board(BOARD_STRUCT *board)
 	ASSERT(pawn_bitboards_temp[WHITE] == board->pawn_bitboards[WHITE]);
 	ASSERT(pawn_bitboards_temp[BLACK] == board->pawn_bitboards[BLACK]);
 	ASSERT(pawn_bitboards_temp[BOTH] == board->pawn_bitboards[BOTH]);
+	for (int index = 0; index < bK; index++)
+	{
+		ASSERT(piece_bitboards_temp[index] == board->piece_bitboards[index]);
+	}
 
 	/***** Material Score *****/
 	ASSERT(material_temp == board->material);
 	ASSERT(total_material_temp == board->total_material);
 
-	/***** Piece Saquare Score *****/
+	/***** Piece Square Score *****/
 	ASSERT(middle_piece_square_temp == board->middle_piece_square_score);
 	ASSERT(end_piece_square_temp == board->end_piece_square_score);
 
@@ -576,6 +599,7 @@ void Check_Board(BOARD_STRUCT *board)
 	Compute_Hash(board); //Recalculate hash
 	ASSERT(board->hash_key == hash_temp); //Make sure they match
 	ASSERT(board->pawn_hash_key == pawn_hash_temp);
+	
 	/***** Castling *****/
 
 

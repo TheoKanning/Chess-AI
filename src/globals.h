@@ -203,6 +203,7 @@ typedef struct
 	int eval_score; //Overall evaluation score
 
 	U64 pawn_bitboards[3]; //One for white, black, and both
+	U64 piece_bitboards[13]; //One for each piece type
 
 	UNDO_LIST_STRUCT undo_list;
 
