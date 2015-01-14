@@ -20,6 +20,7 @@ int Search_Position(BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info)
 {
 	int currentDepth, score;
 	int previous_node_count = 0;
+	int depth_start_time;
 	PV_LIST_STRUCT pv_list;
 	MOVE_STRUCT best_move;
 
@@ -37,7 +38,9 @@ int Search_Position(BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info)
 
 	for (currentDepth = 1; currentDepth <= info->depth; ++currentDepth)
 	{		
-		//info->nodes = 0; //Reset node count befor each iteration
+		info->nodes = 0; //Reset node count befor each iteration
+		depth_start_time = Get_Time_Ms();
+
 		score = Alpha_Beta(-INF, INF, currentDepth, PV, board, info);
 
 		if (info->stopped == 1) {
@@ -50,7 +53,7 @@ int Search_Position(BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info)
 
 		//Print search info
 			printf("info score cp %d depth %d nodes %ld time %d nps %d ",
-				score, currentDepth, info->nodes, Get_Time_Ms() - info->start_time, (int)(info->nodes / ((Get_Time_Ms() - info->start_time) / 1000.0)));
+				score, currentDepth, info->nodes, Get_Time_Ms() - info->start_time, (int)(info->nodes / ((Get_Time_Ms() - depth_start_time + 1) / 1000.0)));
 		
 		//Print branching factor
 		if (previous_node_count != 0)
@@ -164,46 +167,20 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 	}
 
 	/***** Check hash table *****/
-	valid = Get_Hash_Entry(board->hash_key, &hash_entry);
 	
-	//If match is found and at greater depth
-	if (valid && (hash_entry.depth >= depth))
+	int value = Get_Hash_Entry(board->hash_key, alpha, beta, depth, &hash_entry.move);
+	if (value != INVALID)
 	{
-		if (Draw_Error_Found(hash_entry.move, board))
+		if (!is_pv || (value > alpha && value < beta))
 		{
-			//Remove hash entry from table
-			Remove_Hash_Entry(board->hash_key);
-
-			//Clear local hash entry
-			hash_entry.move = 0;
-			hash_entry.flag = HASH_EMPTY;
-		}
-
-		info->hash_hits++;
-
-		//Temporary variables to check for cutoff
-		int alpha_temp = alpha;
-		int beta_temp = beta;
-
-		if (hash_entry.flag == HASH_EXACT)
-		{
-			return hash_entry.eval;
-		}
-		else if (hash_entry.flag == HASH_LOWER && !is_pv) //Only return exact values in pv
-		{
-			alpha_temp = max(alpha, hash_entry.eval);
-		}
-		else if (hash_entry.flag == HASH_UPPER && !is_pv)
-		{
-			beta_temp = min(beta, hash_entry.eval);
-		}
-		//Check for cutoff
-		if (alpha_temp >= beta_temp)
-		{
-			return hash_entry.eval;
+			if (depth < 3 || !Draw_Error_Found(hash_entry.move, board))
+			{
+				info->hash_hits++;
+				return value;
+			}
 		}
 	}
-
+	
 	/***** Null Move *****/
 	if (depth >= 4 && info->null_available && !is_pv && board->hply && !in_check && board->total_material >= 2000)
 	{
@@ -399,7 +376,7 @@ int Draw_Error_Found(int move, BOARD_STRUCT *board)
 	//Check all possible opponent moves for draws, starting with hash move
 	Generate_Moves(board, &move_list);
 	//Find hash move
-	Get_Hash_Entry(board->hash_key, &hash_entry);
+	Get_Hash_Entry(board->hash_key, 0, 0, 0, &hash_entry.move);
 	Find_PV_Move(hash_entry.move, &move_list);
 	Find_Killer_Moves(&move_list, board);
 

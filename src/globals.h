@@ -32,7 +32,8 @@
 #define MAX_PLY						1028 //Maximum depth for searching
 #define MAX_SEARCH_DEPTH			64   //Max search depth, arbitrary
 #define MAX_MOVE_LIST_LENGTH		218 //Maximum moves in any position
-#define INF							10000000 //Large enough number to be infinite
+#define INF							100000 //Large enough number to be infinite
+#define INVALID						1000001 //Larger than infinity, always out of bounds
 #define MATE_SCORE					10000
 
 #define START_FEN		"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
@@ -264,7 +265,7 @@ extern void Init_Hash_Table(void);
 extern void Compute_Hash(BOARD_STRUCT *board);
 extern void Add_Hash_Entry(HASH_ENTRY_STRUCT *hash_ptr, SEARCH_INFO_STRUCT *info);
 extern void Remove_Hash_Entry(U64 hash);
-extern int Get_Hash_Entry(U64 hash, HASH_ENTRY_STRUCT *hash_ptr);
+extern int Get_Hash_Entry(U64 hash, int alpha, int beta, int depth, int * hash_move);
 extern void Fill_Hash_Entry(int age, int depth, int eval, int flag, U64 hash, int move, HASH_ENTRY_STRUCT *hash_ptr);
 
 //history

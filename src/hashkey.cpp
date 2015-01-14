@@ -88,10 +88,37 @@ void Compute_Hash(BOARD_STRUCT *board)
 }
 
 //Reads hash table and returns pointer if entry is found
+int Get_Hash_Entry(U64 hash, int alpha, int beta, int depth, int * hash_move)
+{
+	//Get hash data
+	HASH_ENTRY_STRUCT *hash_temp = &hash_table[hash % HASH_SIZE];
+
+	if (hash_temp->hash == hash) //If hash keys match
+	{
+		*hash_move = hash_temp->move; //Store hash move in pointer
+
+		if (hash_temp->depth >= depth) //If depth is greater than or equal to search depth
+		{
+			if (hash_temp->flag == HASH_EXACT)
+			{
+				return hash_temp->eval;
+			}
+			else if (hash_temp->flag == HASH_UPPER && (hash_temp->eval <= alpha))
+			{
+				return hash_temp->eval;
+			}
+			else if (hash_temp->flag == HASH_LOWER && (hash_temp->eval >= beta))
+			{
+				return hash_temp->eval;
+			}
+		}
+	}
+
+	return INVALID;
+}
 int Get_Hash_Entry(U64 hash, HASH_ENTRY_STRUCT *hash_ptr)
 {
 	int hash_index = hash % HASH_SIZE;
-	
 	//See if hash is a match, if not, end and return zero
 	if (hash_table[hash_index].hash != hash)
 	{
@@ -116,6 +143,7 @@ int Get_Hash_Entry(U64 hash, HASH_ENTRY_STRUCT *hash_ptr)
 	Copy_Hash_Entry(&hash_table[hash_index], hash_ptr);
 
 	return 1;
+	
 }
 
 //Adds a hash entry to the table, checking if replacement is approriate

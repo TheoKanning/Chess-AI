@@ -12,3 +12,5 @@ Version Notes:
 1.24 - Fixed serious hash bug 
 	 - Improved get_next_move function
 	 - In check extension for depth > 0
+	 - Moved hash logic out of alpha beta
+
