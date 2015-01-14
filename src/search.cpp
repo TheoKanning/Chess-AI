@@ -154,21 +154,14 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 
 	/***** Check Test *****/
 	int in_check = In_Check(board->side, board);
+	if (in_check) depth++;
 
 	/***** Leaf Node Response *****/
 	//If at depth 0, extend if in check, start quiescent search if not
 	if (depth <= 0)
 	{
-		if (in_check)
-		{
-			depth++;
-		}
-		else
-		{
 			return Quiescent_Search(alpha, beta, board, info);
-		}
 	}
-
 
 	/***** Check hash table *****/
 	valid = Get_Hash_Entry(board->hash_key, &hash_entry);
