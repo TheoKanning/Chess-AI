@@ -12,7 +12,7 @@
 
 #define PROGRAM_NAME "Chess-AI"
 #define AUTHOR	"Theo Kanning"
-#define VERSION_NO	1.23
+#define VERSION_NO	1.24
 
 #ifndef DEBUG
         #define ASSERT(x)

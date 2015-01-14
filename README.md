@@ -9,3 +9,6 @@ Version Notes:
 1.21 - Added null move 
 1.22 - Added killer heuristic 
 1.23 - Quiescent search includes queen promotions
+1.24 - Fixed serious hash bug 
+	 - Improved get_next_move function
+	 - In check extension for depth > 0
