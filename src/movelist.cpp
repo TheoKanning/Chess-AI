@@ -7,66 +7,46 @@
 
 using namespace std;
 
-//Finds highest scoring move in list, sets its score to -1, then returns its move integer
-int Get_Next_Move(MOVE_LIST_STRUCT *move_list, int *score_ptr)
+//Finds nth highest scoring move in list, move it to the front, then returns its move integer
+void Get_Next_Move(int num, MOVE_LIST_STRUCT *move_list)
 {
-	int high_score = -1;
-	int high_score_index = -1;
-	int index;
-
-	for (index = 0; index < move_list->num; index++)
+	int high_index = num;
+	for (int i = num + 1; i < move_list->num; i++)
 	{
-		//If move is highest so far
-		if (move_list->list[index].score > high_score)
-		{
-			high_score = move_list->list[index].score;
-			high_score_index = index;
-		}
+		if (move_list->list[i].score > move_list->list[high_index].score)
+			high_index = i; //Store new high index
 	}
 
-	//Return integer and clear move from list
-	if (high_score_index != -1) //If move found
-	{
-		*score_ptr = move_list->list[high_score_index].score;
-		move_list->list[high_score_index].score = -1; //Clear score so move can't be found again
-		return move_list->list[high_score_index].move;
-	}
-	else
-	{
-		return 0;
-	}
+	//Move high scoring move to nth position so it won't be searched again
+	MOVE_STRUCT temp;
+	Copy_Move(&move_list->list[num], &temp);
+	Copy_Move(&move_list->list[high_index], &move_list->list[num]);
+	Copy_Move(&temp, &move_list->list[high_index]);
 }
 
 //Finds highest scoring capture move in list, sets its score to -1, then returns its move integer
-int Get_Next_Capture_Move(MOVE_LIST_STRUCT *move_list)
+void Get_Next_Capture_Move(int num, MOVE_LIST_STRUCT *move_list)
 {
-	int high_score = CAPTURE_SCORE - 1;
-	int high_score_index = -1;
-	int index;
-
-	for (index = 0; index < move_list->num; index++)
+	int high_index = num;
+	for (int i = num + 1; i < move_list->num; i++)
 	{
-		//If move is highest so far
-		if (move_list->list[index].score > high_score)
-		{
-			high_score = move_list->list[index].score;
-			high_score_index = index;
-		}
+		if ((move_list->list[i].score > move_list->list[high_index].score))
+			high_index = i; //Store new high index
 	}
 
-	//Return integer and clear move from list
-	if (high_score_index != -1) //If move found
+	if (move_list->list[high_index].score >= CAPTURE_SCORE)
 	{
-		move_list->list[high_score_index].score = -1; //Clear score so move can't be found again
-		return move_list->list[high_score_index].move;
+		//Move high scoring move to nth position so it won't be searched again
+		MOVE_STRUCT temp;
+		Copy_Move(&move_list->list[num], &temp);
+		Copy_Move(&move_list->list[high_index], &move_list->list[num]);
+		Copy_Move(&temp, &move_list->list[high_index]);
 	}
 	else
 	{
-		return 0;
+		move_list->list[num].move = 0; //Remove next move
 	}
 }
-
-
 
 
 //Sort moves according to score using comb sort algorithm
@@ -149,11 +129,11 @@ void Add_Move(MOVE_LIST_STRUCT *move_list, int from, int to, int piece, int capt
 	move_list->list[move_list->num].move = temp;
 	
 	//Update score using killer and history heuristics
+	move_list->list[move_list->num].score = 0;//Start with zero in case other heuristics miss
 	if (score != 0) //Skip if move has an MVVLVA or promote score
 	{
 		move_list->list[move_list->num].score = score;
 	}
-
 	else if (temp == board->the_killers[board->hply][0])//if move matches first killer move
 	{
 		move_list->list[move_list->num].score = KILLER_MOVE_SCORE;
@@ -162,9 +142,16 @@ void Add_Move(MOVE_LIST_STRUCT *move_list, int from, int to, int piece, int capt
 	{
 		move_list->list[move_list->num].score = KILLER_MOVE_SCORE - 1;
 	}
-	else //If nothing else, add score of zero
+	else if (board->hply >= 2) //If killer moves from ply - 2 are available
 	{
-		move_list->list[move_list->num].score = 0;
+		if (temp == board->the_killers[board->hply - 2][0])//if move matches first killer move
+		{
+			move_list->list[move_list->num].score = KILLER_MOVE_SCORE - 2;
+		}
+		else if (temp == board->the_killers[board->hply - 2][1])//if move matches second killer move
+		{
+			move_list->list[move_list->num].score = KILLER_MOVE_SCORE - 3;
+		}
 	}
 	/*
 	else if (board->history_max > 0)//Add history score 

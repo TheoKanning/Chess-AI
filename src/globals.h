@@ -8,7 +8,7 @@
 
 /***** Global Macros *****/
 
-#define DEBUG //Define debug mode for full assert function
+//#define DEBUG //Define debug mode for full assert function
 
 #define PROGRAM_NAME "Chess-AI"
 #define AUTHOR	"Theo Kanning"
@@ -197,6 +197,7 @@ typedef struct
 
 	int material; //Material score
 	int total_material;
+
 	int middle_piece_square_score;
 	int end_piece_square_score;
 
@@ -291,9 +292,9 @@ extern int In_Check(int side, BOARD_STRUCT *board);
 //movelist
 extern void Sort_Moves(MOVE_LIST_STRUCT *move_list);
 extern void Copy_Move(MOVE_STRUCT *move1, MOVE_STRUCT *move2);
-extern int Get_Capture_Moves(MOVE_LIST_STRUCT *move_list);
-extern int Get_Next_Move(MOVE_LIST_STRUCT *move_list, int* score_ptr);
-extern int Get_Next_Capture_Move(MOVE_LIST_STRUCT *move_list);
+extern int Get_Capture_Moves(MOVE_LIST_STRUCT *move_list); 
+extern void Get_Next_Move(int num, MOVE_LIST_STRUCT *move_list); 
+extern void Get_Next_Capture_Move(int num, MOVE_LIST_STRUCT *move_list);
 extern void Add_Move(MOVE_LIST_STRUCT *move_list, int from, int to, int piece, int capture, int special, int score, BOARD_STRUCT *board);
 extern void Print_Move_List(MOVE_LIST_STRUCT *move_list);
 

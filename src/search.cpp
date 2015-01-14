@@ -229,7 +229,10 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 
 	for (move = 0; move < move_list.num; move++) //For all moves in list
 	{
-		current_move = Get_Next_Move(&move_list, &current_move_score);
+		/***** Get best move *****/
+		Get_Next_Move(move, &move_list);//Moves next move into move_index position
+		current_move = move_list.list[move].move;
+		current_move_score = move_list.list[move].score;
 
 		if (current_move == 0) break;
 
@@ -345,7 +348,8 @@ int Quiescent_Search(int alpha, int beta, BOARD_STRUCT *board, SEARCH_INFO_STRUC
 
 	for (move = 0; move < move_list.num; move++) //For all moves in list
 	{
-		next_move = Get_Next_Capture_Move(&move_list);
+		Get_Next_Capture_Move(move, &move_list);
+		next_move = move_list.list[move].move;
 
 		if (next_move == 0) break; 
 
@@ -381,7 +385,6 @@ int Get_Time_Ms(void)
 int Draw_Error_Found(int move, BOARD_STRUCT *board)
 {
 	int count, next_move;
-	int null_ptr;
 	int draw = 0;
 	MOVE_LIST_STRUCT move_list;
 	HASH_ENTRY_STRUCT hash_entry;
@@ -412,7 +415,9 @@ int Draw_Error_Found(int move, BOARD_STRUCT *board)
 
 	while( count < move_list.num && !draw)
 	{
-		next_move = Get_Next_Move(&move_list, &null_ptr);
+		Get_Next_Move(count, &move_list);
+		next_move = move_list.list[count].move;
+
 		if (Make_Move(next_move, board))
 		{
 
