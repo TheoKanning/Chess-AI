@@ -47,8 +47,8 @@ int Search_Position(BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info)
 			break;
 		}
 
+		/***** Get PV Line *****/
 		Get_PV_Line(currentDepth, &pv_list, board);
-
 		if (pv_list.list[0].move != 0) Copy_Move(&pv_list.list[0], &best_move); //Store best move found
 
 		//Print search info
@@ -167,16 +167,17 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 	}
 
 	/***** Check hash table *****/
-	
 	int value = Get_Hash_Entry(board->hash_key, alpha, beta, depth, &hash_entry.move);
-	if (value != INVALID)
+	if (value != INVALID) 
 	{
-		if (!is_pv || (value > alpha && value < beta))
+		if (!is_pv || (value > alpha && value < beta)) //Only return exact values in pv line
 		{
-			if (depth < 3 || !Draw_Error_Found(hash_entry.move, board))
+			if (depth < 3 || !Draw_Error_Found(hash_entry.move, board)) //Search for draw errors if searching higher depths
 			{
 				info->hash_hits++;
-				return value;
+				//Adjust mate score for ply
+				if (IS_MATE(value)) return ADJUST_MATE_SCORE(value, board->hply);
+				return value; 
 			}
 		}
 	}
@@ -204,9 +205,9 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 		current_move = move_list.list[move].move;
 		current_move_score = move_list.list[move].score;
 
-		if (current_move == 0) break;
+		if (current_move == 0) break; //End if no moves are available
 
-		if (!Make_Move(current_move, board)) continue;//If move is unsuccessful
+		if (!Make_Move(current_move, board)) continue;//If move is unsuccessful, try next move
 
 		mate = 0; //A move has been made
 

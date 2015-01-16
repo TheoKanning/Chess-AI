@@ -35,6 +35,8 @@
 #define INF							100000 //Large enough number to be infinite
 #define INVALID						1000001 //Larger than infinity, always out of bounds
 #define MATE_SCORE					10000
+#define IS_MATE(x)					(abs(x) >= MATE_SCORE - MAX_SEARCH_DEPTH)
+#define ADJUST_MATE_SCORE(score,ply)		((score < 0) ? -MATE_SCORE + ply : MATE_SCORE -ply)
 
 #define START_FEN		"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 
