@@ -15,4 +15,9 @@ Version Notes:
 	 - In check extension for depth > 0
 	 - Moved hash logic out of alpha beta
 	 - Added ply adjustment for mate scores
+	 - Check for hash draw error in all pv nodes
+	 - Fixed hash probe bug
+
+
+
 

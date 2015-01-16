@@ -113,6 +113,10 @@ int Get_Hash_Entry(U64 hash, int alpha, int beta, int depth, int * hash_move)
 			}
 		}
 	}
+	else //keys do not match
+	{
+		*hash_move = 0; //Reset move
+	}
 
 	return INVALID;
 }

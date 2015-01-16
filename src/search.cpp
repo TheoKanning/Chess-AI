@@ -172,7 +172,7 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 	{
 		if (!is_pv || (value > alpha && value < beta)) //Only return exact values in pv line
 		{
-			if (depth < 3 || !Draw_Error_Found(hash_entry.move, board)) //Search for draw errors if searching higher depths
+			if ((!is_pv && depth < 3) || !Draw_Error_Found(hash_entry.move, board)) //Search for draw errors if searching higher depths, or if in pv line
 			{
 				info->hash_hits++;
 				//Adjust mate score for ply
