@@ -18,7 +18,7 @@ void Get_PV_Line(int depth, PV_LIST_STRUCT *pv_list, BOARD_STRUCT *board)
 	int move = hash_entry.move;
 	int count = 0;
 
-	while ((move != 0) && (hash_entry.flag != HASH_EMPTY) && (count < depth)) {
+	while ((move != 0) && (count < depth)) {
 
 		ASSERT(count < MAX_SEARCH_DEPTH);
 

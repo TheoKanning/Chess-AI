@@ -8,7 +8,7 @@
 
 /***** Global Macros *****/
 
-#define DEBUG //Define debug mode for full assert function
+//#define DEBUG //Define debug mode for full assert function
 
 #define PROGRAM_NAME "Chess-AI"
 #define AUTHOR	"Theo Kanning"
