@@ -35,6 +35,7 @@
 #define GET_PIECE(x)			((x >> pieceShift) & pieceMask)
 #define GET_CAPTURE(x)			((x >> captureShift) & captureMask)
 #define GET_SPECIAL(x)			((x >> specialShift) & specialMask)
+#define IS_CAPTURE(x)			(GET_CAPTURE(x) != 0)
 #define IS_NOT_SPECIAL(x)		(GET_SPECIAL(x) == NOT_SPECIAL)
 #define IS_EP_CAPTURE(x)		(GET_SPECIAL(x) == EP_CAPTURE)
 #define IS_KING_CASTLE(x)		(GET_SPECIAL(x) == KING_CASTLE)
@@ -68,6 +69,7 @@
 #define KILLER_MOVE_SCORE		300
 #define HISTORY_SCORE_MAX		100
 #define GET_MMVLVA_SCORE(x,y)	(CAPTURE_SCORE + MMV_SCORES[x] + LVA_SCORES[y])
+#define IS_KILLER(score)		(score > KILLER_MOVE_SCORE - 4 && score <= KILLER_MOVE_SCORE)
 
 const int MMV_SCORES[13] = { 0, 10, 20, 20, 30, 40, 50, 10, 20, 20, 30, 40, 50 }; //MVV Scores are multiples of ten
 const int LVA_SCORES[13] = { 0, 5, 4, 4, 3, 2, 1, 5, 4, 4, 3, 2, 1 }; //LVA Scores are less important

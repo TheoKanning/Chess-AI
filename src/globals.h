@@ -12,7 +12,7 @@
 
 #define PROGRAM_NAME "Chess-AI"
 #define AUTHOR	"Theo Kanning"
-#define VERSION_NO	1.24
+#define VERSION_NO	1.26
 
 #ifndef DEBUG
         #define ASSERT(x)
@@ -71,11 +71,14 @@
 #define IS_QUEEN(x)					((x == wQ) || (x == bQ))
 #define IS_KING(x)					((x == wK) || (x == bK))
 
+//Late move reduction macros
+#define CAN_REDUCE(move)			(!IS_CAPTURE(move) && !IS_PROMOTION(move)) //Returns 1 if move is not a promotion or capture
+#define REDUCTION_LIMIT				3 //Minimum depth to consider reductions
+#define LATE_MOVE_NUM				5 //First move number to consider reducing, 6th move = 5
+#define LATE_MOVE_REDUCTION			1 //Number of ply to shorten late move searches
 
 /***** Global structures and typedefs *****/
-
 typedef unsigned long long U64; //64 bit integer
-
 
 enum PIECE_NAME_ENUM
 {
@@ -283,6 +286,7 @@ extern int Make_Move(int move_num, BOARD_STRUCT *board);
 extern void Take_Move(BOARD_STRUCT *board);
 extern int Make_Null_Move(BOARD_STRUCT *board);
 extern void Take_Null_Move(BOARD_STRUCT *board);
+extern int Is_Checking_Move(int move_num, BOARD_STRUCT *board);
 extern void Print_Move(MOVE_STRUCT *move);
 extern char* UCI_Move_String(MOVE_STRUCT *move);
 

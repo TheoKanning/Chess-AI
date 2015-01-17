@@ -183,7 +183,11 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 	}
 	
 	/***** Null Move *****/
-	if (depth >= 4 && info->null_available && !is_pv && board->hply && !in_check && board->total_material >= 2000)
+	if (depth >= 4 
+	&& info->null_available 
+	&& !is_pv && board->hply 
+	&& !in_check 
+	&& board->total_material >= 2000)
 	{
 		info->null_available = 0;
 		Make_Null_Move(board);
@@ -212,20 +216,41 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 		mate = 0; //A move has been made
 
 		/***** Principal Variation Search *****/
-		if (move != 0) //If not first move
-		{
-			score = -Alpha_Beta(-alpha - 1, -alpha, depth - 1, NOT_PV, board, info); //Null window search
-
-			//If move improves alpha but does not cause a cutoff, and if not in a null search already
-			if (alpha < score && beta > score && (beta - alpha > 1)) 
-			{
-				score = -Alpha_Beta(-beta, -alpha, depth - 1, NOT_PV, board, info);
-			}
-		}
-		else //If first move, use full window
+		if (move == 0) //If first move, use full window
 		{
 			score = -Alpha_Beta(-beta, -alpha, depth - 1, (is_pv && (move == 0)), board, info);
 		}
+		else //If not first move
+		{
+			/***** Late move reduction *****/
+			/* Does a reduced search if the move is eligible, otherwise goes straight into PVS search */
+			/* Moves that raise alpha are re-searched in PVS */
+			if (move >= LATE_MOVE_NUM 
+			&& !in_check 
+			&& CAN_REDUCE(current_move) 
+			&& depth >= REDUCTION_LIMIT
+			&& !IS_KILLER(move_list.list[move].score)
+			&& !In_Check(board->side, board))
+			{
+				score = -Alpha_Beta(-alpha - 1, -alpha, depth - 1 - LATE_MOVE_REDUCTION, NOT_PV, board, info); //Null window search
+			}
+			else
+			{
+				score = alpha + 1; //Set score above alpha to automatically trigger PVS next
+			}
+
+			if (score > alpha) //Continue with PVS search
+			{
+				score = -Alpha_Beta(-alpha - 1, -alpha, depth - 1, NOT_PV, board, info); //Null window search
+
+				//If move improves alpha but does not cause a cutoff, and if not in a null search already
+				if (alpha < score && beta > score && (beta - alpha > 1))
+				{
+					score = -Alpha_Beta(-beta, -alpha, depth - 1, NOT_PV, board, info);
+				}
+			}
+		}
+		
 
 		Take_Move(board);
 

@@ -681,6 +681,21 @@ void Add_Piece(int piece, int index120, BOARD_STRUCT *board)
 	}
 }
 
+//Returns 1 if the move generates check
+int Is_Checking_Move(int move_num, BOARD_STRUCT *board)
+{
+	int in_check = 0;
+	//Make move, see if in check, take move
+	if(!Make_Move(move_num, board)) return 0;
+
+	in_check = In_Check(board->side, board);
+
+	Take_Move(board);
+
+	return in_check;
+
+}
+
 //Prints individual move without score data
 void Print_Move(MOVE_STRUCT *move)
 {
