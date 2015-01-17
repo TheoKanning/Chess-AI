@@ -48,6 +48,12 @@ int Make_Move(int move_num, BOARD_STRUCT *board)
 	capture = GET_CAPTURE(move_num);
 	side = board->side;
 
+	if (!((!side && IS_WHITE_PIECE(piece)) || (side && IS_BLACK_PIECE(piece))))
+	{
+		int x = 1;
+	}
+
+	ASSERT((!side && IS_WHITE_PIECE(piece)) || (side && IS_BLACK_PIECE(piece)));
 	ASSERT(ON_BOARD_120(from120));
 	ASSERT(ON_BOARD_120(to120));
 	ASSERT((EMPTY < piece) && (piece <= bK));

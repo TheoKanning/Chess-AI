@@ -15,7 +15,14 @@ Version Notes:
 	 - In check extension for depth > 0
 	 - Moved hash logic out of alpha beta
 	 - Added ply adjustment for mate scores
+	 - Check for hash draw error in all pv nodes
+	 - Fixed hash probe bug
 1.25 - Changed time margin for ending
-1.25a - Removed draw detection
-1.26 - Late move reduction, reduce depth by 1 
+     - Removed draw detection
+     - Late move reduction, reduce depth by 1 
+	 
+
+
+
+>>>>>>> origin/develop
 

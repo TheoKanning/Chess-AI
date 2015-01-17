@@ -52,8 +52,19 @@ int Search_Position(BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info)
 		if (pv_list.list[0].move != 0) Copy_Move(&pv_list.list[0], &best_move); //Store best move found
 
 		//Print search info
-			printf("info score cp %d depth %d nodes %ld time %d nps %d ",
-				score, currentDepth, info->nodes, Get_Time_Ms() - info->start_time, (int)(info->nodes / ((Get_Time_Ms() - depth_start_time + 1) / 1000.0)));
+		printf("info ");
+		if (IS_MATE(score))
+		{
+			printf("score mate %d", (score > 0) ? MATE_SCORE - score: -MATE_SCORE - score);
+		}
+		else
+		{
+			printf("score cp %d", score);
+		}
+		
+		//Remaining info
+			printf(" depth %d nodes %ld time %d nps %d ",
+				currentDepth, info->nodes, Get_Time_Ms() - info->start_time, (int)(info->nodes / ((Get_Time_Ms() - depth_start_time + 1) / 1000.0)));
 		
 		//Print branching factor
 		if (previous_node_count != 0)
@@ -172,7 +183,7 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 	{
 		if (!is_pv || (value > alpha && value < beta)) //Only return exact values in pv line
 		{
-			if (depth < 3 || !Draw_Error_Found(hash_entry.move, board)) //Search for draw errors if searching higher depths
+			if ((!is_pv && depth < 3) || !Draw_Error_Found(hash_entry.move, board)) //Search for draw errors if searching higher depths, or if in pv line
 			{
 				info->hash_hits++;
 				//Adjust mate score for ply
