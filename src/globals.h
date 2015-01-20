@@ -202,6 +202,8 @@ typedef struct
 	int piece_list120[13][10]; //[Piece][instance] contains index of pieces on board, empty cells are 0, which is off the 120 board
 
 	int material; //Material score
+	int white_material;
+	int black_material;
 	int total_material;
 
 	int middle_piece_square_score;
@@ -262,6 +264,7 @@ extern int Evaluate_Board(BOARD_STRUCT *board);
 extern int Get_Board_Piece_Square_Score(BOARD_STRUCT *board);
 extern int Get_Piece_Square_Score(int index64, int piece, float phase);
 extern int Get_Pawn_Eval_Score(BOARD_STRUCT *board);
+extern int Get_King_Safety_Score(BOARD_STRUCT *board);
 extern void Init_Pawn_Masks(void);
 
 //hashkeys
@@ -323,9 +326,17 @@ extern int Search_Position(BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info);
 extern int Get_Time_Ms(void);
 extern int Draw_Error_Found(int move, BOARD_STRUCT *board);
 
+//tuning
+extern int king_end_piece_square_tuning_values[8];
+extern int pawn_end_piece_square_tuning_values[8];
+extern void Set_King_End_Values(void);
+extern void Set_Pawn_End_Values(void);
+
 //uci
 extern void Parse_Go(char* line, SEARCH_INFO_STRUCT *info, BOARD_STRUCT *board);
 extern void Parse_Position(char* lineIn, BOARD_STRUCT *board);
 extern int Parse_Move(char *ptrChar, BOARD_STRUCT *board);
 extern void Uci_Loop(BOARD_STRUCT *pos, SEARCH_INFO_STRUCT *info);
+
+
 

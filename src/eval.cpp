@@ -11,6 +11,8 @@
 #define ISOLATED_PAWN_SCORE	-15
 #define DOUBLED_PAWN_SCORE 5 //This is counted once for each pawn
 
+#define PAWN_SHIELD_SCORE 10 //Score for each pawn in front of the king
+
 //Pawn evaluation masks
 U64 white_passed_masks[64];
 U64 black_passed_masks[64];
@@ -23,6 +25,7 @@ int Evaluate_Board(BOARD_STRUCT *board)
 
 	//Material score
 	score = board->material;
+	ASSERT(score == board->white_material - board->black_material);
 
 	//Piece square table score
 	score += Get_Board_Piece_Square_Score(board);
@@ -30,9 +33,11 @@ int Evaluate_Board(BOARD_STRUCT *board)
 	//Pawn structure score
 	score += Get_Pawn_Eval_Score(board);
 
+	//King Safety
+	score += Get_King_Safety_Score(board);
+
 	//Copy into board
 	board->eval_score = score;
-
 
 	if (board->side == WHITE)
 	{
@@ -63,6 +68,10 @@ int Get_Board_Piece_Square_Score(BOARD_STRUCT *board)
 		phase = 1 - ((float)(board->total_material - ENDGAME_MATERIAL)) / (START_MATERIAL - ENDGAME_MATERIAL);
 	}
 
+	return (int)((1 - phase)*board->middle_piece_square_score + phase*board->end_piece_square_score);
+
+	int mid = 0, end = 0;
+
 	//Loop through every square and add the approriate score
 	for (piece = wP; piece <= bK; piece++)
 	{
@@ -70,17 +79,12 @@ int Get_Board_Piece_Square_Score(BOARD_STRUCT *board)
 		{
 			index64 = SQUARE_120_TO_64(board->piece_list120[piece][piece_num]);
 			score += Get_Piece_Square_Score(index64, piece, phase);
+			mid += (IS_WHITE_PIECE(piece) ? 1 : -1) * middle_piece_square_tables[piece][index64];
+			end += (IS_WHITE_PIECE(piece) ? 1 : -1) * end_piece_square_tables[piece][index64];
 		}
 	}
-	/*
-	for (index64 = 0; index64 < 64; index64++)
-	{
-		piece = board->board_array64[index64];
-
-		if (piece != EMPTY) score += Get_Piece_Square_Score(index64, piece, phase, board);
-	}
-	*/
-
+	ASSERT(board->middle_piece_square_score == mid);
+	ASSERT(board->end_piece_square_score == end);
 
 	return score;
 }
@@ -219,5 +223,67 @@ void Init_Pawn_Masks(void)
 			}
 		}
 	}
+
+}
+
+//Looks at pawn shielding around each king and returns white - black score
+int Get_King_Safety_Score(BOARD_STRUCT *board)
+{
+	int white_score = 0;
+	int black_score = 0;
+
+	int white_king_square = board->piece_list120[wK][0];
+	int black_king_square = board->piece_list120[bK][0];
+
+	//White king on kingside
+	if (GET_FILE_120(white_king_square) > FILE_E && GET_RANK_120(white_king_square) == RANK_1) {
+
+		if (board->board_array120[F2] == wP)  white_score += PAWN_SHIELD_SCORE;
+		else if (board->board_array120[F3] == wP)  white_score += PAWN_SHIELD_SCORE / 2;
+
+		if (board->board_array120[G2] == wP)  white_score += PAWN_SHIELD_SCORE;
+		else if (board->board_array120[G3] == wP)  white_score += PAWN_SHIELD_SCORE / 2;
+
+		if (board->board_array120[H2] == wP)  white_score += PAWN_SHIELD_SCORE;
+		else if (board->board_array120[H3] == wP)  white_score += PAWN_SHIELD_SCORE / 2;
+	}
+	else if (GET_FILE_120(white_king_square) < FILE_D && GET_RANK_120(white_king_square) == RANK_1) {
+
+		if (board->board_array120[A2] == wP)  white_score += PAWN_SHIELD_SCORE;
+		else if (board->board_array120[A3] == wP)  white_score += PAWN_SHIELD_SCORE / 2;
+
+		if (board->board_array120[B2] == wP)  white_score += PAWN_SHIELD_SCORE;
+		else if (board->board_array120[B3] == wP)  white_score += PAWN_SHIELD_SCORE / 2;
+
+		if (board->board_array120[C2] == wP)  white_score += PAWN_SHIELD_SCORE;
+		else if (board->board_array120[C3] == wP)  white_score += PAWN_SHIELD_SCORE / 2;
+	}
+	
+
+	//Black king on kingside
+	if (GET_FILE_120(black_king_square) > FILE_E && GET_RANK_120(black_king_square) == RANK_8) {
+
+		if (board->board_array120[F7] == bP)  black_score += PAWN_SHIELD_SCORE;
+		else if (board->board_array120[F6] == bP)  black_score += PAWN_SHIELD_SCORE / 2;
+
+		if (board->board_array120[G7] == bP)  black_score += PAWN_SHIELD_SCORE;
+		else if (board->board_array120[G6] == bP)  black_score += PAWN_SHIELD_SCORE / 2;
+
+		if (board->board_array120[H7] == bP)  black_score += PAWN_SHIELD_SCORE;
+		else if (board->board_array120[H6] == bP)  black_score += PAWN_SHIELD_SCORE / 2;
+	}
+	else if (GET_FILE_120(black_king_square) < FILE_D && GET_RANK_120(black_king_square) == RANK_8) {
+
+		if (board->board_array120[A7] == bP)  black_score += PAWN_SHIELD_SCORE;
+		else if (board->board_array120[A6] == bP)  black_score += PAWN_SHIELD_SCORE / 2;
+
+		if (board->board_array120[B7] == bP)  black_score += PAWN_SHIELD_SCORE;
+		else if (board->board_array120[B6] == bP)  black_score += PAWN_SHIELD_SCORE / 2;
+
+		if (board->board_array120[C7] == bP)  black_score += PAWN_SHIELD_SCORE;
+		else if (board->board_array120[C6] == bP)  black_score += PAWN_SHIELD_SCORE / 2;
+	}
+
+	return white_score - black_score;
 
 }

@@ -81,11 +81,10 @@ int Search_Position(BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info)
 		//End if time is one third gone because next depth is unlikely to finish
 		if ((Get_Time_Ms() - info->start_time) >= ((info->stop_time - info->start_time) / 3.0)) info->stopped = 1;
 
-
+		if (IS_MATE(score) && (currentDepth == ((score > 0) ? MATE_SCORE - score : MATE_SCORE + score))) break; //End search if mate found
 		
 	}
 
-	
 	printf("bestmove %s\n", UCI_Move_String(&best_move));
 	
 	info->age++;
@@ -142,6 +141,7 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 	int best_move = 0;
 	int score = -INF; //Set in case no moves are available
 	int mate = 1; //If no legal moves are found
+	int f_prune_allowed = 0; //If futility pruning is allowed at this node
 	MOVE_LIST_STRUCT move_list;
 	int current_move;
 	int current_move_score;
@@ -151,9 +151,9 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 
 	info->nodes++;
 	//Check for timeout
-	if ((info->nodes % 5000) == 0) //every 5000 nodes
+	if ((info->nodes & 4096) == 0) //every 5000 nodes
 	{
-		if (Get_Time_Ms() > info->stop_time - 50)
+		if (Get_Time_Ms() > info->stop_time - 20) //Could be reduced to 10 ms
 		{
 			info->stopped = 1;
 			return 0;
@@ -174,7 +174,7 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 	//If at depth 0, extend if in check, start quiescent search if not
 	if (depth <= 0)
 	{
-			return Quiescent_Search(alpha, beta, board, info);
+		return Quiescent_Search(alpha, beta, board, info);
 	}
 
 	/***** Check hash table *****/
@@ -183,7 +183,7 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 	{
 		if (!is_pv || (value > alpha && value < beta)) //Only return exact values in pv line
 		{
-			if ((!is_pv && depth < 3) || !Draw_Error_Found(hash_entry.move, board)) //Search for draw errors if searching higher depths, or if in pv line
+			if ((!is_pv && board->hply > 2) || !Draw_Error_Found(hash_entry.move, board)) //Search for draw errors if searching higher depths, or if in pv line
 			{
 				info->hash_hits++;
 				//Adjust mate score for ply
@@ -196,7 +196,8 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 	/***** Null Move *****/
 	if (depth >= 4 
 	&& info->null_available 
-	&& !is_pv && board->hply 
+	&& !is_pv 
+	&& board->hply 
 	&& !in_check 
 	&& board->total_material >= 2000)
 	{
@@ -208,6 +209,17 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 
 		if (score >= beta) return score;
 	}
+
+	/***** Futility Pruning *****/
+	/* Here we determine if this node is elegible for futility pruning */
+	int fmargin[4] = { 0, 300, 500, 900 };
+
+	if (depth <= 2
+		&& !is_pv
+		&& !in_check
+		&& abs(alpha) < 9000 //Not searching for a mate
+		&& Evaluate_Board(board) + fmargin[depth] <= alpha)
+		f_prune_allowed = 1;
 
 	/***** Move generation and sorting *****/
 	Generate_Moves(board, &move_list);
@@ -226,10 +238,23 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 
 		mate = 0; //A move has been made
 
+		//See if current move leads to check, important for pruning and reductions
+		int checking_move = In_Check(board->side, board);
+
+		/***** Futility Pruning *****/
+		if (f_prune_allowed
+			&&  !IS_CAPTURE(current_move)
+			&& !IS_PROMOTION(current_move)
+			&& !checking_move) {
+			Take_Move(board);
+			continue;
+		}
+
+
 		/***** Principal Variation Search *****/
 		if (move == 0) //If first move, use full window
 		{
-			score = -Alpha_Beta(-beta, -alpha, depth - 1, (is_pv && (move == 0)), board, info);
+			score = -Alpha_Beta(-beta, -alpha, depth - 1, is_pv, board, info);
 		}
 		else //If not first move
 		{
@@ -241,7 +266,7 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 			&& CAN_REDUCE(current_move) 
 			&& depth >= REDUCTION_LIMIT
 			&& !IS_KILLER(move_list.list[move].score)
-			&& !In_Check(board->side, board))
+			&& !checking_move)
 			{
 				score = -Alpha_Beta(-alpha - 1, -alpha, depth - 1 - LATE_MOVE_REDUCTION, NOT_PV, board, info); //Null window search
 			}
@@ -257,7 +282,7 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 				//If move improves alpha but does not cause a cutoff, and if not in a null search already
 				if (alpha < score && beta > score && (beta - alpha > 1))
 				{
-					score = -Alpha_Beta(-beta, -alpha, depth - 1, NOT_PV, board, info);
+					score = -Alpha_Beta(-beta, -alpha, depth - 1, is_pv, board, info);
 				}
 			}
 		}
@@ -306,8 +331,15 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 	{
 		if (in_check)
 		{
-			return -MATE_SCORE + board->hply; //Losing checkmate
+			best_score = -MATE_SCORE + board->hply;
+			//Store in table
+			Fill_Hash_Entry(info->age, depth, best_score, HASH_EXACT, board->hash_key, 0, &hash_entry);
+			Add_Hash_Entry(&hash_entry, info);
+			return best_score; //Losing checkmate
 		}
+		//Store in table
+		Fill_Hash_Entry(info->age, depth, 0, HASH_EXACT, board->hash_key, 0, &hash_entry);
+		Add_Hash_Entry(&hash_entry, info);
 		return 0; //Draw
 	}
 
@@ -399,9 +431,9 @@ int Draw_Error_Found(int move, BOARD_STRUCT *board)
 	U64 hash = board->hash_key;
 
 	//Make hash move
-	Make_Move(move, board);
+	if (!Make_Move(move, board)) return 0;
 	//Check first ply
-
+	
 	if (board->move_counter >= 100 || Is_Threefold_Repetition(board))
 	{
 		Take_Move(board);
@@ -415,7 +447,6 @@ int Draw_Error_Found(int move, BOARD_STRUCT *board)
 	//Find hash move
 	Get_Hash_Entry(board->hash_key, 0, 0, 0, &hash_entry.move);
 	Find_PV_Move(hash_entry.move, &move_list);
-	Find_Killer_Moves(&move_list, board);
 
 	//Search all moves in sorted order, return 1 if draw is found
 	count = 0;
@@ -427,11 +458,17 @@ int Draw_Error_Found(int move, BOARD_STRUCT *board)
 
 		if (Make_Move(next_move, board))
 		{
-
 			if (board->move_counter >= 100 || Is_Threefold_Repetition(board))
 			{
 				draw = 1;
 			}
+			
+			if (board->hply != (ply + 2))
+			{
+				printf("board->hply: %d, ply %d\n\r", board->hply, ply);
+			}
+
+			ASSERT(board->hply == (ply + 2));
 
 			Take_Move(board);
 		}

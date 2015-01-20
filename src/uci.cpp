@@ -163,15 +163,25 @@ void Uci_Loop(BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info) {
 			//DebugAnalysisTest(debug, info);
 			break;
 		}
-		/*
-		else if (!strncmp(line, "setoption name Hash value ", 26)) {
-			sscanf_s(line, "%*s %*s %*s %*s %d", &MB);
-			if (MB < 4) MB = 4;
-			if (MB > 2048) MB = 2048;
-			printf("Set Hash to %d MB\n", MB);
-			InitHashTable(pos->HashTable, MB);
+		else if (!strncmp(line, "setoption name keps", 18)) { 
+						
+			int value = 0;
+			int index = line[19] - '0';
+			sscanf_s(line, "%*s %*s %*s %*s %d", &value);
+			printf("Set keps%d to %d\n", index, value);
+			king_end_piece_square_tuning_values[index] = value;
+			Set_King_End_Values();
 		}
-		*/
+		else if (!strncmp(line, "setoption name peps", 18)) {
+
+			int value = 0;
+			int index = line[19] - '0';
+			sscanf_s(line, "%*s %*s %*s %*s %d", &value);
+			printf("Set keps%d to %d\n", index, value);
+			pawn_end_piece_square_tuning_values[index] = value;
+			Set_Pawn_End_Values();
+		}
+		
 		if (info->quit) break;
 	}
 }

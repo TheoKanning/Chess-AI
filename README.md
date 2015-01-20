@@ -18,11 +18,11 @@ Version Notes:
 	 - Check for hash draw error in all pv nodes
 	 - Fixed hash probe bug
 1.25 - Changed time margin for ending
-     - Removed draw detection
-     - Late move reduction, reduce depth by 1 
-	 
-
-
-
->>>>>>> origin/develop
-
+     - Late move reduction, reduce depth by 1
+1.26 - Futility pruning at pre-frontier nodes (depth = 2)
+	 - PVS researches are pv nodes 
+	 - Uses incremental piece square tables
+	 - Basic king safety pawn shield
+	 - Store mate scores in table
+	 - Options for endgame piece square tables
+	

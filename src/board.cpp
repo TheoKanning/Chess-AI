@@ -291,12 +291,14 @@ void Add_To_Piecelists(int piece, int index120, BOARD_STRUCT *board)
 	if (IS_WHITE_PIECE(piece))
 	{
 		board->material += piece_values[piece];
+		board->white_material += piece_values[piece];
 		board->middle_piece_square_score += middle_piece_square_tables[piece][SQUARE_120_TO_64(index120)];
 		board->end_piece_square_score += end_piece_square_tables[piece][SQUARE_120_TO_64(index120)];
 	}
 	if (IS_BLACK_PIECE(piece))
 	{
 		board->material -= piece_values[piece];
+		board->black_material += piece_values[piece];
 		board->middle_piece_square_score -= middle_piece_square_tables[piece][SQUARE_120_TO_64(index120)];
 		board->end_piece_square_score -= end_piece_square_tables[piece][SQUARE_120_TO_64(index120)];
 	}
@@ -333,12 +335,14 @@ void Remove_From_Piecelists(int piece, int index120, BOARD_STRUCT *board)
 	if (IS_WHITE_PIECE(piece))
 	{
 		board->material -= piece_values[piece];
+		board->white_material -= piece_values[piece];
 		board->middle_piece_square_score -= middle_piece_square_tables[piece][SQUARE_120_TO_64(index120)];
 		board->end_piece_square_score -= end_piece_square_tables[piece][SQUARE_120_TO_64(index120)];
 	}
 	if (IS_BLACK_PIECE(piece))
 	{
 		board->material += piece_values[piece];
+		board->black_material -= piece_values[piece];
 		board->middle_piece_square_score += middle_piece_square_tables[piece][SQUARE_120_TO_64(index120)];
 		board->end_piece_square_score += end_piece_square_tables[piece][SQUARE_120_TO_64(index120)];
 	}
@@ -353,6 +357,8 @@ void Update_Piece_Lists(BOARD_STRUCT *board)
 
 	//Reset material and piece square count to 0
 	board->material = 0;
+	board->white_material = 0;
+	board->black_material = 0;
 	board->total_material = 0;
 	board->end_piece_square_score = 0;
 	board->middle_piece_square_score = 0;
@@ -379,12 +385,14 @@ void Update_Piece_Lists(BOARD_STRUCT *board)
 			if (IS_WHITE_PIECE(piece))
 			{
 				board->material += piece_values[piece];
+				board->white_material += piece_values[piece];
 				board->middle_piece_square_score += middle_piece_square_tables[piece][index];
 				board->end_piece_square_score += end_piece_square_tables[piece][index];
 			}
 			if (IS_BLACK_PIECE(piece))
 			{
 				board->material -= piece_values[piece];
+				board->black_material += piece_values[piece];
 				board->middle_piece_square_score -= middle_piece_square_tables[piece][index];
 				board->end_piece_square_score -= end_piece_square_tables[piece][index];
 			}
@@ -392,7 +400,6 @@ void Update_Piece_Lists(BOARD_STRUCT *board)
 		}
 	}
 }
-
 
 //Fills pawn bitboards using board_array64
 void Update_Bitboards(BOARD_STRUCT *board)
@@ -497,6 +504,8 @@ void Check_Board(BOARD_STRUCT *board)
 {
 	int index64, index120, piece, i, j;
 	int material_temp = 0;
+	int white_material_temp = 0;
+	int black_material_temp = 0;
 	int total_material_temp = 0;
 	int middle_piece_square_temp = 0;
 	int end_piece_square_temp = 0;
@@ -535,12 +544,14 @@ void Check_Board(BOARD_STRUCT *board)
 		if (IS_WHITE_PIECE(piece))
 		{
 			material_temp += piece_values[piece];
+			white_material_temp += piece_values[piece];
 			middle_piece_square_temp += middle_piece_square_tables[piece][index64];
 			end_piece_square_temp += end_piece_square_tables[piece][index64];
 		}
 		if (IS_BLACK_PIECE(piece))
 		{
 			material_temp -= piece_values[piece];
+			black_material_temp += piece_values[piece];
 			middle_piece_square_temp -= middle_piece_square_tables[piece][index64];
 			end_piece_square_temp -= end_piece_square_tables[piece][index64];
 		}
@@ -588,6 +599,8 @@ void Check_Board(BOARD_STRUCT *board)
 	/***** Material Score *****/
 	ASSERT(material_temp == board->material);
 	ASSERT(total_material_temp == board->total_material);
+	ASSERT(white_material_temp == board->white_material);
+	ASSERT(black_material_temp == board->black_material);
 
 	/***** Piece Square Score *****/
 	ASSERT(middle_piece_square_temp == board->middle_piece_square_score);
