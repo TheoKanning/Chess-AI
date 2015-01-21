@@ -29,6 +29,7 @@ int main()
 	Init_Hashkeys();
 	Init_Hash_Table();
 	Init_Pawn_Masks();
+	Set_King_End_Values();
 	Init_Board(&board);
 	char line[256];
 	
@@ -55,7 +56,7 @@ int main()
 			break;
 		}
 	}
-
+	/*
 	Parse_Position(ILLEGAL_MOVE_FEN2, &board);
 	Print_Board(&board);
 	info.stop_time = 1000000;
@@ -94,4 +95,5 @@ int main()
 	
 	
 	system("PAUSE");
+	*/
 }
