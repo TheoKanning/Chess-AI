@@ -139,7 +139,7 @@ int Get_Pawn_Eval_Score(BOARD_STRUCT *board)
 		sq64 = SQUARE_120_TO_64(board->piece_list120[wP][index]); //pawn location in 64 square array
 
 		//if no black pawns in passed mask area
-		if ((board->pawn_bitboards[BLACK] & white_passed_masks[sq64]) == 0) score += PASSED_PAWN_SCORE;
+		if ((board->pawn_bitboards[BLACK] & white_passed_masks[sq64]) == 0) score += PASSED_PAWN_SCORE + passed_pawn_rank_bonus[GET_RANK_64(sq64)];
 
 		//if no white pawns in isolated mask area
 		if ((board->pawn_bitboards[WHITE] & isolated_masks[sq64]) == 0) score += ISOLATED_PAWN_SCORE;
@@ -156,7 +156,7 @@ int Get_Pawn_Eval_Score(BOARD_STRUCT *board)
 		sq64 = SQUARE_120_TO_64(board->piece_list120[bP][index]); //pawn location in 64 square array
 
 		//if no white pawns in passed mask area
-		if ((board->pawn_bitboards[WHITE] & black_passed_masks[sq64]) == 0) score -= PASSED_PAWN_SCORE;
+		if ((board->pawn_bitboards[WHITE] & black_passed_masks[sq64]) == 0) score -= PASSED_PAWN_SCORE - passed_pawn_rank_bonus[RANK_8- GET_RANK_64(sq64)];
 
 		//if no black pawns in isolated mask area
 		if ((board->pawn_bitboards[BLACK] & isolated_masks[sq64]) == 0) score -= ISOLATED_PAWN_SCORE;

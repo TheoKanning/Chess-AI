@@ -271,9 +271,9 @@ extern void Init_Pawn_Masks(void);
 extern void Init_Hashkeys(void);
 extern void Init_Hash_Table(void);
 extern void Compute_Hash(BOARD_STRUCT *board);
-extern void Add_Hash_Entry(HASH_ENTRY_STRUCT *hash_ptr, SEARCH_INFO_STRUCT *info);
+extern void Add_Hash_Entry(HASH_ENTRY_STRUCT *hash_ptr, int ply, SEARCH_INFO_STRUCT *info);
 extern void Remove_Hash_Entry(U64 hash);
-extern int Get_Hash_Entry(U64 hash, int alpha, int beta, int depth, int * hash_move);
+extern int Get_Hash_Entry(U64 hash, int alpha, int beta, int depth, int ply, int * hash_move);
 extern void Fill_Hash_Entry(int age, int depth, int eval, int flag, U64 hash, int move, HASH_ENTRY_STRUCT *hash_ptr);
 
 //history
@@ -328,7 +328,8 @@ extern int Draw_Error_Found(int move, BOARD_STRUCT *board);
 
 //tuning
 extern int king_end_piece_square_tuning_values[8];
-extern int pawn_end_piece_square_tuning_values[8];
+extern int pawn_end_piece_square_tuning_values[7];
+extern int passed_pawn_rank_bonus[8];
 extern void Set_King_End_Values(void);
 extern void Set_Pawn_End_Values(void);
 

@@ -5,7 +5,8 @@
 #include "globals.h"
 
 int king_end_piece_square_tuning_values[8] = { -50, -30, -30, -30, -10, 10, 20, 40 }; //Starting values
-int pawn_end_piece_square_tuning_values[8] = { 0, 0, 10, 20, 30, 40, 50, 0 }; //Starting values
+int pawn_end_piece_square_tuning_values[7] = { 0, 0, 10, 20, 30, 40, 50 }; //Starting values
+int passed_pawn_rank_bonus[8] = { 0, 0, 0, 5, 10, 15, 20, 0};
 
 static int king_end_tuning_zones[64] =
 {

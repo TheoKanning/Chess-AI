@@ -177,9 +177,17 @@ void Uci_Loop(BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info) {
 			int value = 0;
 			int index = line[19] - '0';
 			sscanf_s(line, "%*s %*s %*s %*s %d", &value);
-			printf("Set keps%d to %d\n", index, value);
+			printf("Set peps%d to %d\n", index, value);
 			pawn_end_piece_square_tuning_values[index] = value;
 			Set_Pawn_End_Values();
+		}
+		else if (!strncmp(line, "setoption name pprb", 18)) {
+
+			int value = 0;
+			int index = line[19] - '0';
+			sscanf_s(line, "%*s %*s %*s %*s %d", &value);
+			printf("Set pprb%d to %d\n", index, value);
+			passed_pawn_rank_bonus[index] = value;
 		}
 		
 		if (info->quit) break;

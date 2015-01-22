@@ -81,7 +81,7 @@ int Search_Position(BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info)
 		//End if time is one third gone because next depth is unlikely to finish
 		if ((Get_Time_Ms() - info->start_time) >= ((info->stop_time - info->start_time) / 3.0)) info->stopped = 1;
 
-		if (IS_MATE(score) && (currentDepth == ((score > 0) ? MATE_SCORE - score : MATE_SCORE + score))) break; //End search if mate found
+		if (IS_MATE(score)) break; //End search if mate found
 		
 	}
 
@@ -139,7 +139,7 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 	int alpha_orig = alpha;
 	int best_score = -INF;
 	int best_move = 0;
-	int score = -INF; //Set in case no moves are available
+	int score = -MATE_SCORE; //Set in case no moves are available
 	int mate = 1; //If no legal moves are found
 	int f_prune_allowed = 0; //If futility pruning is allowed at this node
 	MOVE_LIST_STRUCT move_list;
@@ -178,7 +178,7 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 	}
 
 	/***** Check hash table *****/
-	int value = Get_Hash_Entry(board->hash_key, alpha, beta, depth, &hash_entry.move);
+	int value = Get_Hash_Entry(board->hash_key, alpha, beta, depth, board->hply, &hash_entry.move);
 	if (value != INVALID) 
 	{
 		if (!is_pv || (value > alpha && value < beta)) //Only return exact values in pv line
@@ -186,8 +186,6 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 			if ((!is_pv && board->hply > 2) || !Draw_Error_Found(hash_entry.move, board)) //Search for draw errors if searching higher depths, or if in pv line
 			{
 				info->hash_hits++;
-				//Adjust mate score for ply
-				if (IS_MATE(value)) return ADJUST_MATE_SCORE(value, board->hply);
 				return value; 
 			}
 		}
@@ -301,7 +299,7 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 		{
 			//Store hash entry
 			Fill_Hash_Entry(info->age, depth, score, HASH_LOWER, board->hash_key, current_move, &hash_entry);
-			Add_Hash_Entry(&hash_entry, info);
+			Add_Hash_Entry(&hash_entry, board->hply, info);
 
 			//if move is not a capture or promotion
 			if (current_move_score <= KILLER_MOVE_SCORE)
@@ -326,20 +324,25 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 
 	} //End looping through all moves
 
+	if (!(best_score > -INF && best_score < INF))
+	{
+		int x = 1;
+	}
+
+
 	/***** Mate detection *****/
 	if (mate) //No moves found
 	{
 		if (in_check)
 		{
-			best_score = -MATE_SCORE + board->hply;
 			//Store in table
-			Fill_Hash_Entry(info->age, depth, best_score, HASH_EXACT, board->hash_key, 0, &hash_entry);
-			Add_Hash_Entry(&hash_entry, info);
-			return best_score; //Losing checkmate
+			Fill_Hash_Entry(info->age, depth, -MATE_SCORE, HASH_EXACT, board->hash_key, 0, &hash_entry);
+			Add_Hash_Entry(&hash_entry, board->hply, info);
+			return -MATE_SCORE + board->hply; //Losing checkmate
 		}
 		//Store in table
 		Fill_Hash_Entry(info->age, depth, 0, HASH_EXACT, board->hash_key, 0, &hash_entry);
-		Add_Hash_Entry(&hash_entry, info);
+		Add_Hash_Entry(&hash_entry, board->hply, info);
 		return 0; //Draw
 	}
 
@@ -348,13 +351,13 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 	{
 		//Store hash entry
 		Fill_Hash_Entry(info->age, depth, best_score, HASH_EXACT, board->hash_key, best_move, &hash_entry);
-		Add_Hash_Entry(&hash_entry, info);
+		Add_Hash_Entry(&hash_entry, board->hply, info);
 	}
 	else
 	{
 		//Store hash entry
 		Fill_Hash_Entry(info->age, depth, best_score, HASH_UPPER, board->hash_key, best_move, &hash_entry);
-		Add_Hash_Entry(&hash_entry, info);
+		Add_Hash_Entry(&hash_entry, board->hply, info);
 	}
 
 	return alpha;
@@ -445,7 +448,7 @@ int Draw_Error_Found(int move, BOARD_STRUCT *board)
 	//Check all possible opponent moves for draws, starting with hash move
 	Generate_Moves(board, &move_list);
 	//Find hash move
-	Get_Hash_Entry(board->hash_key, 0, 0, 0, &hash_entry.move);
+	Get_Hash_Entry(board->hash_key, 0, 0, 0, board->hply, &hash_entry.move);
 	Find_PV_Move(hash_entry.move, &move_list);
 
 	//Search all moves in sorted order, return 1 if draw is found

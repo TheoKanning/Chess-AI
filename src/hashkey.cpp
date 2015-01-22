@@ -88,7 +88,7 @@ void Compute_Hash(BOARD_STRUCT *board)
 }
 
 //Reads hash table and returns pointer if entry is found
-int Get_Hash_Entry(U64 hash, int alpha, int beta, int depth, int * hash_move)
+int Get_Hash_Entry(U64 hash, int alpha, int beta, int depth, int ply, int * hash_move)
 {
 	//Get hash data
 	HASH_ENTRY_STRUCT *hash_temp = &hash_table[hash % HASH_SIZE];
@@ -99,17 +99,22 @@ int Get_Hash_Entry(U64 hash, int alpha, int beta, int depth, int * hash_move)
 
 		if (hash_temp->depth >= depth) //If depth is greater than or equal to search depth
 		{
+			//Adjust mate score for ply
+			int eval = hash_temp->eval;
+
+			if (IS_MATE(eval)) eval = ADJUST_MATE_SCORE(eval, ply);
+
 			if (hash_temp->flag == HASH_EXACT)
 			{
-				return hash_temp->eval;
+				return eval;
 			}
-			else if (hash_temp->flag == HASH_UPPER && (hash_temp->eval <= alpha))
+			else if (hash_temp->flag == HASH_UPPER && (eval <= alpha))
 			{
-				return hash_temp->eval;
+				return eval;
 			}
-			else if (hash_temp->flag == HASH_LOWER && (hash_temp->eval >= beta))
+			else if (hash_temp->flag == HASH_LOWER && (eval >= beta))
 			{
-				return hash_temp->eval;
+				return eval;
 			}
 		}
 	}
@@ -151,9 +156,13 @@ int Get_Hash_Entry(U64 hash, HASH_ENTRY_STRUCT *hash_ptr)
 }
 
 //Adds a hash entry to the table, checking if replacement is approriate
-void Add_Hash_Entry(HASH_ENTRY_STRUCT *hash_ptr, SEARCH_INFO_STRUCT *info)
+void Add_Hash_Entry(HASH_ENTRY_STRUCT *hash_ptr, int ply, SEARCH_INFO_STRUCT *info)
 {
 	int hash_index = hash_ptr->hash % HASH_SIZE;
+
+	//Adjust mate score for ply
+	if (hash_ptr->eval >= MATE_SCORE - MAX_SEARCH_DEPTH) hash_ptr->eval += ply;
+	if (hash_ptr->eval <= -MATE_SCORE + MAX_SEARCH_DEPTH) hash_ptr->eval -= ply;
 
 	//If stored entry is empty, replace
 	if (hash_table[hash_index].hash == 0)
