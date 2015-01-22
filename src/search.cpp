@@ -55,7 +55,7 @@ int Search_Position(BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info)
 		printf("info ");
 		if (IS_MATE(score))
 		{
-			printf("score mate %d", (score > 0) ? MATE_SCORE - score: -MATE_SCORE - score);
+			printf("score mate %d", (score > 0) ? (MATE_SCORE - score) / 2 + 1 : -(MATE_SCORE + score) / 2 - 1);
 		}
 		else
 		{
@@ -81,7 +81,8 @@ int Search_Position(BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info)
 		//End if time is one third gone because next depth is unlikely to finish
 		if ((Get_Time_Ms() - info->start_time) >= ((info->stop_time - info->start_time) / 3.0)) info->stopped = 1;
 
-		if (IS_MATE(score)) break; //End search if mate found
+		//if (IS_MATE(score)) break; //End search if mate found
+		if (IS_MATE(score) && (currentDepth >= ((score > 0) ? MATE_SCORE - score : MATE_SCORE + score))) break; //End search if mate found
 		
 	}
 
@@ -151,7 +152,7 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 
 	info->nodes++;
 	//Check for timeout
-	if ((info->nodes & 4096) == 0) //every 5000 nodes
+	if ((info->nodes & 4095) == 0) //every 4096 nodes
 	{
 		if (Get_Time_Ms() > info->stop_time - 20) //Could be reduced to 10 ms
 		{
@@ -248,7 +249,6 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 			continue;
 		}
 
-
 		/***** Principal Variation Search *****/
 		if (move == 0) //If first move, use full window
 		{
@@ -324,21 +324,16 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 
 	} //End looping through all moves
 
-	if (!(best_score > -INF && best_score < INF))
-	{
-		int x = 1;
-	}
-
-
 	/***** Mate detection *****/
 	if (mate) //No moves found
 	{
 		if (in_check)
 		{
 			//Store in table
-			Fill_Hash_Entry(info->age, depth, -MATE_SCORE, HASH_EXACT, board->hash_key, 0, &hash_entry);
+			best_score = -MATE_SCORE + board->hply;
+			Fill_Hash_Entry(info->age, depth, best_score, HASH_EXACT, board->hash_key, 0, &hash_entry);
 			Add_Hash_Entry(&hash_entry, board->hply, info);
-			return -MATE_SCORE + board->hply; //Losing checkmate
+			return best_score; //Losing checkmate
 		}
 		//Store in table
 		Fill_Hash_Entry(info->age, depth, 0, HASH_EXACT, board->hash_key, 0, &hash_entry);
@@ -373,7 +368,7 @@ int Quiescent_Search(int alpha, int beta, BOARD_STRUCT *board, SEARCH_INFO_STRUC
 	
 	info->nodes++;
 
-	if ((info->nodes % 5000) == 0) //every 5000 nodes
+	if ((info->nodes & 4095) == 0) //every 4096 nodes
 	{
 		if (Get_Time_Ms() > info->stop_time - 50)
 		{

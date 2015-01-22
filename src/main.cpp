@@ -14,6 +14,8 @@ using namespace std;
 #define MATE_IN_2_FEN	"8/6K1/1p1B1RB1/8/2Q5/2n1kP1N/3b4/4n3 w - - 0 1"
 #define ENDGAME_FEN		"8/3r1pp1/4k3/4p3/4P3/4K3/3R1PP1/8 w - - 0 1"
 #define MATE_FEN "r1r2b1k/2q2pp1/p3pN1p/4P3/1P3QR1/3R4/PP4PP/1K6 w - - 0 1"
+#define MATE_FEN2 "r1r2b1k/2q2p2/p3pN1p/4P3/1P4R1/3R4/PP4PP/1K6 w - - 0 1"
+
 BOARD_STRUCT board;
 MOVE_LIST_STRUCT move_list;
 SEARCH_INFO_STRUCT info;
@@ -56,12 +58,13 @@ int main()
 		}
 	}
 	
-	//Parse_Position(DRAW_ERROR_POS, &board);
+	//Parse_Position(INCORRECT_MATE_POS, &board);
 	Parse_Fen(MATE_FEN, &board);
 	Print_Board(&board);
 	info.stop_time = 1000000;
 	info.depth = 10;
 	Search_Position(&board, &info);
+	
 	Parse_Position(DRAW_ERROR_POS2, &board);
 	Print_Board(&board);
 	info.stop_time = 1000000;

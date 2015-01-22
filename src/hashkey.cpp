@@ -102,7 +102,8 @@ int Get_Hash_Entry(U64 hash, int alpha, int beta, int depth, int ply, int * hash
 			//Adjust mate score for ply
 			int eval = hash_temp->eval;
 
-			if (IS_MATE(eval)) eval = ADJUST_MATE_SCORE(eval, ply);
+			if (eval >= MATE_SCORE - MAX_SEARCH_DEPTH) eval -= ply;
+			else if (eval <= -MATE_SCORE + MAX_SEARCH_DEPTH) eval += ply;
 
 			if (hash_temp->flag == HASH_EXACT)
 			{
