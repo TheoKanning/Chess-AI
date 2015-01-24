@@ -354,7 +354,6 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 		Fill_Hash_Entry(info->age, depth, best_score, HASH_UPPER, board->hash_key, best_move, &hash_entry);
 		Add_Hash_Entry(&hash_entry, board->hply, info);
 	}
-
 	return alpha;
 }
 

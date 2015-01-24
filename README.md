@@ -19,10 +19,11 @@ Version Notes:
 	 - Fixed hash probe bug
 1.25 - Changed time margin for ending
      - Late move reduction, reduce depth by 1
-1.26 - Futility pruning at pre-frontier nodes (depth = 2)
+1.26 - Futility pruning at pre-frontier nodes (depth = 2) (not tuned)
 	 - PVS researches are pv nodes 
 	 - Uses incremental piece square tables
 	 - Basic king safety pawn shield
 	 - Store mate scores in table
-	 - Options for endgame piece square tables
+	 - Options for endgame piece square tables (not tuned)
+	 - Mate scores tracked correctly
 	
