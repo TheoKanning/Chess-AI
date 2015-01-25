@@ -22,10 +22,12 @@ U64 doubled_masks[64];
 int Evaluate_Board(BOARD_STRUCT *board)
 {
 	int score = 0;
+	int total_material = 0;
+	int material_diff = 0;
 
 	//Material score
-	score = board->material;
-	ASSERT(score == board->white_material - board->black_material);
+	material_diff = (board->white_big_material + board->white_pawn_material) - (board->black_big_material + board->black_pawn_material);
+	score += material_diff;
 
 	//Piece square table score
 	score += Get_Board_Piece_Square_Score(board);
@@ -56,16 +58,17 @@ int Get_Board_Piece_Square_Score(BOARD_STRUCT *board)
 	int piece;
 	int piece_num;
 	int score = 0;
+	int total = board->white_big_material + board->white_pawn_material + board->black_big_material + board->black_pawn_material;
 
 	//Calculate game period
 	float phase;
-	if (board->total_material <= ENDGAME_MATERIAL)
+	if (total <= ENDGAME_MATERIAL)
 	{
 		phase = 1;
 	}
 	else
 	{
-		phase = 1 - ((float)(board->total_material - ENDGAME_MATERIAL)) / (START_MATERIAL - ENDGAME_MATERIAL);
+		phase = 1 - ((float)(total - ENDGAME_MATERIAL)) / (START_MATERIAL - ENDGAME_MATERIAL);
 	}
 
 	return (int)((1 - phase)*board->middle_piece_square_score + phase*board->end_piece_square_score);

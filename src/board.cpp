@@ -587,6 +587,17 @@ int Is_Material_Draw(BOARD_STRUCT *board)
 	//Not a draw if a pawn remains
 	if (board->white_pawn_material || board->black_pawn_material) return 0;
 
+	//Not a draw if one side has at least a queen
+	if ((board->white_big_material >= piece_values[wQ]) || (board->black_big_material >= piece_values[bQ])) return 0;
+
+	//Return draw if each side has a bishop or less remaining
+	if (board->white_big_material <= piece_values[wB] && board->black_big_material <= piece_values[wB]) return 1;
+
+	//Return draw if two knights against bare king
+	if (board->white_big_material == 2 * piece_values[wN] && board->black_big_material == 0) return 1;
+	if (board->black_big_material == 2 * piece_values[bN] && board->white_big_material == 0) return 1;
+
+	//Assume not a draw
 	return 0;
 }
 

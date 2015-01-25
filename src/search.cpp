@@ -162,7 +162,7 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 	}
 
 	/***** Draw Detection *****/
-	if (board->move_counter >= 100 || (board->total_material == 0) || (board->hply && Is_Repetition(board))) //)
+	if (board->move_counter >= 100 || Is_Material_Draw(board) || (board->hply && Is_Repetition(board)))
 	{
 		return 0;
 	}
@@ -198,7 +198,7 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 	&& !is_pv 
 	&& board->hply 
 	&& !in_check 
-	&& board->total_material >= 2000)
+	&& (board->white_big_material + board->black_big_material) >= 2000)
 	{
 		info->null_available = 0;
 		Make_Null_Move(board);
