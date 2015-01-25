@@ -12,7 +12,7 @@
 
 #define PROGRAM_NAME "Chess-AI"
 #define AUTHOR	"Theo Kanning"
-#define VERSION_NO	1.26
+#define VERSION_NO	1.27
 
 #ifndef DEBUG
         #define ASSERT(x)
@@ -238,6 +238,7 @@ extern void Remove_From_Piecelists(int piece, int index120, BOARD_STRUCT *board)
 extern void Parse_Fen(char *fen, BOARD_STRUCT *board);
 extern void Clear_Undo_List(BOARD_STRUCT *board);
 extern int  Is_Threefold_Repetition(BOARD_STRUCT *board);
+extern int Is_Repetition(BOARD_STRUCT *board);
 extern void Check_Board(BOARD_STRUCT *board);
 extern void Print_Board(BOARD_STRUCT *board);
 extern void Print_Bitboards(BOARD_STRUCT *board);

@@ -26,4 +26,4 @@ Version Notes:
 	 - Store mate scores in table
 	 - Options for endgame piece square tables (not tuned)
 	 - Mate scores tracked correctly
-	
+1.27 - Score draw after 1 rep if not in root

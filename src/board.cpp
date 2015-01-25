@@ -478,7 +478,7 @@ int Is_Threefold_Repetition(BOARD_STRUCT *board)
 	/* Searches backwards until the first irreversible move found.
 	* The number of reversible moves is equal to the move counter
 	*/
-	if (board->move_counter < 4) return 0;
+	if (board->move_counter < 3) return 0;
 
 	//could probably be index < move counter, but I'd rather be safe than worry about it
 	for (index = 0; index <= board->move_counter; index++)
@@ -497,6 +497,27 @@ int Is_Threefold_Repetition(BOARD_STRUCT *board)
 	return 0;
 }
 
+//Returns 1 if a position has repeated once
+int Is_Repetition(BOARD_STRUCT *board)
+{
+	int index = 0;
+	int start = board->undo_list.num - 1;
+	U64 hash = board->hash_key; //Hash key to search for
+
+	/* Searches backwards until the first irreversible move found.
+	* The number of reversible moves is equal to the move counter
+	*/
+	if (board->move_counter < 3) return 0;
+
+	//could probably be index < move counter, but I'd rather be safe than worry about it
+	for (index = 0; index <= board->move_counter; index++)
+	{
+		if (start - index < 0) return 0;
+		if (board->undo_list.list[start - index].hash == hash) return 1;//if match is found
+		
+	}
+	return 0;
+}
 
 //Checks all board values for consistency
 //Asserts will fail if anything is incorrect

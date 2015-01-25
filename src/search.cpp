@@ -162,7 +162,7 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 	}
 
 	/***** Draw Detection *****/
-	if (board->move_counter >= 100 || Is_Threefold_Repetition(board) || (board->total_material == 0))
+	if (board->move_counter >= 100 || (board->total_material == 0) || (board->hply && Is_Repetition(board))) //)
 	{
 		return 0;
 	}
@@ -184,11 +184,11 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 	{
 		if (!is_pv || (value > alpha && value < beta)) //Only return exact values in pv line
 		{
-			if ((!is_pv && board->hply > 2) || !Draw_Error_Found(hash_entry.move, board)) //Search for draw errors if searching higher depths, or if in pv line
-			{
+			//if ((!is_pv && board->hply > 2) || !Draw_Error_Found(hash_entry.move, board)) //Search for draw errors if searching higher depths, or if in pv line
+			//{
 				info->hash_hits++;
 				return value; 
-			}
+			//}
 		}
 	}
 	

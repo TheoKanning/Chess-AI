@@ -58,8 +58,8 @@ int main()
 		}
 	}
 	
-	//Parse_Position(INCORRECT_MATE_POS, &board);
-	Parse_Fen(MATE_FEN, &board);
+	Parse_Position(DRAW_ERROR_POS, &board);
+	//Parse_Fen(MATE_FEN, &board);
 	Print_Board(&board);
 	info.stop_time = 1000000;
 	info.depth = 10;
