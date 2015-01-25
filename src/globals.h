@@ -8,7 +8,7 @@
 
 /***** Global Macros *****/
 
-//#define DEBUG //Define debug mode for full assert function
+#define DEBUG //Define debug mode for full assert function
 
 #define PROGRAM_NAME "Chess-AI"
 #define AUTHOR	"Theo Kanning"
@@ -202,10 +202,11 @@ typedef struct
 	int piece_num[13]; //Stores the number of each type of piece
 	int piece_list120[13][10]; //[Piece][instance] contains index of pieces on board, empty cells are 0, which is off the 120 board
 
-	int material; //Material score
-	int white_material;
-	int black_material;
-	int total_material;
+	int white_big_material; //Non-pawn material
+	int white_pawn_material;
+
+	int black_big_material;
+	int black_pawn_material;
 
 	int middle_piece_square_score;
 	int end_piece_square_score;
@@ -214,6 +215,7 @@ typedef struct
 
 	U64 pawn_bitboards[3]; //One for white, black, and both
 	U64 piece_bitboards[13]; //One for each piece type
+	U64 side_bitboards[3]; //One for white, black, and both
 
 	UNDO_LIST_STRUCT undo_list;
 
@@ -240,6 +242,7 @@ extern void Parse_Fen(char *fen, BOARD_STRUCT *board);
 extern void Clear_Undo_List(BOARD_STRUCT *board);
 extern int  Is_Threefold_Repetition(BOARD_STRUCT *board);
 extern int Is_Repetition(BOARD_STRUCT *board);
+extern int Is_Material_Draw(BOARD_STRUCT *board);
 extern void Check_Board(BOARD_STRUCT *board);
 extern void Print_Board(BOARD_STRUCT *board);
 extern void Print_Bitboards(BOARD_STRUCT *board);
