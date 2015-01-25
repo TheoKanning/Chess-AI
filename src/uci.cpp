@@ -16,6 +16,7 @@ void Parse_Go(char* line, SEARCH_INFO_STRUCT *info, BOARD_STRUCT *board) {
 	int time = -1, inc = 0;
 	char *ptr = NULL;
 	info->time_set = 0;
+	info->end_early = 1;
 
 	if ((ptr = strstr(line, "infinite"))) {
 		;
@@ -43,6 +44,7 @@ void Parse_Go(char* line, SEARCH_INFO_STRUCT *info, BOARD_STRUCT *board) {
 
 	if ((ptr = strstr(line, "movetime"))) {
 		movetime = atoi(ptr + 9);
+		info->end_early = 0; //Disable ending early if specific move time is given
 	}
 
 	if ((ptr = strstr(line, "depth"))) {
@@ -60,7 +62,7 @@ void Parse_Go(char* line, SEARCH_INFO_STRUCT *info, BOARD_STRUCT *board) {
 	if (time != -1) {
 		info->time_set = 1;
 		time /= movestogo;
-		time -= 50;
+		time -= 10;
 		info->stop_time = info->start_time + time + inc;
 	}
 

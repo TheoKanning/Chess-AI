@@ -79,10 +79,10 @@ int Search_Position(BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info)
 		printf("\n\n");
 
 		//End if time is one third gone because next depth is unlikely to finish
-		if ((Get_Time_Ms() - info->start_time) >= ((info->stop_time - info->start_time) / 3.0)) info->stopped = 1;
+		if (info->end_early && (Get_Time_Ms() - info->start_time) >= ((info->stop_time - info->start_time) / 3.0)) break;
 
-		//if (IS_MATE(score)) break; //End search if mate found
-		if (IS_MATE(score) && (currentDepth >= ((score > 0) ? MATE_SCORE - score : MATE_SCORE + score))) break; //End search if mate found
+		//End search if mate found and full pv shown
+		if (IS_MATE(score) && (currentDepth >= ((score > 0) ? MATE_SCORE - score : MATE_SCORE + score))) break; 
 		
 	}
 
@@ -154,7 +154,7 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 	//Check for timeout
 	if ((info->nodes & 4095) == 0) //every 4096 nodes
 	{
-		if (Get_Time_Ms() > info->stop_time - 20) //Could be reduced to 10 ms
+		if (Get_Time_Ms() > info->stop_time - 40) //Could be reduced to 10 ms
 		{
 			info->stopped = 1;
 			return 0;
@@ -369,7 +369,7 @@ int Quiescent_Search(int alpha, int beta, BOARD_STRUCT *board, SEARCH_INFO_STRUC
 
 	if ((info->nodes & 4095) == 0) //every 4096 nodes
 	{
-		if (Get_Time_Ms() > info->stop_time - 50)
+		if (Get_Time_Ms() > info->stop_time - 40)
 		{
 			info->stopped = 1;
 			return 0;

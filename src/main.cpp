@@ -61,18 +61,11 @@ int main()
 	Parse_Position(DRAW_ERROR_POS, &board);
 	//Parse_Fen(MATE_FEN, &board);
 	Print_Board(&board);
-	info.stop_time = 1000000;
-	info.depth = 10;
+	info.stop_time = 100000;
+	info.depth = 12;
 	Search_Position(&board, &info);
-	
-	Parse_Position(DRAW_ERROR_POS2, &board);
-	Print_Board(&board);
-	info.stop_time = 1000000;
-	info.depth = 10;
-	Search_Position(&board, &info);
-	system("PAUSE");
 
-	
+	/*
 	while (!done)
 	{
 		Generate_Moves(&board, &move_list);
@@ -96,7 +89,7 @@ int main()
 		board.eval_score = Evaluate_Board(&board);
 		Print_Board(&board);
 	}
-	
+	*/
 	
 	
 	system("PAUSE");

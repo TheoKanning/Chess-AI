@@ -157,6 +157,7 @@ typedef struct
 	int start_time;
 	int stop_time;
 	int time_set;
+	int end_early; //Enable ending early if using normal clock
 	int stopped;
 	int nodes;
 
