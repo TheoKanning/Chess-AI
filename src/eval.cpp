@@ -5,7 +5,7 @@
 #include "globals.h"
 
 #define ENDGAME_MATERIAL 2000
-#define START_MATERIAL	 8000
+#define START_MATERIAL	 6400
 
 #define PASSED_PAWN_SCORE 20
 #define ISOLATED_PAWN_SCORE	-15
@@ -22,15 +22,14 @@ U64 doubled_masks[64];
 int Evaluate_Board(BOARD_STRUCT *board)
 {
 	int score = 0;
-	int total_material = 0;
-	int material_diff = 0;
+	int total_material = board->white_big_material + board->black_big_material;
+	int material_diff = (board->white_big_material + board->white_pawn_material) - (board->black_big_material + board->black_pawn_material);
 
 	//Material score
-	material_diff = (board->white_big_material + board->white_pawn_material) - (board->black_big_material + board->black_pawn_material);
 	score += material_diff;
 
 	//Piece square table score
-	score += Get_Board_Piece_Square_Score(board);
+	score += (total_material * board->middle_piece_square_score + (START_MATERIAL - total_material) * board->end_piece_square_score) / START_MATERIAL;
 
 	//Pawn structure score
 	score += Get_Pawn_Eval_Score(board);

@@ -27,3 +27,6 @@ Version Notes:
 	 - Options for endgame piece square tables (not tuned)
 	 - Mate scores tracked correctly
 1.27 - Score draw after 1 rep if not in root
+	 - Removed redundant material  terms
+	 - Added basic material draw detection
+	 - Use only big pieces for phase

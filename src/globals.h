@@ -202,6 +202,8 @@ typedef struct
 	int piece_num[13]; //Stores the number of each type of piece
 	int piece_list120[13][10]; //[Piece][instance] contains index of pieces on board, empty cells are 0, which is off the 120 board
 
+	int phase; //Calculated at beginning of eval function
+
 	int white_big_material; //Non-pawn material
 	int white_pawn_material;
 
