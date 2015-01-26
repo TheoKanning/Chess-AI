@@ -31,3 +31,5 @@ Version Notes:
 	 - Added basic material draw detection
 	 - Use only big pieces for phase
 	 - Encourage trading while ahead
+	 - Score adjustments for bishop, knight, and rook pairs
+
