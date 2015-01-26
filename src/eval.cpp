@@ -4,15 +4,19 @@
 */
 #include "globals.h"
 
-#define ENDGAME_MATERIAL 2000
-#define START_MATERIAL	 8000
-#define START_BIG_MATERIAL 6400
+#define ENDGAME_MATERIAL		2000
+#define START_MATERIAL			8000
+#define START_BIG_MATERIAL		6400
 
-#define PASSED_PAWN_SCORE 20
-#define ISOLATED_PAWN_SCORE	-15
-#define DOUBLED_PAWN_SCORE 5 //This is counted once for each pawn
+#define PASSED_PAWN_SCORE		20
+#define ISOLATED_PAWN_SCORE	   -15
+#define DOUBLED_PAWN_SCORE		5	//This is counted once for each pawn
 
-#define PAWN_SHIELD_SCORE 10 //Score for each pawn in front of the king
+#define PAWN_SHIELD_SCORE		10	//Score for each pawn in front of the king
+
+#define BISHOP_PAIR				50	//Bonus in cp for having bishop pair	
+#define KNIGHT_PAIR			   -20	//Penalty in cp for having knight pair
+#define ROOK_PAIR			   -20	//Penalty in cp for having rook pair
 
 //Pawn evaluation masks
 U64 white_passed_masks[64];
@@ -28,17 +32,27 @@ int Evaluate_Board(BOARD_STRUCT *board)
 	int material_diff = (board->white_big_material + board->white_pawn_material) - (board->black_big_material + board->black_pawn_material);
 	int winning_pawn_num = (material_diff > 0) ? board->piece_num[wP] : board->piece_num[bP]; //Number of pawns on side winning in material
 
-	//Material score, adjusted for total material on board
+	/* Material score, adjusted for total material on board */
 	int material_score = material_diff + (material_diff * winning_pawn_num * (START_MATERIAL - total_material)) / (START_BIG_MATERIAL * (winning_pawn_num + 1));
 	score += material_score;
 
-	//Piece square table score
+	/* Piece square table score */
 	score += (total_big_material * board->middle_piece_square_score + (START_BIG_MATERIAL - total_big_material) * board->end_piece_square_score) / START_BIG_MATERIAL;
 
-	//Pawn structure score
+	/* Pair bonuses */
+	if (board->piece_num[wB] >= 2) score += BISHOP_PAIR;
+	if (board->piece_num[bB] >= 2) score -= BISHOP_PAIR;
+
+	if (board->piece_num[wN] >= 2) score += KNIGHT_PAIR;
+	if (board->piece_num[bN] >= 2) score -= KNIGHT_PAIR;
+
+	if (board->piece_num[wR] >= 2) score += ROOK_PAIR;
+	if (board->piece_num[bR] >= 2) score -= ROOK_PAIR;
+
+	/* Pawn structure score */
 	score += Get_Pawn_Eval_Score(board);
 
-	//King Safety
+	/* King Safety */
 	score += Get_King_Safety_Score(board);
 
 
