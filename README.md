@@ -30,3 +30,4 @@ Version Notes:
 	 - Removed redundant material  terms
 	 - Added basic material draw detection
 	 - Use only big pieces for phase
+	 - Encourage trading while ahead

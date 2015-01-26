@@ -5,7 +5,8 @@
 #include "globals.h"
 
 #define ENDGAME_MATERIAL 2000
-#define START_MATERIAL	 6400
+#define START_MATERIAL	 8000
+#define START_BIG_MATERIAL 6400
 
 #define PASSED_PAWN_SCORE 20
 #define ISOLATED_PAWN_SCORE	-15
@@ -22,20 +23,28 @@ U64 doubled_masks[64];
 int Evaluate_Board(BOARD_STRUCT *board)
 {
 	int score = 0;
-	int total_material = board->white_big_material + board->black_big_material;
+	int total_big_material = board->white_big_material + board->black_big_material;
+	int total_material = total_big_material + board->white_pawn_material + board->black_pawn_material;
 	int material_diff = (board->white_big_material + board->white_pawn_material) - (board->black_big_material + board->black_pawn_material);
+	int winning_pawn_num = (material_diff > 0) ? board->piece_num[wP] : board->piece_num[bP]; //Number of pawns on side winning in material
 
-	//Material score
-	score += material_diff;
+	//Material score, adjusted for total material on board
+	int material_score = material_diff + (material_diff * winning_pawn_num * (START_MATERIAL - total_material)) / (START_BIG_MATERIAL * (winning_pawn_num + 1));
+	score += material_score;
 
 	//Piece square table score
-	score += (total_material * board->middle_piece_square_score + (START_MATERIAL - total_material) * board->end_piece_square_score) / START_MATERIAL;
+	score += (total_big_material * board->middle_piece_square_score + (START_BIG_MATERIAL - total_big_material) * board->end_piece_square_score) / START_BIG_MATERIAL;
 
 	//Pawn structure score
 	score += Get_Pawn_Eval_Score(board);
 
 	//King Safety
 	score += Get_King_Safety_Score(board);
+
+
+	/* Low material correction 
+	* Divide score in cases of drawish endings (add later) 
+	*/
 
 	//Copy into board
 	board->eval_score = score;
