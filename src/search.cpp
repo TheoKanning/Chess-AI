@@ -206,7 +206,7 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 		Take_Null_Move(board);
 		info->null_available = 1;
 
-		if (score >= beta) return score;
+		if (score >= beta && !IS_MATE(score)) return score;
 	}
 
 	/***** Futility Pruning *****/
@@ -305,7 +305,7 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 			if (current_move_score <= KILLER_MOVE_SCORE)
 			{				 
 				Add_Killer_Move(current_move, board); //Store killer move
-				Add_History_Move(current_move, board); //Store move in history array
+				//Add_History_Move(current_move, board); //Store move in history array
 			}
 			return score; //Beta cutoff
 		}
