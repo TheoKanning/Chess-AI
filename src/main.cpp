@@ -28,7 +28,7 @@ int main()
 	Init_Hash_Table();
 	Init_Pawn_Masks();
 	Set_King_End_Values();
-	Set_Pawn_End_Values();
+	//Set_Pawn_End_Values();
 	Init_Board(&board);
 	char line[256];
 	
@@ -53,14 +53,17 @@ int main()
 		else if (!strncmp(line, "quit", 4))	{
 			break;
 		}
+		else if (!strncmp(line, "test", 4))	{
+			Parse_Position(DRAW_ERROR_POS, &board);
+			//Parse_Fen(LASKER_FEN, &board);
+			Print_Board(&board);
+			info.stop_time = 100000;
+			info.depth = 14;
+			Search_Position(&board, &info);
+			system("PAUSE");
+			break;
+		}
 	}
-	
-	Parse_Position(DRAW_ERROR_POS, &board);
-	//Parse_Fen(LASKER_FEN, &board);
-	Print_Board(&board);
-	info.stop_time = 100000;
-	info.depth = 14;
-	Search_Position(&board, &info);
 
 	/*
 	while (!done)
@@ -89,6 +92,6 @@ int main()
 	*/
 	
 	
-	system("PAUSE");
+	
 	
 }

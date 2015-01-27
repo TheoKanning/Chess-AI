@@ -44,7 +44,7 @@ void Parse_Go(char* line, SEARCH_INFO_STRUCT *info, BOARD_STRUCT *board) {
 
 	if ((ptr = strstr(line, "movetime"))) {
 		movetime = atoi(ptr + 9);
-		info->end_early = 0; //Disable ending early if specific move time is given
+		//info->end_early = 0; //Disable ending early if specific move time is given
 	}
 
 	if ((ptr = strstr(line, "depth"))) {
@@ -189,7 +189,7 @@ void Uci_Loop(BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info) {
 			int index = line[19] - '0';
 			sscanf_s(line, "%*s %*s %*s %*s %d", &value);
 			printf("Set pprb%d to %d\n", index, value);
-			passed_pawn_rank_bonus[index] = value;
+			passed_pawn_rank_bonus[index] = value * 5;
 		}
 		
 		if (info->quit) break;
