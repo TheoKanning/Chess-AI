@@ -32,4 +32,7 @@ Version Notes:
 	 - Use only big pieces for phase
 	 - Encourage trading while ahead
 	 - Score adjustments for bishop, knight, and rook pairs
+1.28 - Can be told to quit mid-search
+	 - Won't null prune if mate found
+	 - Can change options before entering UCI loop
 

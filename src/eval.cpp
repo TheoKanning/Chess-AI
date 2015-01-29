@@ -33,7 +33,7 @@ int Evaluate_Board(BOARD_STRUCT *board)
 	int winning_pawn_num = (material_diff > 0) ? board->piece_num[wP] : board->piece_num[bP]; //Number of pawns on side winning in material
 
 	/* Material score, adjusted for total material on board */
-	int material_score = material_diff + (material_diff * winning_pawn_num * (START_MATERIAL - total_material)) / (START_BIG_MATERIAL * (winning_pawn_num + 1));
+	int material_score = material_diff;// +(material_diff * winning_pawn_num * (START_MATERIAL - total_material)) / (START_BIG_MATERIAL * (winning_pawn_num + 1));
 	score += material_score;
 
 	/* Piece square table score */
@@ -73,83 +73,6 @@ int Evaluate_Board(BOARD_STRUCT *board)
 	}
 }
 
-//Loops through every piece and adds the total piece square contribution to the evaluation function
-int Get_Board_Piece_Square_Score(BOARD_STRUCT *board)
-{
-	int index64;
-	int piece;
-	int piece_num;
-	int score = 0;
-	int total = board->white_big_material + board->white_pawn_material + board->black_big_material + board->black_pawn_material;
-
-	//Calculate game period
-	float phase;
-	if (total <= ENDGAME_MATERIAL)
-	{
-		phase = 1;
-	}
-	else
-	{
-		phase = 1 - ((float)(total - ENDGAME_MATERIAL)) / (START_MATERIAL - ENDGAME_MATERIAL);
-	}
-
-	return (int)((1 - phase)*board->middle_piece_square_score + phase*board->end_piece_square_score);
-
-	int mid = 0, end = 0;
-
-	//Loop through every square and add the approriate score
-	for (piece = wP; piece <= bK; piece++)
-	{
-		for (piece_num = 0; piece_num < board->piece_num[piece]; piece_num++)
-		{
-			index64 = SQUARE_120_TO_64(board->piece_list120[piece][piece_num]);
-			score += Get_Piece_Square_Score(index64, piece, phase);
-			mid += (IS_WHITE_PIECE(piece) ? 1 : -1) * middle_piece_square_tables[piece][index64];
-			end += (IS_WHITE_PIECE(piece) ? 1 : -1) * end_piece_square_tables[piece][index64];
-		}
-	}
-	ASSERT(board->middle_piece_square_score == mid);
-	ASSERT(board->end_piece_square_score == end);
-
-	return score;
-}
-
-//Returns the piece square table score of a piece in a given position
-int Get_Piece_Square_Score(int index64, int piece, float phase)
-{
-	switch (piece)
-	{
-	case EMPTY:
-		return 0;
-	case wP:
-		return pawn_piece_square_table[63 - index64];
-	case wN:
-		return knight_piece_square_table[63 - index64];
-	case wB:
-		return bishop_piece_square_table[63 - index64];
-	case wR:
-		return rook_piece_square_table[63 - index64];
-	case wQ:
-		return queen_piece_square_table[63 - index64];
-	case wK:
-		return (int)((1 - phase)*king_piece_square_table[63 - index64] + phase*king_endgame_piece_square_table[63 - index64]);
-	case bP:
-		return -pawn_piece_square_table[index64];
-	case bN:
-		return -knight_piece_square_table[index64];
-	case bB:
-		return -bishop_piece_square_table[index64];
-	case bR:
-		return -rook_piece_square_table[index64];
-	case bQ:
-		return -queen_piece_square_table[index64];
-	case bK:
-		return -(int)((1 - phase)*king_piece_square_table[index64] + phase*king_endgame_piece_square_table[index64]);
-	default:
-		ASSERT(1 == 2);
-	}
-	return 0;
-}
 
 //Returns pawn evaluation score
 int Get_Pawn_Eval_Score(BOARD_STRUCT *board)
@@ -165,7 +88,7 @@ int Get_Pawn_Eval_Score(BOARD_STRUCT *board)
 
 		//if no black pawns in passed mask area
 		if ((board->pawn_bitboards[BLACK] & white_passed_masks[sq64]) == 0) score += passed_pawn_rank_bonus[GET_RANK_64(sq64)];
-
+		
 		//if no white pawns in isolated mask area
 		if ((board->pawn_bitboards[WHITE] & isolated_masks[sq64]) == 0) score += ISOLATED_PAWN_SCORE;
 
@@ -181,8 +104,8 @@ int Get_Pawn_Eval_Score(BOARD_STRUCT *board)
 		sq64 = SQUARE_120_TO_64(board->piece_list120[bP][index]); //pawn location in 64 square array
 
 		//if no white pawns in passed mask area
-		if ((board->pawn_bitboards[WHITE] & black_passed_masks[sq64]) == 0) score -= passed_pawn_rank_bonus[RANK_8- GET_RANK_64(sq64)];
-
+		if ((board->pawn_bitboards[WHITE] & black_passed_masks[sq64]) == 0)	score -= passed_pawn_rank_bonus[RANK_8 - GET_RANK_64(sq64)];
+		
 		//if no black pawns in isolated mask area
 		if ((board->pawn_bitboards[BLACK] & isolated_masks[sq64]) == 0) score -= ISOLATED_PAWN_SCORE;
 

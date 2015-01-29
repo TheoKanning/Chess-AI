@@ -184,12 +184,20 @@ void Uci_Loop(BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info) {
 			Set_Pawn_End_Values();
 		}
 		else if (!strncmp(line, "setoption name pprb", 18)) {
+			float value = 0;
+			int index = line[19] - '0';
+			sscanf_s(line, "%*s %*s %*s %*s %f", &value);
+			printf("Set pprb%d to %f\n", index, value);
+			passed_pawn_tuning_parameters[index] = value;
+			Set_Passed_Pawn_Rank_Bonuses();
+		}
+		else if (!strncmp(line, "setoption name fmrg", 18)) {
 
 			int value = 0;
 			int index = line[19] - '0';
 			sscanf_s(line, "%*s %*s %*s %*s %d", &value);
-			printf("Set pprb%d to %d\n", index, value);
-			passed_pawn_rank_bonus[index] = value * 5;
+			printf("Set fmrg%d to %d\n", index, value);
+			futility_margins[index] = value;
 		}
 		
 		if (info->quit) break;

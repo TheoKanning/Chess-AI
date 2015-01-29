@@ -8,8 +8,6 @@
 //#include "stdafx.h"
 using namespace std;
 
-extern int piece_values[13];
-
 //Private functions
 void Update_Board_Array_120(BOARD_STRUCT *board);
 
@@ -105,8 +103,6 @@ void Init_Board(BOARD_STRUCT *board)
 	Update_Piece_Lists(board);
 
 	Compute_Hash(board);
-
-	Evaluate_Board(board);
 
 	board->age = 0;
 
@@ -269,8 +265,6 @@ void Parse_Fen(char *fen, BOARD_STRUCT *board)
 	Update_Board_Array_120(board);
 
 	Compute_Hash(board);
-
-	Evaluate_Board(board);
 
 #ifdef DEBUG
 	Check_Board(board);
@@ -857,7 +851,7 @@ void Print_Board(BOARD_STRUCT *board)
 	cout << "Hply: " << board->hply << endl;
 
 	//Material score
-	cout << "Eval: " << board->eval_score / 100.0 << endl;
+	cout << "Eval: " << Evaluate_Board(board) / 100.0 << endl;
 }
 
 //Prints all three pawn bitboards using the same format as the Print_Board function

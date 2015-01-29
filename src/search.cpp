@@ -79,7 +79,7 @@ int Search_Position(BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info)
 		printf("\n\n");
 
 		//End if time is one third gone because next depth is unlikely to finish
-		if (info->end_early && (Get_Time_Ms() - info->start_time) >= ((info->stop_time - info->start_time) / 3.0)) break;
+		if (info->time_set && info->end_early && (Get_Time_Ms() - info->start_time) >= ((info->stop_time - info->start_time) / 3.0)) break;
 
 		//End search if mate found and full pv shown
 		if (IS_MATE(score) && (currentDepth >= ((score > 0) ? MATE_SCORE - score : MATE_SCORE + score))) break; 
@@ -154,11 +154,12 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 	//Check for timeout
 	if ((info->nodes & 4095) == 0) //every 4096 nodes
 	{
-		if (Get_Time_Ms() > info->stop_time - 40) //Could be reduced to 10 ms
+		if ((info->time_set) && (Get_Time_Ms() > info->stop_time - 40)) //Could be reduced to 10 ms
 		{
 			info->stopped = 1;
 			return 0;
 		}
+		ReadInput(info); //Check for input
 	}
 
 	/***** Draw Detection *****/
@@ -172,7 +173,7 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 	if (in_check) depth++;
 
 	/***** Leaf Node Response *****/
-	//If at depth 0, extend if in check, start quiescent search if not
+	//Start quiescent search at depth 0
 	if (depth <= 0)
 	{
 		return Quiescent_Search(alpha, beta, board, info);
@@ -184,11 +185,8 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 	{
 		if (!is_pv || (value > alpha && value < beta)) //Only return exact values in pv line
 		{
-			//if ((!is_pv && board->hply > 2) || !Draw_Error_Found(hash_entry.move, board)) //Search for draw errors if searching higher depths, or if in pv line
-			//{
 				info->hash_hits++;
 				return value; 
-			//}
 		}
 	}
 	
@@ -211,13 +209,13 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 
 	/***** Futility Pruning *****/
 	/* Here we determine if this node is elegible for futility pruning */
-	int fmargin[4] = { 0, 300, 500, 900 };
+	
 
 	if (depth <= 2
 		&& !is_pv
 		&& !in_check
 		&& abs(alpha) < 9000 //Not searching for a mate
-		&& Evaluate_Board(board) + fmargin[depth] <= alpha)
+		&& Evaluate_Board(board) + futility_margins[depth] <= alpha)
 		f_prune_allowed = 1;
 
 	/***** Move generation and sorting *****/
@@ -369,11 +367,14 @@ int Quiescent_Search(int alpha, int beta, BOARD_STRUCT *board, SEARCH_INFO_STRUC
 
 	if ((info->nodes & 4095) == 0) //every 4096 nodes
 	{
-		if (Get_Time_Ms() > info->stop_time - 40)
+		if (info->time_set && (Get_Time_Ms() > info->stop_time - 40))
 		{
 			info->stopped = 1;
 			return 0;
 		}
+
+		//Check for quit input
+
 	}
 
 
@@ -411,11 +412,6 @@ int Quiescent_Search(int alpha, int beta, BOARD_STRUCT *board, SEARCH_INFO_STRUC
 	return alpha;
 }
 
-//Returns current time in ms
-int Get_Time_Ms(void)
-{
-	return clock() * 1000 / CLOCKS_PER_SEC;
-}
 
 //Performs the given move at a position, checks for a draw, the performs all moves at that position and checks for draws
 int Draw_Error_Found(int move, BOARD_STRUCT *board)
