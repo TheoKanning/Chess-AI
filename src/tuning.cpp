@@ -4,7 +4,7 @@
 
 #include "globals.h"
 
-int king_end_piece_square_tuning_values[8] = { -50, -30, -30, -30, -10, 10, 20, 40 }; //Starting values
+int king_end_piece_square_tuning_values[8] = { -46, -32, -18, 0, -10, 18, 44, 58 }; //Starting values
 int pawn_end_piece_square_tuning_values[7] = { 0, 0, 10, 20, 30, 40, 50 }; //Starting values
 float passed_pawn_tuning_parameters[3] = { 0, 0, 0 };
 

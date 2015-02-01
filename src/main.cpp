@@ -27,14 +27,14 @@ int main()
 	Init_Hashkeys();
 	Init_Hash_Table();
 	Init_Pawn_Masks();
-	Set_King_End_Values();
-	//Set_Passed_Pawn_Rank_Bonuses();
 	Init_Board(&board);
+	Generate_Magic_Moves();
+	Set_King_End_Values();
+
 	char line[256];
 
 	setvbuf(stdin, NULL, _IONBF, NULL);
 	setvbuf(stdout, NULL, _IONBF, NULL);
-
 
 	while (1) {
 		memset(&line[0], 0, sizeof(line));
@@ -49,6 +49,19 @@ int main()
 			Uci_Loop(&board, &info);
 			if (info.quit == 1) break;
 			continue;
+		}
+		if (!strncmp(line, "perft", 5)){
+			Perft_Test("r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 w - - 0 10", 4, &board);
+		}
+		else if (!strncmp(line, "test", 4))	{
+			Parse_Position(DRAW_ERROR_POS, &board);
+			//Parse_Fen(LASKER_FEN, &board);
+			Print_Board(&board);
+			info.stop_time = 100000;
+			info.depth = 14;
+			Search_Position(&board, &info);
+			system("PAUSE");
+			break;
 		}
 		else if (!strncmp(line, "setoption name keps", 18)) {
 
@@ -69,15 +82,15 @@ int main()
 			Set_Pawn_End_Values();
 		}
 		else if (!strncmp(line, "setoption name pprb", 18)) {
-			float value = 0;
+			int value = 0;
 			int index = line[19] - '0';
-			sscanf_s(line, "%*s %*s %*s %*s %f", &value);
-			printf("Set pprb%d to %f\n", index, value);
-			passed_pawn_tuning_parameters[index] = value;
-			Set_Passed_Pawn_Rank_Bonuses();
+			sscanf_s(line, "%*s %*s %*s %*s %d", &value);
+			printf("Set pprb%d to %d\n", index, value);
+			passed_pawn_rank_bonus[index] = value;
+			//passed_pawn_tuning_parameters[index] = value;
+			//Set_Passed_Pawn_Rank_Bonuses();
 		}
 		else if (!strncmp(line, "setoption name fmrg", 18)) {
-
 			int value = 0;
 			int index = line[19] - '0';
 			sscanf_s(line, "%*s %*s %*s %*s %d", &value);
@@ -85,16 +98,6 @@ int main()
 			futility_margins[index] = value;
 		}
 		else if (!strncmp(line, "quit", 4))	{
-			break;
-		}
-		else if (!strncmp(line, "test", 4))	{
-			Parse_Position(DRAW_ERROR_POS, &board);
-			//Parse_Fen(LASKER_FEN, &board);
-			Print_Board(&board);
-			info.stop_time = 100000;
-			info.depth = 14;
-			Search_Position(&board, &info);
-			system("PAUSE");
 			break;
 		}
 	}

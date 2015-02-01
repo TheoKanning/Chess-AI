@@ -27,6 +27,13 @@
 			   }
 #endif
 
+//Returns random 64 bit uint
+#define RANDOM_U64()			(((U64)rand() + \
+								((U64)rand() << 15) + \
+								((U64)rand() << 30) + \
+								((U64)rand() << 45) + \
+							   (((U64)rand() & 0x0f) << 60)))
+
 
 
 #define MAX_PLY						1028 //Maximum depth for searching
@@ -244,7 +251,7 @@ extern int Is_Repetition(BOARD_STRUCT *board);
 extern int Is_Material_Draw(BOARD_STRUCT *board);
 extern void Check_Board(BOARD_STRUCT *board);
 extern void Print_Board(BOARD_STRUCT *board);
-extern void Print_Bitboards(BOARD_STRUCT *board);
+extern void Print_Bitboard(U64 bb);
 
 //data
 extern int square_120_to_64[120];
@@ -261,6 +268,8 @@ extern int is_bishop[13];
 extern int is_rook[13];
 extern int is_queen[13];
 extern int is_king[13];
+extern const U64 rank_masks[8];
+extern const U64 file_masks[8];
 extern int futility_margins[4];
 extern int piece_values[13];
 extern int passed_pawn_rank_bonus[8];
@@ -297,6 +306,31 @@ extern void ReadInput(SEARCH_INFO_STRUCT *info);
 extern void Find_Killer_Moves(MOVE_LIST_STRUCT *move_list, BOARD_STRUCT *board);
 extern void Add_Killer_Move(int move, BOARD_STRUCT *board);
 
+//magic_data
+extern const U64 R_Magic[64];
+extern const U64 B_Magic[64];
+extern const int R_Bits[64];
+extern const int B_Bits[64];
+extern const U64 R_Occ[64];
+extern const U64 B_Occ[64];
+extern int count_1s(U64 b);
+extern const int BitTable[64];
+extern int pop_1st_bit(U64 *bb);
+extern int transform(U64 b, U64 magic, int bits);
+extern U64 magicMovesRook[64][4096];
+extern U64 magicMovesBishop[64][512];
+extern const U64 magicMovesKnight[64];
+extern const U64 magicMovesKing[64];
+extern void Generate_Occupancy_Masks(void);
+extern void Generate_King_Knight_Attack_Masks(void);
+extern void Generate_Magic_Numbers(void);
+extern void Generate_Magic_Moves(void);
+
+//magic_movegen
+extern U64 Rook_Attacks(U64 occ, int sq);
+extern U64 Bishop_Attacks(U64 occ, int sq);
+extern void Magic_Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *list);
+
 //makemove
 extern int Make_Move(int move_num, BOARD_STRUCT *board);
 extern void Take_Move(BOARD_STRUCT *board);
@@ -319,11 +353,14 @@ extern int Get_Capture_Moves(MOVE_LIST_STRUCT *move_list);
 extern void Get_Next_Move(int num, MOVE_LIST_STRUCT *move_list); 
 extern void Get_Next_Capture_Move(int num, MOVE_LIST_STRUCT *move_list);
 extern void Add_Move(MOVE_LIST_STRUCT *move_list, int from, int to, int piece, int capture, int special, int score, BOARD_STRUCT *board);
+extern int Movelists_Identical(MOVE_LIST_STRUCT *ptr1, MOVE_LIST_STRUCT *ptr2);
 extern void Print_Move_List(MOVE_LIST_STRUCT *move_list);
 
 //perft
 extern int Perft_Test(char *fen, int depth, BOARD_STRUCT *board);
 extern int Search(BOARD_STRUCT *board, int depth);
+extern int Magic_Perft_Test(char *fen, int depth, BOARD_STRUCT *board);
+extern int Magic_Search(BOARD_STRUCT *board, int depth);
 
 //pv_table
 extern void Clear_PV_List(PV_LIST_STRUCT *pv);

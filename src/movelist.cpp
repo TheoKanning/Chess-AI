@@ -166,6 +166,28 @@ void Add_Move(MOVE_LIST_STRUCT *move_list, int from, int to, int piece, int capt
 	move_list->num++; //Increment counter
 }
 
+//Returns 1 if movelists are identical, otherwise 0
+int Movelists_Identical(MOVE_LIST_STRUCT *ptr1, MOVE_LIST_STRUCT *ptr2)
+{
+	ASSERT(ptr1->num == ptr2->num)
+	
+	int move, score, found;
+
+	//For each move in list 1, search all of list 2 to find an exact match
+	for (int i = 0; i < ptr1->num; i++)
+	{
+		move = ptr1->list[i].move;
+		score = ptr1->list[i].score;
+		found = 0;
+		for (int j = 0; j < ptr2->num; j++)
+		{
+			if (move == ptr2->list[j].move && score == ptr2->list[j].score) found = 1;
+		}
+		if (!found) return 0;
+	}
+	return 1;
+}
+
 //Prints all moves in standard chess format
 void Print_Move_List(MOVE_LIST_STRUCT *move_list)
 {

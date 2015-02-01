@@ -5,13 +5,6 @@
 #include "stdlib.h"
 #include "time.h"
 
-//Returns random 64 bit uint
-#define RANDOM_U64()			(((U64)rand() + \
-								((U64)rand() << 15) + \
-								((U64)rand() << 30) + \
-								((U64)rand() << 45) + \
-							   (((U64)rand() & 0x0f) << 60)))
-
 //Hashkey data
 U64 piece_keys[13][64];//[square][piece]
 U64 side_keys[2];

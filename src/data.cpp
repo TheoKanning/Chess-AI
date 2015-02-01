@@ -46,12 +46,37 @@ int square_64_to_120[64] = {
 	91, 92, 93, 94, 95, 96, 97, 98
 };
 
+/***** Rank and File Masks *****/
+const U64 rank_masks[8] =
+{
+	0xFFULL,
+	0xFF00ULL,
+	0xFF0000ULL,
+	0xFF000000ULL,
+	0xFF00000000ULL,
+	0xFF0000000000ULL,
+	0xFF000000000000ULL,
+	0xFF00000000000000ULL
+};
+
+const U64 file_masks[8] =
+{
+	0x0101010101010101ULL,
+	0x0202020202020202ULL,
+	0x0404040404040404ULL,
+	0x0808080808080801ULL,
+	0x1010101010101010ULL,
+	0x2020202020202020ULL,
+	0x4040404040404040ULL,
+	0x8080808080808080ULL,
+};
+
 /***** Search Arrays *****/
 int futility_margins[4] = { 0, 300, 500, 900 }; //Margin at each depth
 
 /***** Evaluation Arrays *****/
 int piece_values[13] = { 0, 100, 320, 330, 500, 900, 1000000, 100, 320, 330, 500, 900, 1000000 };
-int passed_pawn_rank_bonus[8] = { 0, 20, 20, 20, 20, 20, 20, 0 };
+int passed_pawn_rank_bonus[8] = { 0, 4, 9, 32, 41, 90, 117, 0 };
 
 //Contains the middle game piece square values for each piece
 short middle_piece_square_tables[13][64] = {

@@ -144,6 +144,7 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 	int mate = 1; //If no legal moves are found
 	int f_prune_allowed = 0; //If futility pruning is allowed at this node
 	MOVE_LIST_STRUCT move_list;
+	MOVE_LIST_STRUCT magic_move_list;
 	int current_move;
 	int current_move_score;
 	HASH_ENTRY_STRUCT hash_entry;
@@ -220,6 +221,17 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 
 	/***** Move generation and sorting *****/
 	Generate_Moves(board, &move_list);
+	Magic_Generate_Moves(board, &magic_move_list);
+
+	if (!Movelists_Identical(&move_list, &magic_move_list))
+	{
+		cout << "Normal" << endl;
+		Print_Move_List(&move_list);
+		cout << "Magic" << endl;
+		Print_Move_List(&magic_move_list);
+		system("PAUSE");
+	}
+	
 	Find_PV_Move(hash_entry.move, &move_list); //Find hash move if available
 
 	for (move = 0; move < move_list.num; move++) //For all moves in list
