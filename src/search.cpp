@@ -210,8 +210,6 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 
 	/***** Futility Pruning *****/
 	/* Here we determine if this node is elegible for futility pruning */
-	
-
 	if (depth <= 2
 		&& !is_pv
 		&& !in_check

@@ -54,105 +54,197 @@ void Magic_Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *move_list)
 		/**************** PAWNS ****************/
 		/***************************************/
 
-		//Loop through each pawn and test for every kind of move, separate loops for white and black
-		piece = wP;
-		for (i = 0; i < board->piece_num[wP]; i++)
+		/***** Single Pushes *****/
+		U64 single_pushes = board->piece_bitboards[wP] << 8; //Shift pawns forward
+		single_pushes &= ~occ; //Remove blockers
+		U64 double_pushes = (single_pushes & rank_masks[RANK_3]) << 8; //Shift pushes on rank 3
+		double_pushes &= ~occ; //Remove blockers
+
+		//Add single push moves
+		while (single_pushes)
 		{
-			//Get pawn index120
-			from120 = board->piece_list120[wP][i];
-			ASSERT(ON_BOARD_120(from120));
-
-			/***** Pushes and Promotions *****/
-			to120 = from120 + 10;
-			ASSERT(ON_BOARD_120(to120));
-
-			if (board->board_array120[to120] == EMPTY) //If next space is empty, this also means it is on the board
+			to = pop_1st_bit(&single_pushes);
+			if (GET_RANK_64(to) == RANK_8)//Promotions
 			{
-				/***** Single Pushes and Promotions *****/
-				//Add as a promotion if this leads to rank 8
-				if (GET_RANK_120(to120) == RANK_8)
-				{
-					Add_Move(move_list, from120, to120, wP, 0, QUEEN_PROMOTE, QUEEN_PROMOTE_SCORE, board);
-					Add_Move(move_list, from120, to120, wP, 0, ROOK_PROMOTE, UNDER_PROMOTE_SCORE, board);
-					Add_Move(move_list, from120, to120, wP, 0, BISHOP_PROMOTE, UNDER_PROMOTE_SCORE, board);
-					Add_Move(move_list, from120, to120, wP, 0, KNIGHT_PROMOTE, UNDER_PROMOTE_SCORE, board);
-				}
-				else //If not a promotion
-				{
-					Add_Move(move_list, from120, to120, wP, 0, NOT_SPECIAL, 0, board);
-				}
-
-				/***** Double Pushes *****/
-				to120 = from120 + 20;
-
-				//Same as before, first space in front already established as empty
-				if ((GET_RANK_120(from120) == RANK_2) && (board->board_array120[to120] == EMPTY)) //If pawn is on starting rank, and second square is also empty
-				{
-					Add_Move(move_list, from120, to120, wP, 0, NOT_SPECIAL, 0, board);
-				}
+				Add_Move(move_list, SQUARE_64_TO_120(to - 8), SQUARE_64_TO_120(to), wP, 0, QUEEN_PROMOTE, QUEEN_PROMOTE_SCORE, board);
+				Add_Move(move_list, SQUARE_64_TO_120(to - 8), SQUARE_64_TO_120(to), wP, 0, ROOK_PROMOTE, UNDER_PROMOTE_SCORE, board);
+				Add_Move(move_list, SQUARE_64_TO_120(to - 8), SQUARE_64_TO_120(to), wP, 0, BISHOP_PROMOTE, UNDER_PROMOTE_SCORE, board);
+				Add_Move(move_list, SQUARE_64_TO_120(to - 8), SQUARE_64_TO_120(to), wP, 0, KNIGHT_PROMOTE, UNDER_PROMOTE_SCORE, board);
 			}
-
-			/***** Normal and EP Captures *****/
-			//Check first target square
-			to120 = from120 + 9;
-			if (ON_BOARD_120(to120)) //If target square is on board
+			else //Non-promotions
 			{
-				if (IS_BLACK_PIECE(board->board_array120[to120])) //If target has a piece that can be taken
-				{
-					capture = board->board_array120[to120];
-					if (GET_RANK_120(to120) == RANK_8) //If capturing into promotion
-					{
-						Add_Move(move_list, from120, to120, wP, capture, QUEEN_PROMOTE, QUEEN_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, wP), board);
-						Add_Move(move_list, from120, to120, wP, capture, ROOK_PROMOTE, UNDER_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, wP), board);
-						Add_Move(move_list, from120, to120, wP, capture, BISHOP_PROMOTE, UNDER_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, wP), board);
-						Add_Move(move_list, from120, to120, wP, capture, KNIGHT_PROMOTE, UNDER_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, wP), board);
-					}
-					else
-					{
-						Add_Move(move_list, from120, to120, wP, capture, NOT_SPECIAL, GET_MMVLVA_SCORE(capture, wP), board);
-					}
-				}
-				else if (to120 == board->ep) //If target is ep square
-				{
-					capture = bP;
-					Add_Move(move_list, from120, to120, wP, capture, EP_CAPTURE, GET_MMVLVA_SCORE(capture, wP), board);
-				}
-			}
-
-			//Check second target square
-			to120 = from120 + 11;
-			if (ON_BOARD_120(to120)) //If target square is on board
-			{
-				if (IS_BLACK_PIECE(board->board_array120[to120])) //If target has a piece that can be taken
-				{
-					capture = board->board_array120[to120];
-					if (GET_RANK_120(to120) == RANK_8) //If capturing into promotion
-					{
-						Add_Move(move_list, from120, to120, wP, capture, QUEEN_PROMOTE, QUEEN_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, wP), board);
-						Add_Move(move_list, from120, to120, wP, capture, ROOK_PROMOTE, UNDER_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, wP), board);
-						Add_Move(move_list, from120, to120, wP, capture, BISHOP_PROMOTE, UNDER_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, wP), board);
-						Add_Move(move_list, from120, to120, wP, capture, KNIGHT_PROMOTE, UNDER_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, wP), board);
-					}
-					else
-					{
-						Add_Move(move_list, from120, to120, wP, capture, NOT_SPECIAL, GET_MMVLVA_SCORE(capture, wP), board);
-					}
-				}
-				else if (to120 == board->ep) //If target is ep square
-				{
-					capture = bP;
-					Add_Move(move_list, from120, to120, wP, capture, EP_CAPTURE, GET_MMVLVA_SCORE(capture, wP), board);
-				}
+				Add_Move(move_list, SQUARE_64_TO_120(to - 8), SQUARE_64_TO_120(to), wP, 0, NOT_SPECIAL, 0, board);
 			}
 		}
-		/***** End Pawn Moves *****/
+		
+		/***** Double Pushes *****/
+		while (double_pushes)
+		{
+			to = pop_1st_bit(&double_pushes);
+			Add_Move(move_list, SQUARE_64_TO_120(to - 16), SQUARE_64_TO_120(to), wP, 0, NOT_SPECIAL, 0, board);
+		}
+
+		/***** Left Captures *****/
+		U64 left_captures = (board->piece_bitboards[wP] << 7) & ~file_masks[FILE_H]; //Shift up and left
+		left_captures &= board->side_bitboards[BLACK]; //Find valid captures
+		U64 left_ep_attacks = left_captures & (1i64 << SQUARE_120_TO_64(board->ep)); //Check if ep square is hit
+
+		while (left_captures)
+		{
+			to = pop_1st_bit(&left_captures);
+			capture = board->board_array64[to];
+			ASSERT(capture != EMPTY);
+			if (GET_RANK_64(to) == RANK_8) //Promotions
+			{
+				Add_Move(move_list, SQUARE_64_TO_120(to - 7), SQUARE_64_TO_120(to), wP, capture, QUEEN_PROMOTE, QUEEN_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, wP), board);
+				Add_Move(move_list, SQUARE_64_TO_120(to - 7), SQUARE_64_TO_120(to), wP, capture, ROOK_PROMOTE, UNDER_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, wP), board);
+				Add_Move(move_list, SQUARE_64_TO_120(to - 7), SQUARE_64_TO_120(to), wP, capture, BISHOP_PROMOTE, UNDER_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, wP), board);
+				Add_Move(move_list, SQUARE_64_TO_120(to - 7), SQUARE_64_TO_120(to), wP, capture, KNIGHT_PROMOTE, UNDER_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, wP), board);
+
+			}
+			else //Non-promotions
+			{
+				Add_Move(move_list, SQUARE_64_TO_120(to - 7), SQUARE_64_TO_120(to), wP, capture, NOT_SPECIAL, GET_MMVLVA_SCORE(capture, wP), board);
+			}
+		}
+
+		/***** Right Captures *****/
+		U64 right_captures = (board->piece_bitboards[wP] << 9) & ~file_masks[FILE_A]; //Shift up and left
+		right_captures &= board->side_bitboards[BLACK]; //Find valid captures
+		U64 right_ep_attacks = right_captures & (1i64 << SQUARE_120_TO_64(board->ep)); //Check if ep square is hit
+
+		while (right_captures)
+		{
+			to = pop_1st_bit(&right_captures);
+			capture = board->board_array64[to];
+			ASSERT(capture != EMPTY);
+			if (GET_RANK_64(to) == RANK_8) //Promotions
+			{
+				Add_Move(move_list, SQUARE_64_TO_120(to - 9), SQUARE_64_TO_120(to), wP, capture, QUEEN_PROMOTE, QUEEN_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, wP), board);
+				Add_Move(move_list, SQUARE_64_TO_120(to - 9), SQUARE_64_TO_120(to), wP, capture, ROOK_PROMOTE, UNDER_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, wP), board);
+				Add_Move(move_list, SQUARE_64_TO_120(to - 9), SQUARE_64_TO_120(to), wP, capture, BISHOP_PROMOTE, UNDER_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, wP), board);
+				Add_Move(move_list, SQUARE_64_TO_120(to - 9), SQUARE_64_TO_120(to), wP, capture, KNIGHT_PROMOTE, UNDER_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, wP), board);
+
+			}
+			else //Non-promotions
+			{
+				Add_Move(move_list, SQUARE_64_TO_120(to - 9), SQUARE_64_TO_120(to), wP, capture, NOT_SPECIAL, GET_MMVLVA_SCORE(capture, wP), board);
+			}
+		}
+
+		/***** Ep Captures *****/
+		if (left_ep_attacks)
+		{
+			to = pop_1st_bit(&left_ep_attacks);
+			ASSERT(GET_RANK_64(to) == RANK_3)
+			Add_Move(move_list, SQUARE_64_TO_120(to - 7), SQUARE_64_TO_120(to), wP, bP, EP_CAPTURE, GET_MMVLVA_SCORE(bP, wP), board);
+		}
+		if (right_ep_attacks)
+		{
+			to = pop_1st_bit(&right_ep_attacks);
+			ASSERT(GET_RANK_64(to) == RANK_3)
+				Add_Move(move_list, SQUARE_64_TO_120(to - 9), SQUARE_64_TO_120(to), wP, bP, EP_CAPTURE, GET_MMVLVA_SCORE(bP, wP), board);
+		}
+
+
+		////Loop through each pawn and test for every kind of move, separate loops for white and black
+		//piece = wP;
+		//for (i = 0; i < board->piece_num[wP]; i++)
+		//{
+		//	//Get pawn index120
+		//	from120 = board->piece_list120[wP][i];
+		//	ASSERT(ON_BOARD_120(from120));
+
+		//	/***** Pushes and Promotions *****/
+		//	to120 = from120 + 10;
+		//	ASSERT(ON_BOARD_120(to120));
+
+		//	if (board->board_array120[to120] == EMPTY) //If next space is empty, this also means it is on the board
+		//	{
+		//		/***** Single Pushes and Promotions *****/
+		//		//Add as a promotion if this leads to rank 8
+		//		if (GET_RANK_120(to120) == RANK_8)
+		//		{
+		//			Add_Move(move_list, from120, to120, wP, 0, QUEEN_PROMOTE, QUEEN_PROMOTE_SCORE, board);
+		//			Add_Move(move_list, from120, to120, wP, 0, ROOK_PROMOTE, UNDER_PROMOTE_SCORE, board);
+		//			Add_Move(move_list, from120, to120, wP, 0, BISHOP_PROMOTE, UNDER_PROMOTE_SCORE, board);
+		//			Add_Move(move_list, from120, to120, wP, 0, KNIGHT_PROMOTE, UNDER_PROMOTE_SCORE, board);
+		//		}
+		//		else //If not a promotion
+		//		{
+		//			Add_Move(move_list, from120, to120, wP, 0, NOT_SPECIAL, 0, board);
+		//		}
+
+		//		/***** Double Pushes *****/
+		//		to120 = from120 + 20;
+
+		//		//Same as before, first space in front already established as empty
+		//		if ((GET_RANK_120(from120) == RANK_2) && (board->board_array120[to120] == EMPTY)) //If pawn is on starting rank, and second square is also empty
+		//		{
+		//			Add_Move(move_list, from120, to120, wP, 0, NOT_SPECIAL, 0, board);
+		//		}
+		//	}
+
+		//	/***** Normal and EP Captures *****/
+		//	//Check first target square
+		//	to120 = from120 + 9;
+		//	if (ON_BOARD_120(to120)) //If target square is on board
+		//	{
+		//		if (IS_BLACK_PIECE(board->board_array120[to120])) //If target has a piece that can be taken
+		//		{
+		//			capture = board->board_array120[to120];
+		//			if (GET_RANK_120(to120) == RANK_8) //If capturing into promotion
+		//			{
+		//				Add_Move(move_list, from120, to120, wP, capture, QUEEN_PROMOTE, QUEEN_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, wP), board);
+		//				Add_Move(move_list, from120, to120, wP, capture, ROOK_PROMOTE, UNDER_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, wP), board);
+		//				Add_Move(move_list, from120, to120, wP, capture, BISHOP_PROMOTE, UNDER_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, wP), board);
+		//				Add_Move(move_list, from120, to120, wP, capture, KNIGHT_PROMOTE, UNDER_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, wP), board);
+		//			}
+		//			else
+		//			{
+		//				Add_Move(move_list, from120, to120, wP, capture, NOT_SPECIAL, GET_MMVLVA_SCORE(capture, wP), board);
+		//			}
+		//		}
+		//		else if (to120 == board->ep) //If target is ep square
+		//		{
+		//			capture = bP;
+		//			Add_Move(move_list, from120, to120, wP, capture, EP_CAPTURE, GET_MMVLVA_SCORE(capture, wP), board);
+		//		}
+		//	}
+
+		//	//Check second target square
+		//	to120 = from120 + 11;
+		//	if (ON_BOARD_120(to120)) //If target square is on board
+		//	{
+		//		if (IS_BLACK_PIECE(board->board_array120[to120])) //If target has a piece that can be taken
+		//		{
+		//			capture = board->board_array120[to120];
+		//			if (GET_RANK_120(to120) == RANK_8) //If capturing into promotion
+		//			{
+		//				Add_Move(move_list, from120, to120, wP, capture, QUEEN_PROMOTE, QUEEN_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, wP), board);
+		//				Add_Move(move_list, from120, to120, wP, capture, ROOK_PROMOTE, UNDER_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, wP), board);
+		//				Add_Move(move_list, from120, to120, wP, capture, BISHOP_PROMOTE, UNDER_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, wP), board);
+		//				Add_Move(move_list, from120, to120, wP, capture, KNIGHT_PROMOTE, UNDER_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, wP), board);
+		//			}
+		//			else
+		//			{
+		//				Add_Move(move_list, from120, to120, wP, capture, NOT_SPECIAL, GET_MMVLVA_SCORE(capture, wP), board);
+		//			}
+		//		}
+		//		else if (to120 == board->ep) //If target is ep square
+		//		{
+		//			capture = bP;
+		//			Add_Move(move_list, from120, to120, wP, capture, EP_CAPTURE, GET_MMVLVA_SCORE(capture, wP), board);
+		//		}
+		//	}
+		//}
 
 		/***************************************/
 		/*************** KNIGHTS ***************/
 		/***************************************/
 		U64 knights_temp = board->piece_bitboards[wN];
 
-		//Loop until no rooks remain
+		//Loop until no knights remain
 		while (knights_temp)
 		{
 			from = pop_1st_bit(&knights_temp);
@@ -308,99 +400,97 @@ void Magic_Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *move_list)
 		/***************************************/
 		/**************** PAWNS ****************/
 		/***************************************/
+		/***** Single Pushes *****/
+		U64 single_pushes = board->piece_bitboards[bP] >> 8; //Shift pawns forward
+		single_pushes &= ~occ; //Remove blockers
+		U64 double_pushes = (single_pushes & rank_masks[RANK_6]) >> 8; //Shift pushes on rank 6
+		double_pushes &= ~occ; //Remove blockers
 
-		//Loop through each pawn and test for every kind of move
-		piece = bP;
-		for (i = 0; i < board->piece_num[bP]; i++)
+		//Add single push moves
+		while (single_pushes)
 		{
-			//Get pawn index120
-			from120 = board->piece_list120[bP][i];
-			ASSERT(ON_BOARD_120(from120));
-
-			/***** Pushes and Promotions *****/
-			to120 = from120 - 10;
-			ASSERT(ON_BOARD_120(to120));
-
-			if (board->board_array120[to120] == EMPTY) //If next space is empty, this also means it is on the board
+			to = pop_1st_bit(&single_pushes);
+			if (GET_RANK_64(to) == RANK_1)//Promotions
 			{
-				/***** Single Pushes and Promotions *****/
-				//Add as a promotion if this leads to rank 1
-				if (GET_RANK_120(to120) == RANK_1)
-				{
-					Add_Move(move_list, from120, to120, bP, 0, QUEEN_PROMOTE, QUEEN_PROMOTE_SCORE, board);
-					Add_Move(move_list, from120, to120, bP, 0, ROOK_PROMOTE, UNDER_PROMOTE_SCORE, board);
-					Add_Move(move_list, from120, to120, bP, 0, BISHOP_PROMOTE, UNDER_PROMOTE_SCORE, board);
-					Add_Move(move_list, from120, to120, bP, 0, KNIGHT_PROMOTE, UNDER_PROMOTE_SCORE, board);
-				}
-				else //If not a promotion
-				{
-					Add_Move(move_list, from120, to120, bP, 0, NOT_SPECIAL, 0, board);
-				}
-
-				/***** Double Pushes *****/
-				to120 = from120 - 20;
-
-				//Same as before, first space in front already established as empty
-				if ((GET_RANK_120(from120) == RANK_7) && (board->board_array120[to120] == EMPTY)) //If pawn is on starting rank, and second square is also empty
-				{
-					Add_Move(move_list, from120, to120, bP, 0, NOT_SPECIAL, 0, board);
-				}
+				Add_Move(move_list, SQUARE_64_TO_120(to + 8), SQUARE_64_TO_120(to), wP, 0, QUEEN_PROMOTE, QUEEN_PROMOTE_SCORE, board);
+				Add_Move(move_list, SQUARE_64_TO_120(to + 8), SQUARE_64_TO_120(to), wP, 0, ROOK_PROMOTE, UNDER_PROMOTE_SCORE, board);
+				Add_Move(move_list, SQUARE_64_TO_120(to + 8), SQUARE_64_TO_120(to), wP, 0, BISHOP_PROMOTE, UNDER_PROMOTE_SCORE, board);
+				Add_Move(move_list, SQUARE_64_TO_120(to + 8), SQUARE_64_TO_120(to), wP, 0, KNIGHT_PROMOTE, UNDER_PROMOTE_SCORE, board);
 			}
-
-			/***** Normal and EP Captures *****/
-			//Check first target square
-			to120 = from120 - 9;
-			if (ON_BOARD_120(to120)) //If target square is on board
+			else //Non-promotions
 			{
-				if (IS_WHITE_PIECE(board->board_array120[to120])) //If target has a piece that can be taken
-				{
-					capture = board->board_array120[to120];
-					if (GET_RANK_120(to120) == RANK_1) //If capturing into promotion
-					{
-						Add_Move(move_list, from120, to120, bP, capture, QUEEN_PROMOTE, QUEEN_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, bP), board);
-						Add_Move(move_list, from120, to120, bP, capture, ROOK_PROMOTE, UNDER_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, bP), board);
-						Add_Move(move_list, from120, to120, bP, capture, BISHOP_PROMOTE, UNDER_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, bP), board);
-						Add_Move(move_list, from120, to120, bP, capture, KNIGHT_PROMOTE, UNDER_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, bP), board);
-					}
-					else
-					{
-						Add_Move(move_list, from120, to120, bP, capture, NOT_SPECIAL, GET_MMVLVA_SCORE(capture, bP), board);
-					}
-				}
-				else if (to120 == board->ep) //If target is ep square
-				{
-					capture = wP;
-					Add_Move(move_list, from120, to120, bP, capture, EP_CAPTURE, GET_MMVLVA_SCORE(capture, bP), board);
-				}
-			}
-
-			//Check second target square
-			to120 = from120 - 11;
-			if (ON_BOARD_120(to120)) //If target square is on board
-			{
-				if (IS_WHITE_PIECE(board->board_array120[to120])) //If target has a piece that can be taken
-				{
-					capture = board->board_array120[to120];
-					if (GET_RANK_120(to120) == RANK_1) //If capturing into promotion
-					{
-						Add_Move(move_list, from120, to120, bP, capture, QUEEN_PROMOTE, QUEEN_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, bP), board);
-						Add_Move(move_list, from120, to120, bP, capture, ROOK_PROMOTE, UNDER_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, bP), board);
-						Add_Move(move_list, from120, to120, bP, capture, BISHOP_PROMOTE, UNDER_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, bP), board);
-						Add_Move(move_list, from120, to120, bP, capture, KNIGHT_PROMOTE, UNDER_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, bP), board);
-					}
-					else
-					{
-						Add_Move(move_list, from120, to120, bP, capture, NOT_SPECIAL, GET_MMVLVA_SCORE(capture, bP), board);
-					}
-				}
-				else if (to120 == board->ep) //If target is ep square
-				{
-					capture = wP;
-					Add_Move(move_list, from120, to120, bP, capture, EP_CAPTURE, GET_MMVLVA_SCORE(capture, bP), board);
-				}
+				Add_Move(move_list, SQUARE_64_TO_120(to + 8), SQUARE_64_TO_120(to), bP, 0, NOT_SPECIAL, 0, board);
 			}
 		}
-		/***** End Pawn Moves *****/
+
+		/***** Double Pushes *****/
+		while (double_pushes)
+		{
+			to = pop_1st_bit(&double_pushes);
+			Add_Move(move_list, SQUARE_64_TO_120(to + 16), SQUARE_64_TO_120(to), bP, 0, NOT_SPECIAL, 0, board);
+		}
+
+		/***** Left Captures *****/
+		U64 left_captures = (board->piece_bitboards[bP] >> 9) & ~file_masks[FILE_H]; //Shift down and left
+		left_captures &= board->side_bitboards[WHITE]; //Find valid captures
+		U64 left_ep_attacks = left_captures & (1i64 << SQUARE_120_TO_64(board->ep)); //Check if ep square is hit
+
+		while (left_captures)
+		{
+			to = pop_1st_bit(&left_captures);
+			capture = board->board_array64[to];
+			ASSERT(capture != EMPTY);
+			if (GET_RANK_64(to) == RANK_1) //Promotions
+			{
+				Add_Move(move_list, SQUARE_64_TO_120(to + 9), SQUARE_64_TO_120(to), bP, capture, QUEEN_PROMOTE, QUEEN_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, bP), board);
+				Add_Move(move_list, SQUARE_64_TO_120(to + 9), SQUARE_64_TO_120(to), bP, capture, ROOK_PROMOTE, UNDER_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, bP), board);
+				Add_Move(move_list, SQUARE_64_TO_120(to + 9), SQUARE_64_TO_120(to), bP, capture, BISHOP_PROMOTE, UNDER_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, bP), board);
+				Add_Move(move_list, SQUARE_64_TO_120(to + 9), SQUARE_64_TO_120(to), bP, capture, KNIGHT_PROMOTE, UNDER_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, bP), board);
+
+			}
+			else //Non-promotions
+			{
+				Add_Move(move_list, SQUARE_64_TO_120(to + 9), SQUARE_64_TO_120(to), bP, capture, NOT_SPECIAL, GET_MMVLVA_SCORE(capture, bP), board);
+			}
+		}
+
+		/***** Right Captures *****/
+		U64 right_captures = (board->piece_bitboards[bP] >> 7) & ~file_masks[FILE_A]; //Shift down and right
+		right_captures &= board->side_bitboards[WHITE]; //Find valid captures
+		U64 right_ep_attacks = right_captures & (1i64 << SQUARE_120_TO_64(board->ep)); //Check if ep square is hit
+
+		while (right_captures)
+		{
+			to = pop_1st_bit(&right_captures);
+			capture = board->board_array64[to];
+			ASSERT(capture != EMPTY);
+			if (GET_RANK_64(to) == RANK_1) //Promotions
+			{
+				Add_Move(move_list, SQUARE_64_TO_120(to + 7), SQUARE_64_TO_120(to), bP, capture, QUEEN_PROMOTE, QUEEN_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, bP), board);
+				Add_Move(move_list, SQUARE_64_TO_120(to + 7), SQUARE_64_TO_120(to), bP, capture, ROOK_PROMOTE, UNDER_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, bP), board);
+				Add_Move(move_list, SQUARE_64_TO_120(to + 7), SQUARE_64_TO_120(to), bP, capture, BISHOP_PROMOTE, UNDER_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, bP), board);
+				Add_Move(move_list, SQUARE_64_TO_120(to + 7), SQUARE_64_TO_120(to), bP, capture, KNIGHT_PROMOTE, UNDER_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, bP), board);
+
+			}
+			else //Non-promotions
+			{
+				Add_Move(move_list, SQUARE_64_TO_120(to + 7), SQUARE_64_TO_120(to), bP, capture, NOT_SPECIAL, GET_MMVLVA_SCORE(capture, bP), board);
+			}
+		}
+
+		/***** Ep Captures *****/
+		if (left_ep_attacks)
+		{
+			to = pop_1st_bit(&left_ep_attacks);
+			ASSERT(GET_RANK_64(to) == RANK_6)
+				Add_Move(move_list, SQUARE_64_TO_120(to + 9), SQUARE_64_TO_120(to), bP, wP, EP_CAPTURE, GET_MMVLVA_SCORE(wP, bP), board);
+		}
+		if (right_ep_attacks)
+		{
+			to = pop_1st_bit(&right_ep_attacks);
+			ASSERT(GET_RANK_64(to) == RANK_6)
+				Add_Move(move_list, SQUARE_64_TO_120(to + 7), SQUARE_64_TO_120(to), bP, wP, EP_CAPTURE, GET_MMVLVA_SCORE(wP, bP), board);
+		}
 
 		/***************************************/
 		/*************** KNIGHTS ***************/
