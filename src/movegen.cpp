@@ -11,14 +11,7 @@ void Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *move_list)
 	const int side = board->side; //Store side to move
 
 	/***** Clear move list *****/
-	for (i = 0; i < move_list->num; i++)
-	{
-		move_list->list[i].move = 0;
-		move_list->list[i].score = 0;
-	}
-
-	move_list->num = 0;
-	/***** Move list now empty *****/
+	Clear_Movelist(move_list);
 
 
 	ASSERT((side == WHITE) || (side == BLACK));

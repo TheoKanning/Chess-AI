@@ -12,7 +12,7 @@
 
 #define PROGRAM_NAME "Chess-AI"
 #define AUTHOR	"Theo Kanning"
-#define VERSION_NO	1.27
+#define VERSION_NO	1.30
 
 #ifndef DEBUG
         #define ASSERT(x)
@@ -300,6 +300,7 @@ extern int Get_Board_Piece_Square_Score(BOARD_STRUCT *board);
 extern int Get_Piece_Square_Score(int index64, int piece, float phase);
 extern int Get_Pawn_Eval_Score(BOARD_STRUCT *board);
 extern int Get_King_Safety_Score(BOARD_STRUCT *board);
+extern int Get_Pawn_And_King_Score(BOARD_STRUCT *board);
 extern void Init_Pawn_Masks(void);
 
 //hashkeys
@@ -355,7 +356,6 @@ extern int Is_Checking_Move(int move_num, BOARD_STRUCT *board);
 extern void Print_Move(MOVE_STRUCT *move);
 extern char* UCI_Move_String(MOVE_STRUCT *move);
 
-
 //movegen
 extern void Generate_Moves(BOARD_STRUCT*, MOVE_LIST_STRUCT*);
 
@@ -367,7 +367,13 @@ extern void Get_Next_Move(int num, MOVE_LIST_STRUCT *move_list);
 extern void Get_Next_Capture_Move(int num, MOVE_LIST_STRUCT *move_list);
 extern void Add_Move(MOVE_LIST_STRUCT *move_list, int from, int to, int piece, int capture, int special, int score, BOARD_STRUCT *board);
 extern int Movelists_Identical(MOVE_LIST_STRUCT *ptr1, MOVE_LIST_STRUCT *ptr2);
+extern void Clear_Movelist(MOVE_LIST_STRUCT *ptr);
 extern void Print_Move_List(MOVE_LIST_STRUCT *move_list);
+
+//pawn_hash_table
+extern void Add_Pawn_Hash_Entry(int score, U64 hash);
+extern int Get_Pawn_Hash_Entry(U64 hash);
+extern void Clear_Pawn_Hash_Table(void);
 
 //perft
 extern int Perft_Test(char *fen, int depth, BOARD_STRUCT *board);

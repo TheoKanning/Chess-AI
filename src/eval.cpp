@@ -8,7 +8,6 @@
 #define START_MATERIAL			8000
 #define START_BIG_MATERIAL		6400
 
-#define PASSED_PAWN_SCORE		20
 #define ISOLATED_PAWN_SCORE	   -15
 #define DOUBLED_PAWN_SCORE		5	//This is counted once for each pawn
 
@@ -50,11 +49,7 @@ int Evaluate_Board(BOARD_STRUCT *board)
 	if (board->piece_num[bR] >= 2) score -= ROOK_PAIR;
 
 	/* Pawn structure score */
-	score += Get_Pawn_Eval_Score(board);
-
-	/* King Safety */
-	score += Get_King_Safety_Score(board);
-
+	score += Get_Pawn_And_King_Score(board);
 
 	/* Low material correction 
 	* Divide score in cases of drawish endings (add later) 
@@ -94,7 +89,6 @@ int Get_Pawn_Eval_Score(BOARD_STRUCT *board)
 
 		//If a white pawn is found in the same file
 		if ((board->pawn_bitboards[WHITE] & doubled_masks[sq64]) != 0) score -= DOUBLED_PAWN_SCORE;
-
 	}
 
 
@@ -234,4 +228,21 @@ int Get_King_Safety_Score(BOARD_STRUCT *board)
 
 	return white_score - black_score;
 
+}
+
+//Returns evaluation for pawns and kings, checks hash table for hit
+int Get_Pawn_And_King_Score(BOARD_STRUCT *board)
+{
+	//Check hash table
+	int hash_score = Get_Pawn_Hash_Entry(board->pawn_hash_key);
+	//if (hash_score != INVALID) return hash_score;
+
+	//Calculate scores and store hash data
+	int score = Get_Pawn_Eval_Score(board);
+
+	score += Get_King_Safety_Score(board);
+
+	Add_Pawn_Hash_Entry(score, board->pawn_hash_key);
+
+	return score;
 }

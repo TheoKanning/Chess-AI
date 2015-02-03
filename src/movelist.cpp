@@ -11,10 +11,14 @@ using namespace std;
 void Get_Next_Move(int num, MOVE_LIST_STRUCT *move_list)
 {
 	int high_index = num;
-	for (int i = num + 1; i < move_list->num; i++)
+	int high_score = -INF;
+	for (int i = num; i < move_list->num; i++)
 	{
-		if (move_list->list[i].score > move_list->list[high_index].score)
+		if (move_list->list[i].score > high_score)
+		{
+			high_score = move_list->list[i].score;
 			high_index = i; //Store new high index
+		}
 	}
 
 	//Move high scoring move to nth position so it won't be searched again
@@ -28,10 +32,15 @@ void Get_Next_Move(int num, MOVE_LIST_STRUCT *move_list)
 void Get_Next_Capture_Move(int num, MOVE_LIST_STRUCT *move_list)
 {
 	int high_index = num;
-	for (int i = num + 1; i < move_list->num; i++)
+	int high_score = -INF;
+
+	for (int i = num; i < move_list->num; i++)
 	{
-		if ((move_list->list[i].score > move_list->list[high_index].score))
+		if ((move_list->list[i].score > high_score))
+		{
+			high_score = move_list->list[i].score;
 			high_index = i; //Store new high index
+		}
 	}
 
 	if (move_list->list[high_index].score >= CAPTURE_SCORE)
@@ -186,6 +195,13 @@ int Movelists_Identical(MOVE_LIST_STRUCT *ptr1, MOVE_LIST_STRUCT *ptr2)
 		if (!found) return 0;
 	}
 	return 1;
+}
+
+//Clears a movelist
+void Clear_Movelist(MOVE_LIST_STRUCT *ptr)
+{
+	ptr->num = 0;
+	memset(ptr->list, 0, MAX_MOVE_LIST_LENGTH*sizeof(MOVE_STRUCT));
 }
 
 //Prints all moves in standard chess format

@@ -191,7 +191,31 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 				return value; 
 		}
 	}
-	
+
+	/***** Search Hash Move *****/
+	/* Searching the hash move before generating any others can save time */
+	/*
+	if (hash_entry.move != 0)
+	{
+		if (Make_Move(hash_entry.move, board)) //If move is legal (it should be)
+		{
+			mate = 0;
+			score = -Alpha_Beta(-beta, -alpha, depth - 1, is_pv, board, info);
+
+			Take_Move(board);
+
+			if (score >= beta) return score; //Hash has already been stored here, so no need to save again
+
+			if (score > best_score)
+			{
+				best_score = score;
+				best_move = hash_entry.move;
+				if (best_score > alpha) alpha = best_score;
+			}
+		}
+	}
+	*/
+
 	/***** Null Move *****/
 	if (depth >= 4 
 	&& info->null_available 
@@ -232,7 +256,7 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 	}
 	*/
 	Find_PV_Move(hash_entry.move, &move_list); //Find hash move if available
-
+	
 	for (move = 0; move < move_list.num; move++) //For all moves in list
 	{
 		/***** Get best move *****/

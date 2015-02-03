@@ -37,5 +37,7 @@ Version Notes:
 	 - Can change options before entering UCI loop
 	 - Tuned passed pawn and king endgame values
 1.30 - Won't see if move causes check unless pruning is available
+	 - Faster under attack function
+	 - Better movelist clearing
 
 

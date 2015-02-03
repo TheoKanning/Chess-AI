@@ -36,14 +36,8 @@ void Magic_Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *move_list)
 	U64 occ = board->side_bitboards[BOTH];
 
 	/***** Clear move list *****/
-	for (i = 0; i < move_list->num; i++)
-	{
-		move_list->list[i].move = 0;
-		move_list->list[i].score = 0;
-	}
+	Clear_Movelist(move_list);
 
-	move_list->num = 0;
-	/***** Move list now empty *****/
 
 
 	ASSERT((side == WHITE) || (side == BLACK));

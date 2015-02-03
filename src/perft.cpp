@@ -54,6 +54,7 @@ int Search(BOARD_STRUCT *board, int depth)
 
 	//Generate all moves
 	Generate_Moves(board, &move_list);
+	/*
 	Magic_Generate_Moves(board, &magic_move_list);
 
 	if (!Movelists_Identical(&move_list, &magic_move_list))
@@ -64,6 +65,7 @@ int Search(BOARD_STRUCT *board, int depth)
 		Print_Move_List(&magic_move_list);
 		system("PAUSE");
 	}
+	*/
 
 	//For each move
 	for (index = 0; index < move_list.num; index++)
@@ -97,7 +99,7 @@ int Magic_Search(BOARD_STRUCT *board, int depth)
 	{
 		if (Make_Move(move_list.list[index].move, board)) //If make move is successful
 		{
-			Search(board, depth - 1);
+			Magic_Search(board, depth - 1);
 			Take_Move(board);
 		}
 	}
