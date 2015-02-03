@@ -29,6 +29,7 @@ int main()
 	Init_Pawn_Masks();
 	Init_Board(&board);
 	Generate_Magic_Moves();
+	Generate_Between_Squares();
 	Set_King_End_Values();
 
 	char line[256];
@@ -51,7 +52,7 @@ int main()
 			continue;
 		}
 		if (!strncmp(line, "perft", 5)){
-			Perft_Test("r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 w - - 0 10", 4, &board);
+			Perft_Test("rnbqkb1r/pp1p1ppp/2p5/4P3/2B5/8/PPP1NnPP/RNBQK2R w KQkq - 0 6", 4, &board);
 		}
 		else if (!strncmp(line, "test", 4))	{
 			Parse_Position(DRAW_ERROR_POS, &board);

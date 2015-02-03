@@ -30,7 +30,7 @@ void Add_Slider_Piece_Moves(int piece, int from, U64 occ, MOVE_LIST_STRUCT *move
 //Generates all moves using magic bitboards
 void Magic_Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *move_list)
 {
-	int i, from120, to120, piece, capture, from, to;
+	int i, capture, from, to;
 	const int side = board->side; //Store side to move
 	U64 attacks;
 	U64 occ = board->side_bitboards[BOTH];
@@ -86,8 +86,8 @@ void Magic_Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *move_list)
 
 		/***** Left Captures *****/
 		U64 left_captures = (board->piece_bitboards[wP] << 7) & ~file_masks[FILE_H]; //Shift up and left
-		left_captures &= board->side_bitboards[BLACK]; //Find valid captures
 		U64 left_ep_attacks = left_captures & (1i64 << SQUARE_120_TO_64(board->ep)); //Check if ep square is hit
+		left_captures &= board->side_bitboards[BLACK]; //Find valid captures
 
 		while (left_captures)
 		{
@@ -110,8 +110,9 @@ void Magic_Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *move_list)
 
 		/***** Right Captures *****/
 		U64 right_captures = (board->piece_bitboards[wP] << 9) & ~file_masks[FILE_A]; //Shift up and left
-		right_captures &= board->side_bitboards[BLACK]; //Find valid captures
 		U64 right_ep_attacks = right_captures & (1i64 << SQUARE_120_TO_64(board->ep)); //Check if ep square is hit
+		right_captures &= board->side_bitboards[BLACK]; //Find valid captures
+		
 
 		while (right_captures)
 		{
@@ -249,7 +250,7 @@ void Magic_Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *move_list)
 		{
 			from = pop_1st_bit(&knights_temp);
 			//Calculate attack spaces and remove friendly targets
-			attacks = magicMovesKnight[from] & ~board->side_bitboards[WHITE];
+			attacks = knight_attack_masks[from] & ~board->side_bitboards[WHITE];
 			while (attacks)
 			{
 				to = pop_1st_bit(&attacks);
@@ -357,7 +358,7 @@ void Magic_Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *move_list)
 
 		from = pop_1st_bit(&king_temp);
 		//Calculate attack spaces and remove friendly targets
-		attacks = magicMovesKing[from] & ~board->side_bitboards[WHITE];
+		attacks = king_attack_masks[from] & ~board->side_bitboards[WHITE];
 		while (attacks)
 		{
 			to = pop_1st_bit(&attacks);
@@ -503,7 +504,7 @@ void Magic_Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *move_list)
 		{
 			from = pop_1st_bit(&knights_temp);
 			//Calculate attack spaces and remove friendly targets
-			attacks = magicMovesKnight[from] & ~board->side_bitboards[BLACK];
+			attacks = knight_attack_masks[from] & ~board->side_bitboards[BLACK];
 			while (attacks)
 			{
 				to = pop_1st_bit(&attacks);
@@ -609,7 +610,7 @@ void Magic_Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *move_list)
 
 		from = pop_1st_bit(&king_temp);
 		//Calculate attack spaces and remove friendly targets
-		attacks = magicMovesKing[from] & ~board->side_bitboards[BLACK];
+		attacks = king_attack_masks[from] & ~board->side_bitboards[BLACK];
 		while (attacks)
 		{
 			to = pop_1st_bit(&attacks);

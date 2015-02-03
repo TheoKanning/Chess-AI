@@ -150,6 +150,7 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 	HASH_ENTRY_STRUCT hash_entry;
 	hash_entry.move = 0;
 	int valid = 0;
+	int checking_move = 0;
 
 	info->nodes++;
 	//Check for timeout
@@ -219,7 +220,7 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 
 	/***** Move generation and sorting *****/
 	Generate_Moves(board, &move_list);
-	Magic_Generate_Moves(board, &magic_move_list);
+	/*Magic_Generate_Moves(board, &magic_move_list);
 
 	if (!Movelists_Identical(&move_list, &magic_move_list))
 	{
@@ -229,7 +230,7 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 		Print_Move_List(&magic_move_list);
 		system("PAUSE");
 	}
-	
+	*/
 	Find_PV_Move(hash_entry.move, &move_list); //Find hash move if available
 
 	for (move = 0; move < move_list.num; move++) //For all moves in list
@@ -246,8 +247,8 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 		mate = 0; //A move has been made
 
 		//See if current move leads to check, important for pruning and reductions
-		int checking_move = In_Check(board->side, board);
-
+		if((f_prune_allowed || move >= LATE_MOVE_NUM) && CAN_REDUCE(current_move)) checking_move = In_Check(board->side, board);
+		else checking_move = 0;
 		/***** Futility Pruning *****/
 		if (f_prune_allowed
 			&&  !IS_CAPTURE(current_move)

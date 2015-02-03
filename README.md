@@ -35,4 +35,7 @@ Version Notes:
 1.28 - Can be told to quit mid-search
 	 - Won't null prune if mate found
 	 - Can change options before entering UCI loop
+	 - Tuned passed pawn and king endgame values
+1.30 - Won't see if move causes check unless pruning is available
+
 

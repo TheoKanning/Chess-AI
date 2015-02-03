@@ -238,6 +238,24 @@ typedef struct
 
 
 /***** Global Functions *****/
+//attack
+extern int Under_Attack(int target120, int side, BOARD_STRUCT *board);
+extern int Under_Attack_Fast(int sq, int side, BOARD_STRUCT *board);
+extern int In_Check(int side, BOARD_STRUCT *board);
+extern U64 between[64][64]; 
+extern void Generate_Between_Squares(void);
+
+//attack masks
+extern const U64 knight_attack_masks[64];
+extern const U64 king_attack_masks[64];
+extern const U64 wpawn_attack_masks[64];
+extern const U64 bpawn_attack_masks[64];
+extern const U64 rook_attack_masks[64];
+extern const U64 bishop_attack_masks[64];
+extern void Generate_King_Knight_Attack_Masks(void);
+extern void Generate_Pawn_Attack_Masks(void);
+extern void Generate_Rook_Bishop_Attack_Masks(void);
+
 //board
 extern void Init_Board(BOARD_STRUCT *board);
 extern void Update_Piece_Lists(BOARD_STRUCT *board);
@@ -309,20 +327,17 @@ extern void Add_Killer_Move(int move, BOARD_STRUCT *board);
 //magic_data
 extern const U64 R_Magic[64];
 extern const U64 B_Magic[64];
-extern const int R_Bits[64];
-extern const int B_Bits[64];
 extern const U64 R_Occ[64];
 extern const U64 B_Occ[64];
+extern const int R_Bits[64];
+extern const int B_Bits[64];
 extern int count_1s(U64 b);
 extern const int BitTable[64];
 extern int pop_1st_bit(U64 *bb);
 extern int transform(U64 b, U64 magic, int bits);
 extern U64 magicMovesRook[64][4096];
 extern U64 magicMovesBishop[64][512];
-extern const U64 magicMovesKnight[64];
-extern const U64 magicMovesKing[64];
 extern void Generate_Occupancy_Masks(void);
-extern void Generate_King_Knight_Attack_Masks(void);
 extern void Generate_Magic_Numbers(void);
 extern void Generate_Magic_Moves(void);
 
@@ -343,8 +358,6 @@ extern char* UCI_Move_String(MOVE_STRUCT *move);
 
 //movegen
 extern void Generate_Moves(BOARD_STRUCT*, MOVE_LIST_STRUCT*);
-extern int Under_Attack(int target120, int side, BOARD_STRUCT *board);
-extern int In_Check(int side, BOARD_STRUCT *board);
 
 //movelist
 extern void Sort_Moves(MOVE_LIST_STRUCT *move_list);
