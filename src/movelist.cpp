@@ -137,29 +137,39 @@ void Add_Move(MOVE_LIST_STRUCT *move_list, int from, int to, int piece, int capt
 	//Store in list and update counter
 	move_list->list[move_list->num].move = temp;
 	
-	//Update score using killer and history heuristics
-	move_list->list[move_list->num].score = 0;//Start with zero in case other heuristics miss
-	if (score != 0) //Skip if move has an MVVLVA or promote score
+	if (score != 0)
 	{
-		move_list->list[move_list->num].score = score;
+		move_list->list[move_list->num].score = score;//Add parameter score
 	}
-	else if (temp == board->the_killers[board->hply][0])//if move matches first killer move
+	else //Check heuristics for scoring
 	{
-		move_list->list[move_list->num].score = KILLER_MOVE_SCORE;
-	}
-	else if (temp == board->the_killers[board->hply][1])//if move matches second killer move
-	{
-		move_list->list[move_list->num].score = KILLER_MOVE_SCORE - 1;
-	}
-	else if (board->hply >= 2) //If killer moves from ply - 2 are available
-	{
-		if (temp == board->the_killers[board->hply - 2][0])//if move matches first killer move
+		move_list->list[move_list->num].score = 0;
+
+		//Killer moves
+		if (temp == board->the_killers[board->hply][0])//if move matches first killer move
 		{
-			move_list->list[move_list->num].score = KILLER_MOVE_SCORE - 2;
+			move_list->list[move_list->num].score = KILLER_MOVE_SCORE;
 		}
-		else if (temp == board->the_killers[board->hply - 2][1])//if move matches second killer move
+		else if (temp == board->the_killers[board->hply][1])//if move matches second killer move
 		{
-			move_list->list[move_list->num].score = KILLER_MOVE_SCORE - 3;
+			move_list->list[move_list->num].score = KILLER_MOVE_SCORE - 1;
+		}
+		else if (board->hply >= 2) //If killer moves from ply - 2 are available
+		{
+			if (temp == board->the_killers[board->hply - 2][0])//if move matches first killer move
+			{
+				move_list->list[move_list->num].score = KILLER_MOVE_SCORE - 2;
+			}
+			else if (temp == board->the_killers[board->hply - 2][1])//if move matches second killer move
+			{
+				move_list->list[move_list->num].score = KILLER_MOVE_SCORE - 3;
+			}
+		}
+
+		//Piece square ordering
+		if (move_list->list[move_list->num].score == 0) //If score is still zero
+		{
+			move_list->list[move_list->num].score = middle_piece_square_tables[piece][SQUARE_120_TO_64(to)] - middle_piece_square_tables[piece][SQUARE_120_TO_64(from)];
 		}
 	}
 	/*
@@ -192,7 +202,12 @@ int Movelists_Identical(MOVE_LIST_STRUCT *ptr1, MOVE_LIST_STRUCT *ptr2)
 		{
 			if (move == ptr2->list[j].move && score == ptr2->list[j].score) found = 1;
 		}
-		if (!found) return 0;
+		if (!found)
+		{
+			Print_Move(&ptr1->list[i]);
+			printf(" not found!\n");
+			return 0;
+		}
 	}
 	return 1;
 }

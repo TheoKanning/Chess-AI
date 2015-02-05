@@ -26,7 +26,7 @@ int main()
 {
 	cout << PROGRAM_NAME << " version " << VERSION_NO << endl << AUTHOR << endl;
 	Init_Hashkeys();
-	Init_Hash_Table();
+	Clear_Hash_Table();
 	Init_Pawn_Masks();
 	Init_Board(&board);
 	Generate_Magic_Moves();
@@ -78,6 +78,10 @@ int main()
 			}
 			system("PAUSE");
 			break;
+		}
+		else if (!strncmp(line, "search_test", 11)) {
+			Search_Test();
+			system("PAUSE");
 		}
 		else if (!strncmp(line, "setoption name keps", 18)) {
 

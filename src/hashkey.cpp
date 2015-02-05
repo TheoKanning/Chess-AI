@@ -284,7 +284,7 @@ void Remove_Hash_Entry(U64 hash)
 }
 
 //Initializes hash table and clears all entries
-void Init_Hash_Table(void)
+void Clear_Hash_Table(void)
 {
 	memset(hash_table, 0, sizeof(hash_table));
 }

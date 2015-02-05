@@ -8,7 +8,7 @@
 
 /***** Global Macros *****/
 
-//#define DEBUG //Define debug mode for full assert function
+#define DEBUG //Define debug mode for full assert function
 
 #define PROGRAM_NAME "Chess-AI"
 #define AUTHOR	"Theo Kanning"
@@ -305,7 +305,7 @@ extern void Init_Pawn_Masks(void);
 
 //hashkeys
 extern void Init_Hashkeys(void);
-extern void Init_Hash_Table(void);
+extern void Clear_Hash_Table(void);
 extern void Compute_Hash(BOARD_STRUCT *board);
 extern void Add_Hash_Entry(HASH_ENTRY_STRUCT *hash_ptr, int ply, SEARCH_INFO_STRUCT *info);
 extern void Remove_Hash_Entry(U64 hash);
@@ -346,6 +346,7 @@ extern void Generate_Magic_Moves(void);
 extern U64 Rook_Attacks(U64 occ, int sq);
 extern U64 Bishop_Attacks(U64 occ, int sq);
 extern void Magic_Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *list);
+extern void Magic_Generate_Capture_Promote_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *move_list);
 
 //makemove
 extern int Make_Move(int move_num, BOARD_STRUCT *board);
@@ -393,6 +394,10 @@ extern int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *b
 extern int Quiescent_Search(int alpha, int beta, BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info);
 extern int Search_Position(BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info);
 extern int Draw_Error_Found(int move, BOARD_STRUCT *board);
+extern void Internal_Iterative_Deepening(int alpha, int beta, int depth, MOVE_LIST_STRUCT *move_list, BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info);
+
+//search_test
+extern void Search_Test(void);
 
 //see
 extern int Static_Exchange_Evaluation(int move, BOARD_STRUCT *board);

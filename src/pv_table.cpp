@@ -61,6 +61,7 @@ void Clear_PV_List(PV_LIST_STRUCT *pv)
 int Find_PV_Move(int move_num, MOVE_LIST_STRUCT *move_list)
 {
 	int index;
+	if (move_num == 0) return 0;
 
 	for (index = 0; index < move_list->num; index++)
 	{

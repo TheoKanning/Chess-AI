@@ -250,8 +250,9 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 
 	/***** Move generation and sorting *****/
 	Generate_Moves(board, &move_list);
-	Magic_Generate_Moves(board, &magic_move_list);
+	//Magic_Generate_Moves(board, &move_list);
 
+	/*
 	if (!Movelists_Identical(&move_list, &magic_move_list))
 	{
 		Print_Board(board);
@@ -262,8 +263,19 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 		Magic_Generate_Moves(board, &magic_move_list);
 		system("PAUSE");
 	}
+	*/
 	
-	Find_PV_Move(hash_entry.move, &move_list); //Find hash move if available
+	if (!Find_PV_Move(hash_entry.move, &move_list)) //If hash move not found
+	{
+		/***** Internal Iterative Deepening *****/
+		/* This funtion is almost never called, but it's an insurance measure in case it's ever needed*/
+		if (is_pv
+			&& depth >= 5
+			&& info->null_available)
+		{
+			Internal_Iterative_Deepening(alpha, beta, depth, &move_list, board, info);
+		}
+	}
 	
 	for (move = 0; move < move_list.num; move++) //For all moves in list
 	{
@@ -426,7 +438,8 @@ int Quiescent_Search(int alpha, int beta, BOARD_STRUCT *board, SEARCH_INFO_STRUC
 	if (score >= beta) return beta;
 	if (alpha < score) alpha = score;
 
-	Generate_Moves(board, &move_list);
+	Magic_Generate_Capture_Promote_Moves(board, &move_list);
+	//Generate_Moves(board, &move_list);
 
 	//Set_Quiescent_SEE_Scores(&move_list, board);
 
@@ -521,4 +534,29 @@ int Draw_Error_Found(int move, BOARD_STRUCT *board)
 	ASSERT(hash == board->hash_key);
 
 	return draw;
+}
+
+//Searches every move in the list, and sorts them according to their scores 
+void Internal_Iterative_Deepening(int alpha, int beta, int depth, MOVE_LIST_STRUCT *move_list, BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info)
+{
+	int iid_depth = depth / 2; //Search at half depth
+
+	U64 hash = board->hash_key;
+
+	for (int i = 0; i < move_list->num; i++)
+	{
+		//Make move
+		if (Make_Move(move_list->list[i].move, board))
+		{
+			move_list->list[i].score = -Alpha_Beta(-beta, -alpha, iid_depth, PV, board, info);
+
+			Take_Move(board);
+		}
+		else //Move not successful
+		{
+			move_list->list[i].score = -10000; //Search these last
+		}
+	}
+
+	ASSERT(hash == board->hash_key);
 }
