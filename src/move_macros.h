@@ -62,12 +62,13 @@
 #define CLEAR_SPECIAL(x)		((x &= ~(specialMask << specialShift)))
 
 //Moves scores
-#define PV_SCORE				10000
-#define QUEEN_PROMOTE_SCORE		2000
-#define CAPTURE_SCORE			1000	//Number to add to make capture scores higher or lower than other heuristics
-#define UNDER_PROMOTE_SCORE		500
-#define KILLER_MOVE_SCORE		300
-#define HISTORY_SCORE_MAX		100
+#define PV_SCORE				1000000
+#define QUEEN_PROMOTE_SCORE		200000
+#define CAPTURE_SCORE			100000	//Number to add to make capture scores higher or lower than other heuristics
+#define LOSING_CAPTURE_SCORE	50000
+#define UNDER_PROMOTE_SCORE		5000
+#define KILLER_MOVE_SCORE		3000
+#define HISTORY_SCORE_MAX		1000
 #define GET_MMVLVA_SCORE(x,y)	(CAPTURE_SCORE + MMV_SCORES[x] + LVA_SCORES[y])
 #define IS_KILLER(score)		(score > KILLER_MOVE_SCORE - 4 && score <= KILLER_MOVE_SCORE)
 

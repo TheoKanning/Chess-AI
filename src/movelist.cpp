@@ -43,7 +43,7 @@ void Get_Next_Capture_Move(int num, MOVE_LIST_STRUCT *move_list)
 		}
 	}
 
-	if (move_list->list[high_index].score >= CAPTURE_SCORE)
+	if (move_list->list[high_index].score >= CAPTURE_SCORE) //Subtract 10000 to include negative see scores
 	{
 		//Move high scoring move to nth position so it won't be searched again
 		MOVE_STRUCT temp;

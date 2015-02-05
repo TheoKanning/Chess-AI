@@ -12,6 +12,7 @@ using namespace std;
 #define ENDGAME_FEN		"8/3r1pp1/4k3/4p3/4P3/4K3/3R1PP1/8 w - - 0 1"
 #define MATE_FEN "r1r2b1k/2q2pp1/p3pN1p/4P3/1P3QR1/3R4/PP4PP/1K6 w - - 0 1"
 #define MATE_FEN2 "r1r2b1k/2q2p2/p3pN1p/4P3/1P4R1/3R4/PP4PP/1K6 w - - 0 1"
+#define TEST_FEN "rnbqkb1r/pp1p1ppp/2p5/4P3/2B5/8/PPP1NnPP/RNBQK2R w KQkq - 0 6"
 
 BOARD_STRUCT board;
 MOVE_LIST_STRUCT move_list;
@@ -55,12 +56,26 @@ int main()
 			Perft_Test("rnbqkb1r/pp1p1ppp/2p5/4P3/2B5/8/PPP1NnPP/RNBQK2R w KQkq - 0 6", 4, &board);
 		}
 		else if (!strncmp(line, "test", 4))	{
-			Parse_Position(DRAW_ERROR_POS, &board);
-			//Parse_Fen(LASKER_FEN, &board);
+			Parse_Fen(TEST_FEN, &board);
 			Print_Board(&board);
 			info.stop_time = 100000;
-			info.depth = 14;
+			info.depth = 10;
 			Search_Position(&board, &info);
+			system("PAUSE");
+			break;
+		}
+		else if (!strncmp(line, "see", 3))	{
+			Parse_Fen(TEST_FEN, &board);
+			Print_Board(&board);
+			Generate_Moves(&board, &move_list);
+			for (int i = 0; i < move_list.num; i++)
+			{
+				if (IS_CAPTURE(move_list.list[i].move))
+				{
+					Print_Move(&move_list.list[i]);
+					printf(" SEE: %d\n", Static_Exchange_Evaluation(move_list.list[i].move, &board));
+				}
+			}
 			system("PAUSE");
 			break;
 		}

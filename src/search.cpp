@@ -39,6 +39,8 @@ int Search_Position(BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info)
 	for (currentDepth = 1; currentDepth <= info->depth; ++currentDepth)
 	{		
 		info->nodes = 0; //Reset node count befor each iteration
+		info->hash_hits = 0;
+
 		depth_start_time = Get_Time_Ms();
 
 		score = Alpha_Beta(-INF, INF, currentDepth, PV, board, info);
@@ -63,8 +65,8 @@ int Search_Position(BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info)
 		}
 		
 		//Remaining info
-			printf(" depth %d nodes %ld time %d nps %d ",
-				currentDepth, info->nodes, Get_Time_Ms() - info->start_time, (int)(info->nodes / ((Get_Time_Ms() - depth_start_time + 1) / 1000.0)));
+			printf(" depth %d nodes %ld time %d nps %d hash_rate %d ",
+				currentDepth, info->nodes, Get_Time_Ms() - info->start_time, (int)(info->nodes / ((Get_Time_Ms() - depth_start_time + 1) / 1000.0)), (100 * info->hash_hits)/info->nodes);
 		
 		//Print branching factor
 		if (previous_node_count != 0)
@@ -187,10 +189,10 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 	{
 		if (!is_pv || (value > alpha && value < beta)) //Only return exact values in pv line
 		{
-				info->hash_hits++;
 				return value; 
 		}
 	}
+	if (hash_entry.move != 0) info->hash_hits++; //Count hash hit as long as a move if found
 
 	/***** Search Hash Move *****/
 	/* Searching the hash move before generating any others can save time */
@@ -204,8 +206,12 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 
 			Take_Move(board);
 
-			if (score >= beta) return score; //Hash has already been stored here, so no need to save again
-
+			if (score >= beta)
+			{
+				Fill_Hash_Entry(info->age, depth, score, HASH_LOWER, board->hash_key, hash_entry.move, &hash_entry);
+				Add_Hash_Entry(&hash_entry, board->hply, info);
+				return score; //Hash has already been stored here, so no need to save again
+			}
 			if (score > best_score)
 			{
 				best_score = score;
@@ -244,17 +250,19 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 
 	/***** Move generation and sorting *****/
 	Generate_Moves(board, &move_list);
-	/*Magic_Generate_Moves(board, &magic_move_list);
+	Magic_Generate_Moves(board, &magic_move_list);
 
 	if (!Movelists_Identical(&move_list, &magic_move_list))
 	{
+		Print_Board(board);
 		cout << "Normal" << endl;
 		Print_Move_List(&move_list);
 		cout << "Magic" << endl;
 		Print_Move_List(&magic_move_list);
+		Magic_Generate_Moves(board, &magic_move_list);
 		system("PAUSE");
 	}
-	*/
+	
 	Find_PV_Move(hash_entry.move, &move_list); //Find hash move if available
 	
 	for (move = 0; move < move_list.num; move++) //For all moves in list
@@ -266,6 +274,8 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 
 		if (current_move == 0) break; //End if no moves are available
 
+		//if (current_move == hash_entry.move) continue;
+
 		if (!Make_Move(current_move, board)) continue;//If move is unsuccessful, try next move
 
 		mate = 0; //A move has been made
@@ -273,6 +283,7 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 		//See if current move leads to check, important for pruning and reductions
 		if((f_prune_allowed || move >= LATE_MOVE_NUM) && CAN_REDUCE(current_move)) checking_move = In_Check(board->side, board);
 		else checking_move = 0;
+
 		/***** Futility Pruning *****/
 		if (f_prune_allowed
 			&&  !IS_CAPTURE(current_move)
@@ -318,7 +329,6 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 			}
 		}
 		
-
 		Take_Move(board);
 
 		//Check if search ended while searching
@@ -387,7 +397,8 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 		Fill_Hash_Entry(info->age, depth, best_score, HASH_UPPER, board->hash_key, best_move, &hash_entry);
 		Add_Hash_Entry(&hash_entry, board->hply, info);
 	}
-	return alpha;
+
+	return best_score;
 }
 
 //Quiescent search to find positions suitable for evaluation
@@ -409,7 +420,6 @@ int Quiescent_Search(int alpha, int beta, BOARD_STRUCT *board, SEARCH_INFO_STRUC
 		}
 
 		//Check for quit input
-
 	}
 
 
@@ -417,6 +427,8 @@ int Quiescent_Search(int alpha, int beta, BOARD_STRUCT *board, SEARCH_INFO_STRUC
 	if (alpha < score) alpha = score;
 
 	Generate_Moves(board, &move_list);
+
+	//Set_Quiescent_SEE_Scores(&move_list, board);
 
 	for (move = 0; move < move_list.num; move++) //For all moves in list
 	{

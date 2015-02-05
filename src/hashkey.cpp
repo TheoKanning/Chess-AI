@@ -11,10 +11,10 @@ U64 side_keys[2];
 U64 ep_keys[101]; //NO_SQUARE = 100;
 U64 castle_keys[16];
 
-int HASH_SIZE = 1000000; //Number of hash entries stored
+#define HASH_SIZE  10000000 //Number of hash entries stored
 int HASH_SIZE_MB = 0;
 
-HASH_ENTRY_STRUCT hash_table[1000000];
+HASH_ENTRY_STRUCT hash_table[HASH_SIZE];
 
 static void Copy_Hash_Entry(HASH_ENTRY_STRUCT *ptr1, HASH_ENTRY_STRUCT *ptr2);
 
@@ -114,7 +114,7 @@ int Get_Hash_Entry(U64 hash, int alpha, int beta, int depth, int ply, int * hash
 	}
 	else //keys do not match
 	{
-		*hash_move = 0; //Reset move
+		//*hash_move = 0; //Reset move (unecessary since it starts at 0)
 	}
 
 	return INVALID;
@@ -158,6 +158,9 @@ void Add_Hash_Entry(HASH_ENTRY_STRUCT *hash_ptr, int ply, SEARCH_INFO_STRUCT *in
 	if (hash_ptr->eval >= MATE_SCORE - MAX_SEARCH_DEPTH) hash_ptr->eval += ply;
 	if (hash_ptr->eval <= -MATE_SCORE + MAX_SEARCH_DEPTH) hash_ptr->eval -= ply;
 
+	//Copy_Hash_Entry(hash_ptr, &hash_table[hash_index]);
+	//return;
+
 	//If stored entry is empty, replace
 	if (hash_table[hash_index].hash == 0)
 	{
@@ -166,7 +169,7 @@ void Add_Hash_Entry(HASH_ENTRY_STRUCT *hash_ptr, int ply, SEARCH_INFO_STRUCT *in
 	}
 
 	//If stored entry is too old, replace
-	if (hash_table[hash_index].age + 3 < info->age)
+	if (hash_table[hash_index].age + 1 < info->age)
 	{
 		Copy_Hash_Entry(hash_ptr, &hash_table[hash_index]);
 		return;

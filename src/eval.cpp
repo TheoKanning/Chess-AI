@@ -58,6 +58,7 @@ int Evaluate_Board(BOARD_STRUCT *board)
 	//Copy into board
 	board->eval_score = score;
 
+
 	if (board->side == WHITE)
 	{
 		return score;

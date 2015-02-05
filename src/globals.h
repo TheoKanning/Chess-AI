@@ -394,6 +394,10 @@ extern int Quiescent_Search(int alpha, int beta, BOARD_STRUCT *board, SEARCH_INF
 extern int Search_Position(BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info);
 extern int Draw_Error_Found(int move, BOARD_STRUCT *board);
 
+//see
+extern int Static_Exchange_Evaluation(int move, BOARD_STRUCT *board);
+extern void Set_Quiescent_SEE_Scores(MOVE_LIST_STRUCT *move_list, BOARD_STRUCT *board);
+
 //tuning
 extern int king_end_piece_square_tuning_values[8];
 extern int pawn_end_piece_square_tuning_values[7];

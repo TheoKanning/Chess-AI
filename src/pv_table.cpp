@@ -30,8 +30,9 @@ void Get_PV_Line(int depth, PV_LIST_STRUCT *pv_list, BOARD_STRUCT *board)
 		else {
 			break;
 		}
-		Get_Hash_Entry(board->hash_key, 0, 0, 0, board->hply, &hash_entry.move);
-		move = hash_entry.move;
+		move = 0;
+		Get_Hash_Entry(board->hash_key, 0, 0, 0, board->hply, &move);
+		
 	}
 
 	while (board->hply > 0) {
