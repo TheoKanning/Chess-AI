@@ -8,7 +8,7 @@
 
 /***** Global Macros *****/
 
-#define DEBUG //Define debug mode for full assert function
+//#define DEBUG //Define debug mode for full assert function
 
 #define PROGRAM_NAME "Chess-AI"
 #define AUTHOR	"Theo Kanning"
@@ -170,6 +170,9 @@ typedef struct
 
 	int age; //Number of irreversible moves made
 	int hash_hits;
+
+	int best_index[MAX_MOVE_LIST_LENGTH];
+	int beta_cutoff_index[MAX_MOVE_LIST_LENGTH];
 
 	int quit;
 	
@@ -395,6 +398,11 @@ extern int Quiescent_Search(int alpha, int beta, BOARD_STRUCT *board, SEARCH_INF
 extern int Search_Position(BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info);
 extern int Draw_Error_Found(int move, BOARD_STRUCT *board);
 extern void Internal_Iterative_Deepening(int alpha, int beta, int depth, MOVE_LIST_STRUCT *move_list, BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info);
+
+//search_info
+extern void Clear_Search_Info(SEARCH_INFO_STRUCT *info);
+extern void Print_Move_Index_Data(SEARCH_INFO_STRUCT *info);
+
 
 //search_test
 extern void Search_Test(void);

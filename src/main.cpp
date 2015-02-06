@@ -13,6 +13,7 @@ using namespace std;
 #define MATE_FEN "r1r2b1k/2q2pp1/p3pN1p/4P3/1P3QR1/3R4/PP4PP/1K6 w - - 0 1"
 #define MATE_FEN2 "r1r2b1k/2q2p2/p3pN1p/4P3/1P4R1/3R4/PP4PP/1K6 w - - 0 1"
 #define TEST_FEN "rnbqkb1r/pp1p1ppp/2p5/4P3/2B5/8/PPP1NnPP/RNBQK2R w KQkq - 0 6"
+#define SEE_TEST_FEN "1k1r3q/1ppn3p/p4b2/4p3/8/P2N2P1/1PP1R1BP/2K1Q3 w - -  0 0"
 
 BOARD_STRUCT board;
 MOVE_LIST_STRUCT move_list;
@@ -65,7 +66,7 @@ int main()
 			break;
 		}
 		else if (!strncmp(line, "see", 3))	{
-			Parse_Fen(TEST_FEN, &board);
+			Parse_Fen(SEE_TEST_FEN, &board);
 			Print_Board(&board);
 			Generate_Moves(&board, &move_list);
 			for (int i = 0; i < move_list.num; i++)

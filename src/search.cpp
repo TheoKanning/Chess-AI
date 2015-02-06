@@ -25,14 +25,9 @@ int Search_Position(BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info)
 	MOVE_STRUCT best_move;
 
 	Clear_PV_List(&pv_list);
+	Clear_Search_Info(info);
 
 	board->hply = 0;
-
-	//Reset stop flag
-	info->stopped = 0;
-	info->nodes = 0;
-
-	info->null_available = 1;
 
 	Clear_History_Data(board);
 
@@ -153,6 +148,7 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 	hash_entry.move = 0;
 	int valid = 0;
 	int checking_move = 0;
+	int best_move_index = 0;
 
 	info->nodes++;
 	//Check for timeout
@@ -277,6 +273,8 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 		}
 	}
 	
+
+	/***** Search *****/
 	for (move = 0; move < move_list.num; move++) //For all moves in list
 	{
 		/***** Get best move *****/
@@ -356,6 +354,9 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 			Fill_Hash_Entry(info->age, depth, score, HASH_LOWER, board->hash_key, current_move, &hash_entry);
 			Add_Hash_Entry(&hash_entry, board->hply, info);
 
+			//Update best move index
+			info->beta_cutoff_index[move]++;
+
 			//if move is not a capture or promotion
 			if (current_move_score <= KILLER_MOVE_SCORE)
 			{				 
@@ -374,6 +375,7 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 				//Add_History_Move(current_move, board); //Store move in history array
 			}
 			best_score = score;
+			best_move_index = move;
 			best_move = current_move;
 		}
 
@@ -409,6 +411,9 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 		Fill_Hash_Entry(info->age, depth, best_score, HASH_UPPER, board->hash_key, best_move, &hash_entry);
 		Add_Hash_Entry(&hash_entry, board->hply, info);
 	}
+
+	//Update best_index
+	info->best_index[best_move_index]++;
 
 	return best_score;
 }

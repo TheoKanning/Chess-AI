@@ -137,7 +137,26 @@ void Add_Move(MOVE_LIST_STRUCT *move_list, int from, int to, int piece, int capt
 	//Store in list and update counter
 	move_list->list[move_list->num].move = temp;
 	
-	if (score != 0)
+	//If capture
+	if (IS_CAPTURE(temp))
+	{
+		//move_list->list[move_list->num].score = score;
+		
+		int see = Static_Exchange_Evaluation(temp, board); //Calculate SEE score
+		if (see > 0)
+		{
+			move_list->list[move_list->num].score = WINNING_CAPTURE_SCORE + see;
+		}
+		else if (see < 0)
+		{
+			move_list->list[move_list->num].score = LOSING_CAPTURE_SCORE + see;
+		}
+		else
+		{
+			move_list->list[move_list->num].score = CAPTURE_SCORE + see;
+		}
+	}
+	else if (IS_PROMOTION(temp)) //Promotion
 	{
 		move_list->list[move_list->num].score = score;//Add parameter score
 	}

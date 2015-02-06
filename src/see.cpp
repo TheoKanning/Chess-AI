@@ -40,8 +40,8 @@ int Static_Exchange_Evaluation(int move, BOARD_STRUCT *board)
 
 	int score[32] = { 0 };
 
-	const U64 all_rooks = board->pawn_bitboards[wR] | board->pawn_bitboards[wQ] | board->pawn_bitboards[bR] | board->pawn_bitboards[bQ];
-	const U64 all_bishops = board->pawn_bitboards[wB] | board->pawn_bitboards[wQ] | board->pawn_bitboards[bB] | board->pawn_bitboards[bQ];
+	const U64 all_rooks = (board->piece_bitboards[wR] | board->piece_bitboards[wQ] | board->piece_bitboards[bR] | board->piece_bitboards[bQ]);
+	const U64 all_bishops = board->piece_bitboards[wB] | board->piece_bitboards[wQ] | board->piece_bitboards[bB] | board->piece_bitboards[bQ];
 
 	U64 all_pieces = board->side_bitboards[BOTH];
 
@@ -87,8 +87,8 @@ int Static_Exchange_Evaluation(int move, BOARD_STRUCT *board)
 		all_pieces &= ~attacker_mask;
 
 		// Update attacker list due to uncovered attacks
-		all_attackers |= (((Rook_Attacks(all_pieces, square)) & all_rooks) |
-			((Bishop_Attacks(all_pieces, square)) & all_bishops));
+		all_attackers |= ((Rook_Attacks(all_pieces, square) & all_rooks) |
+			(Bishop_Attacks(all_pieces, square) & all_bishops));
 
 		all_attackers &= all_pieces;
 
@@ -109,7 +109,7 @@ int Static_Exchange_Evaluation(int move, BOARD_STRUCT *board)
 
 	// Propagate scores back
 	while (--depth) {
-		score[depth - 1] = -(score[depth] > score[depth-1] ? score[depth] : score[depth-1]);
+		score[depth - 1] = -(score[depth] > -score[depth-1] ? score[depth] : -score[depth-1]);
 	}
 
 	return score[0];

@@ -11,7 +11,7 @@ U64 side_keys[2];
 U64 ep_keys[101]; //NO_SQUARE = 100;
 U64 castle_keys[16];
 
-#define HASH_SIZE  10000000 //Number of hash entries stored
+#define HASH_SIZE  1000000 //Number of hash entries stored
 int HASH_SIZE_MB = 0;
 
 HASH_ENTRY_STRUCT hash_table[HASH_SIZE];
