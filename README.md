@@ -39,5 +39,9 @@ Version Notes:
 1.30 - Won't see if move causes check unless pruning is available
 	 - Faster under attack function
 	 - Better movelist clearing
+	 - Piece-square move ordering
+	 - SEE implemented
+	 - Two-tiered hash table, still depth-based
+
 
 

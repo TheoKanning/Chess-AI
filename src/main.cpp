@@ -2,10 +2,12 @@
 #include <iostream>
 #include "globals.h"
 
+using namespace std;
+
 #define DRAW_ERROR_POS "position startpos moves d2d4 g8f6 c2c4 c7c6 e2e3 d7d6 g1f3 c8g4 f1e2 b8d7 b1c3 e7e5 e1g1 f8e7 d1b3 g4f3 e2f3 d8b6 b3b6 d7b6 d4d5 c6d5 c3d5 b6d5 f3d5 f6d5 c4d5 e5e4 f2f3 e4f3 f1f3 e7f6 e3e4 e8g8 f3b3 f8e8 b3b4 a8b8 c1f4 a7a5 b4b5 e8e4 f4d6 b8e8 d6c5 e4c4 c5a3 f6d4 g1h1 e8c8 b2b3 c4c2 a1d1 c2a2 b5a5 d4c3 d1c1 c8e8 a5c5 a2e2 h2h4 c3f6 h4h5 e2e4 g2g3 f6e7 c5a5 b7b6 a5a7 e7a3 a7a3 e4d4 h5h6 g7h6 a3a6 e8e3 a6b6 e3g3 b6h6 d4d5 b3b4 g3g4 c1g1 g4g6 h6h3 d5d4 b4b5 d4b4 h3h5 b4b2 g1d1 g6b6 d1d5 g8g7 h1g1 b6g6 g1f1 g6f6 f1e1 f6f2 d5g5 g7f6 g5g8 b2e2 e1d1 e2d2 d1e1"
 #define DRAW_ERROR_POS2 "position startpos moves d2d4 g8f6 c2c4 c7c6 e2e3 d7d6 g1f3 c8g4 f1e2 b8d7 b1c3 e7e5 e1g1 f8e7 d1b3 g4f3 e2f3 d8b6 b3b6 d7b6 d4d5 c6d5 c3d5 b6d5 f3d5 f6d5 c4d5 e5e4 f2f3 e4f3 f1f3 e7f6 e3e4 e8g8 f3b3 f8e8 b3b4 a8b8 c1f4 a7a5 b4b5 e8e4 f4d6 b8e8 d6c5 e4c4 c5a3 f6d4 g1h1 e8c8 b2b3 c4c2 a1d1 c2a2 b5a5 d4c3 d1c1 c8e8 a5c5 a2e2 h2h4 c3f6 h4h5 e2e4 g2g3 f6e7 c5a5 b7b6 a5a7 e7a3 a7a3 e4d4 h5h6 g7h6 a3a6 e8e3 a6b6 e3g3 b6h6 d4d5 b3b4 g3g4 c1g1 g4g6 h6h3 d5d4 b4b5 d4b4 h3h5 b4b2 g1d1 g6b6 d1d5 g8g7 h1g1 b6g6 g1f1 g6f6 f1e1 f6f2 d5g5 g7f6 g5g8 b2e2 e1d1 e2d2 d1e1 d2e2 e1d1 e2d2 d1e1"
 
-using namespace std;
+#define MATE_ERROR_FEN "8/8/1K6/8/6k1/8/8/5r2 b - - 0 1"
 
 #define LASKER_FEN		"8/k7/3p4/p2P1p2/P2P1P2/8/8/K7 w - - 0 1"
 #define MATE_IN_2_FEN	"8/6K1/1p1B1RB1/8/2Q5/2n1kP1N/3b4/4n3 w - - 0 1"
@@ -14,6 +16,7 @@ using namespace std;
 #define MATE_FEN2 "r1r2b1k/2q2p2/p3pN1p/4P3/1P4R1/3R4/PP4PP/1K6 w - - 0 1"
 #define TEST_FEN "rnbqkb1r/pp1p1ppp/2p5/4P3/2B5/8/PPP1NnPP/RNBQK2R w KQkq - 0 6"
 #define SEE_TEST_FEN "1k1r3q/1ppn3p/p4b2/4p3/8/P2N2P1/1PP1R1BP/2K1Q3 w - -  0 0"
+#define HASH_TEST_FEN "r1b1r1k1/ppq2p1p/3b2pQ/3pn3/8/2P4P/PPBN1PP1/R1B1R1K1 b - - 0 0"
 
 BOARD_STRUCT board;
 MOVE_LIST_STRUCT move_list;
@@ -54,13 +57,16 @@ int main()
 			continue;
 		}
 		if (!strncmp(line, "perft", 5)){
-			Perft_Test("rnbqkb1r/pp1p1ppp/2p5/4P3/2B5/8/PPP1NnPP/RNBQK2R w KQkq - 0 6", 4, &board);
+			Perft_Test("rnbqkb1r/pp1p1ppp/2p5/4P3/2B5/8/PPP1NnPP/RNBQK2R w KQkq - 0 6", 5, &board);
 		}
 		else if (!strncmp(line, "test", 4))	{
-			Parse_Fen(TEST_FEN, &board);
+			Parse_Fen(MATE_ERROR_FEN, &board);
+			//Parse_Position(MATE_ERROR_POS, &board);
 			Print_Board(&board);
 			info.stop_time = 100000;
-			info.depth = 10;
+			info.depth = 20;
+			Search_Position(&board, &info);
+			info.depth = 27;
 			Search_Position(&board, &info);
 			system("PAUSE");
 			break;
@@ -117,6 +123,26 @@ int main()
 			sscanf_s(line, "%*s %*s %*s %*s %d", &value);
 			printf("Set fmrg%d to %d\n", index, value);
 			futility_margins[index] = value;
+		}
+		else if (!strncmp(line, "setoption name dual_hash", 23)) {
+			int value = 0;
+			sscanf_s(line, "%*s %*s %*s %*s %d", &value);
+			printf("Set dual_hash to %d\n", value);
+			use_dual_hash = value;
+		}
+		else if (!strncmp(line, "setoption name SEE", 17)) {
+			int value = 0;
+			sscanf_s(line, "%*s %*s %*s %*s %d", &value);
+			printf("Set SEE to %d\n", value);
+			use_SEE = value * 10;
+		}
+		else if (!strncmp(line, "setoption name aspiration", 24)) {
+			int value = 0;
+			int index = line[25] - '0';
+			sscanf_s(line, "%*s %*s %*s %*s %d", &value);
+			printf("Set aspiration%d to %d\n", index, value);
+			use_aspiration_window = 1;
+			aspiration_windows[index] = value * 10;
 		}
 		else if (!strncmp(line, "quit", 4))	{
 			break;

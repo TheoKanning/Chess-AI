@@ -14,7 +14,7 @@ void Get_PV_Line(int depth, PV_LIST_STRUCT *pv_list, BOARD_STRUCT *board)
 	
 	Clear_PV_List(pv_list);
 
-	Get_Hash_Entry(board->hash_key, 0, 0, 0, board->hply, &hash_entry.move);
+	Get_Dual_Hash_Entry(board->hash_key, 0, 0, 0, board->hply, &hash_entry.move);
 	int move = hash_entry.move;
 	int count = 0;
 
@@ -31,7 +31,7 @@ void Get_PV_Line(int depth, PV_LIST_STRUCT *pv_list, BOARD_STRUCT *board)
 			break;
 		}
 		move = 0;
-		Get_Hash_Entry(board->hash_key, 0, 0, 0, board->hply, &move);
+		Get_Dual_Hash_Entry(board->hash_key, 0, 0, 0, board->hply, &move);
 		
 	}
 

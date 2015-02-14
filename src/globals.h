@@ -34,8 +34,6 @@
 								((U64)rand() << 45) + \
 							   (((U64)rand() & 0x0f) << 60)))
 
-
-
 #define MAX_PLY						1028 //Maximum depth for searching
 #define MAX_SEARCH_DEPTH			64   //Max search depth, arbitrary
 #define MAX_MOVE_LIST_LENGTH		218 //Maximum moves in any position
@@ -80,6 +78,7 @@
 #define REDUCTION_LIMIT				3 //Minimum depth to consider reductions
 #define LATE_MOVE_NUM				5 //First move number to consider reducing, 6th move = 5
 #define LATE_MOVE_REDUCTION			1 //Number of ply to shorten late move searches
+
 
 /***** Global structures and typedefs *****/
 typedef unsigned long long U64; //64 bit integer
@@ -163,13 +162,15 @@ typedef struct
 	int time_set;
 	int end_early; //Enable ending early if using normal clock
 	int stopped;
-	int nodes;
+	long nodes;
 
 	int depth;
+	int max_depth; //Max depth reached in normal search
 	int null_available;
 
 	int age; //Number of irreversible moves made
-	int hash_hits;
+	long hash_probes;
+	long hash_hits;
 
 	int best_index[MAX_MOVE_LIST_LENGTH];
 	int beta_cutoff_index[MAX_MOVE_LIST_LENGTH];
@@ -275,6 +276,9 @@ extern void Print_Board(BOARD_STRUCT *board);
 extern void Print_Bitboard(U64 bb);
 
 //data
+extern int use_SEE;
+extern int use_aspiration_window;
+extern int use_dual_hash;
 extern int square_120_to_64[120];
 extern int square_64_to_120[64];
 extern char* file_names;
@@ -292,6 +296,7 @@ extern int is_king[13];
 extern const U64 rank_masks[8];
 extern const U64 file_masks[8];
 extern int futility_margins[4];
+extern int aspiration_windows[4];
 extern int piece_values[13];
 extern int passed_pawn_rank_bonus[8];
 extern short middle_piece_square_tables[13][64];
@@ -313,6 +318,8 @@ extern void Compute_Hash(BOARD_STRUCT *board);
 extern void Add_Hash_Entry(HASH_ENTRY_STRUCT *hash_ptr, int ply, SEARCH_INFO_STRUCT *info);
 extern void Remove_Hash_Entry(U64 hash);
 extern int  Get_Hash_Entry(U64 hash, int alpha, int beta, int depth, int ply, int * hash_move);
+extern void Add_Dual_Hash_Entry(HASH_ENTRY_STRUCT *hash_ptr, int ply, SEARCH_INFO_STRUCT *info);
+extern int  Get_Dual_Hash_Entry(U64 hash, int alpha, int beta, int depth, int ply, int * hash_move);
 extern void Fill_Hash_Entry(int age, int depth, int eval, int flag, U64 hash, int move, HASH_ENTRY_STRUCT *hash_ptr);
 
 //history

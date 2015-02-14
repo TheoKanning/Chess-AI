@@ -40,7 +40,7 @@ int Static_Exchange_Evaluation(int move, BOARD_STRUCT *board)
 
 	int score[32] = { 0 };
 
-	const U64 all_rooks = (board->piece_bitboards[wR] | board->piece_bitboards[wQ] | board->piece_bitboards[bR] | board->piece_bitboards[bQ]);
+	const U64 all_rooks = board->piece_bitboards[wR] | board->piece_bitboards[wQ] | board->piece_bitboards[bR] | board->piece_bitboards[bQ];
 	const U64 all_bishops = board->piece_bitboards[wB] | board->piece_bitboards[wQ] | board->piece_bitboards[bB] | board->piece_bitboards[bQ];
 
 	U64 all_pieces = board->side_bitboards[BOTH];
@@ -51,8 +51,8 @@ int Static_Exchange_Evaluation(int move, BOARD_STRUCT *board)
 	U64 all_attackers = ((bpawn_attack_masks[square] & board->piece_bitboards[wP]) |
 		(wpawn_attack_masks[square] & board->piece_bitboards[bP]) |
 		(knight_attack_masks[square] & (board->piece_bitboards[wN] | board->piece_bitboards[bN])) |
-		(Bishop_Attacks(all_pieces, square) & (board->piece_bitboards[wB] | board->piece_bitboards[bB] | board->piece_bitboards[wQ] | board->piece_bitboards[bQ])) |
-		(Rook_Attacks(all_pieces, square) & (board->piece_bitboards[wR] | board->piece_bitboards[bR] | board->piece_bitboards[wQ] | board->piece_bitboards[bQ])) |
+		(Bishop_Attacks(all_pieces, square) & all_bishops) |
+		(Rook_Attacks(all_pieces, square) & all_rooks) |
 		(king_attack_masks[square] & (board->piece_bitboards[wK] | board->piece_bitboards[bK])));
 
 	//Remove attacking piece
