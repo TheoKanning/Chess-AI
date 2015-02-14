@@ -40,8 +40,10 @@ Version Notes:
 	 - Faster under attack function
 	 - Better movelist clearing
 	 - Piece-square move ordering
-	 - SEE implemented
+	 - SEE added, but not fully tested
 	 - Two-tiered hash table, still depth-based
+	 - Call PVS research as PV
+	 - Mate score pruning
 
 
 
