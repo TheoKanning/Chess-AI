@@ -9,6 +9,8 @@
 int use_SEE = 0;
 int use_aspiration_window = 0;
 int use_dual_hash = 1;
+int use_futility = 1;
+int use_late_move_reduction = 1;
 
 /***** Arrays *****/
 char* file_names = "abcdefgh";
@@ -79,7 +81,7 @@ const U64 file_masks[8] =
 
 /***** Search Arrays *****/
 int futility_margins[4] = { 0, 300, 500, 900 }; //Margin at each depth
-int aspiration_windows[4] = { 30, 60, 150, INF };
+int aspiration_windows[4] = { 20, INF, INF, INF };
 
 /***** Evaluation Arrays *****/
 int piece_values[13] = { 0, 100, 320, 330, 500, 900, 1000000, 100, 320, 330, 500, 900, 1000000 };

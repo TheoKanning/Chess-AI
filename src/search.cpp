@@ -42,7 +42,6 @@ int Search_Position(BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info)
 
 		depth_start_time = Get_Time_Ms();
 
-
 		/***** Aspiration Windows *****/
 		if (use_aspiration_window)
 		{
@@ -112,7 +111,7 @@ int Search_Position(BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info)
 		if (info->time_set && info->end_early && (Get_Time_Ms() - info->start_time) >= ((info->stop_time - info->start_time) / 3.0)) break;
 
 		//End search if mate found and full pv shown
-		//if (IS_MATE(score) && (currentDepth >= ((score > 0) ? MATE_SCORE - score : MATE_SCORE + score))) break; 
+		if (IS_MATE(score) && (currentDepth >= ((score > 0) ? MATE_SCORE - score : MATE_SCORE + score))) break; 
 		
 	}
 
@@ -167,7 +166,8 @@ int Iterative_Deepening(int depth, BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info
 int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info)
 {
 	int move;
-	int moves_tried = 0;
+	int moves_searched = 0; //Number of legal moves searched (not futility pruned)
+	int moves_made = 0; //Number of legal moves
 	int alpha_orig = alpha;
 	int best_score = -INF;
 	int best_move = 0;
@@ -183,6 +183,7 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 	int valid = 0;
 	int checking_move = 0;
 	int best_move_index = 0;
+	int reduction_depth = 0;
 
 	info->nodes++;
 	//Check for timeout
@@ -209,12 +210,8 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 	if (beta > mate_value - 1) beta = mate_value - 1;
 	if (alpha >= beta) return alpha;
 
-
 	/***** Draw Detection *****/
-	if (board->move_counter >= 100 || Is_Material_Draw(board) || (board->hply && Is_Repetition(board)))
-	{
-		return 0;
-	}
+	if (board->move_counter >= 100 || Is_Material_Draw(board) || (board->hply && Is_Repetition(board)))	return 0;
 
 	/***** Check Test *****/
 	int in_check = In_Check(board->side, board);
@@ -233,6 +230,7 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 	if (hash_entry.move != 0) info->hash_hits++; //Count hash hit as long as a move if found
 	if (value != INVALID) 
 	{
+		ASSERT(abs(value) <= MATE_SCORE)
 		if (!is_pv || (value > alpha && value < beta)) //Only return exact values in pv line
 		{
 				return value; 
@@ -281,16 +279,17 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 		score = -Alpha_Beta(-beta, -beta + 1, depth - 3, NOT_PV, board, info); //Subtract an additional 2 ply from depth
 		Take_Null_Move(board);
 		info->null_available = 1;
-
+		ASSERT(abs(score) <= MATE_SCORE)
 		if (score >= beta && !IS_MATE(score)) return score;
 	}
 
 	/***** Futility Pruning *****/
 	/* Here we determine if this node is elegible for futility pruning */
 	if (depth <= 2
+		&& use_futility
 		&& !is_pv
 		&& !in_check
-		&& (abs(alpha) < MATE_SCORE - MAX_SEARCH_DEPTH) //Not searching for a mate
+		&& !IS_MATE(alpha) //Not searching for a mate
 		&& (Evaluate_Board(board) + futility_margins[depth] <= alpha))
 		f_prune_allowed = 1;
 
@@ -336,11 +335,12 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 		//if (current_move == hash_entry.move) continue;
 
 		if (!Make_Move(current_move, board)) continue;//If move is unsuccessful, try next move
-		moves_tried++;
+		
 		mate = 0; //A move has been made
+		moves_made++;
 
 		//See if current move leads to check, important for pruning and reductions
-		if((f_prune_allowed || moves_tried >= LATE_MOVE_NUM) && CAN_REDUCE(current_move)) checking_move = In_Check(board->side, board);
+		if((f_prune_allowed || moves_made >= LATE_MOVE_NUM) && CAN_REDUCE(current_move)) checking_move = In_Check(board->side, board);
 		else checking_move = 0;
 
 		/***** Futility Pruning *****/
@@ -349,7 +349,7 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 			&& !IS_PROMOTION(current_move)
 			&& !checking_move) 
 		{
-			if (depth <= 2)
+			if (depth <= 3)
 			{
 				Take_Move(board);
 				continue;
@@ -365,6 +365,8 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 			}
 		}
 
+		moves_searched++; //Move will be searched
+
 		/***** Principal Variation Search *****/
 		if (move == 0) //If first move, use full window
 		{
@@ -375,7 +377,8 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 			/***** Late move reduction *****/
 			/* Does a reduced search if the move is eligible, otherwise goes straight into PVS search */
 			/* Moves that raise alpha are re-searched in PVS */
-			if (moves_tried >= LATE_MOVE_NUM
+			if (moves_made >= LATE_MOVE_NUM
+			&& use_late_move_reduction
 			&& !in_check
 			&& !is_pv
 			&& CAN_REDUCE(current_move) 
@@ -383,7 +386,10 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 			&& !IS_KILLER(move_list.list[move].score)
 			&& !checking_move)
 			{
-				score = -Alpha_Beta(-alpha - 1, -alpha, depth - 1 - LATE_MOVE_REDUCTION, NOT_PV, board, info); //Null window search
+				//if (moves_searched >= 9 && depth > 2) reduction_depth = 2; //On tenth move and beyond
+				reduction_depth = 1;
+
+				score = -Alpha_Beta(-alpha - 1, -alpha, depth - 1 - reduction_depth, NOT_PV, board, info); //Null window search
 			}
 			else
 			{
@@ -401,7 +407,7 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 				}
 			}
 		}
-		
+
 		Take_Move(board);
 
 		//Check if search ended while searching
@@ -441,7 +447,6 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 			best_move_index = move;
 			best_move = current_move;
 		}
-
 	} //End looping through all moves
 
 	/***** Mate detection *****/
@@ -461,6 +466,11 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 		return 0; //Draw
 	}
 
+	/***** Futility Check *****/
+	/* If all move have been pruned (moves_searched == 0)
+	* set bestcore to alpha */
+	if (moves_searched == 0) best_score = alpha;
+
 	//For exact and upper nodes
 	if (best_score > alpha_orig)
 	{
@@ -477,7 +487,7 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 
 	//Update best_index
 	info->best_index[best_move_index]++;
-
+	
 	return best_score;
 }
 
@@ -513,6 +523,12 @@ int Quiescent_Search(int alpha, int beta, BOARD_STRUCT *board, SEARCH_INFO_STRUC
 	if (score > best_score) best_score = score;
 	if (alpha < score) alpha = score;
 
+	if (abs(best_score) > MATE_SCORE)
+	{
+		printf("bestscore:%d alpha:%d \n", best_score, alpha);
+		ASSERT(abs(best_score) <= MATE_SCORE)
+	}
+
 	Magic_Generate_Capture_Promote_Moves(board, &move_list);
 	//Generate_Moves(board, &move_list);
 
@@ -544,7 +560,7 @@ int Quiescent_Search(int alpha, int beta, BOARD_STRUCT *board, SEARCH_INFO_STRUC
 			alpha = score;
 		}
 	}
-
+	ASSERT(abs(best_score) <= MATE_SCORE)
 	return best_score;
 }
 

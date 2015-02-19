@@ -42,8 +42,10 @@ Version Notes:
 	 - Piece-square move ordering
 	 - SEE added, but not fully tested
 	 - Two-tiered hash table, still depth-based
+	 - No LMR in PV nodes
 	 - Call PVS research as PV
 	 - Mate score pruning
+1.40 - SEE working
 
 
 

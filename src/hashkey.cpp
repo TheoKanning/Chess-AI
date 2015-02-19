@@ -254,8 +254,8 @@ void Add_Dual_Hash_Entry(HASH_ENTRY_STRUCT *hash_ptr, int ply, SEARCH_INFO_STRUC
 	int hash_index = hash_ptr->hash % DUAL_HASH_SIZE;
 
 	//Adjust mate score for ply
-	if (hash_ptr->eval >= MATE_SCORE - MAX_SEARCH_DEPTH) hash_ptr->eval += ply;
-	if (hash_ptr->eval <= -MATE_SCORE + MAX_SEARCH_DEPTH) hash_ptr->eval -= ply;
+	if (hash_ptr->eval >= MATE_SCORE - MAX_SEARCH_DEPTH && hash_ptr->eval <= MATE_SCORE) hash_ptr->eval += ply;
+	if (hash_ptr->eval <= -MATE_SCORE + MAX_SEARCH_DEPTH && hash_ptr->eval >= -MATE_SCORE) hash_ptr->eval -= ply;
 
 	//Replace first slot if deeper or newer
 	if (dual_hash_table[0][hash_index].depth < hash_ptr->depth || dual_hash_table[0][hash_index].age < hash_ptr->age)

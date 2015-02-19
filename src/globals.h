@@ -12,7 +12,7 @@
 
 #define PROGRAM_NAME "Chess-AI"
 #define AUTHOR	"Theo Kanning"
-#define VERSION_NO	1.30
+#define VERSION_NO	1.40
 
 #ifndef DEBUG
         #define ASSERT(x)
@@ -40,7 +40,7 @@
 #define INF							100000 //Large enough number to be infinite
 #define INVALID						1000001 //Larger than infinity, always out of bounds
 #define MATE_SCORE					10000
-#define IS_MATE(x)					(abs(x) >= MATE_SCORE - MAX_SEARCH_DEPTH)
+#define IS_MATE(x)					(abs(x) >= MATE_SCORE - MAX_SEARCH_DEPTH && abs(x) <= MATE_SCORE)
 #define ADJUST_MATE_SCORE(score,ply)		((score < 0) ? -MATE_SCORE + ply : MATE_SCORE -ply)
 
 #define START_FEN		"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
@@ -279,6 +279,8 @@ extern void Print_Bitboard(U64 bb);
 extern int use_SEE;
 extern int use_aspiration_window;
 extern int use_dual_hash;
+extern int use_futility;
+extern int use_late_move_reduction;
 extern int square_120_to_64[120];
 extern int square_64_to_120[64];
 extern char* file_names;
@@ -344,7 +346,7 @@ extern const int R_Bits[64];
 extern const int B_Bits[64];
 extern int count_1s(U64 b);
 extern const int BitTable[64];
-extern int pop_1st_bit(U64 *bb);
+extern int pop_1st_bit(U64 *bb); //Make inline
 extern int transform(U64 b, U64 magic, int bits);
 extern U64 magicMovesRook[64][4096];
 extern U64 magicMovesBishop[64][512];

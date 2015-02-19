@@ -17,7 +17,7 @@ U64 Least_Valuable_Attacker(int color, U64 attackers, int *piece_ptr, BOARD_STRU
 	else piece = bP;
 
 	//Find matching piece
-	while (!(match = board->pawn_bitboards[piece] & attackers))
+	while (!(match = board->piece_bitboards[piece] & attackers))
 	{
 		piece++;
 	}
