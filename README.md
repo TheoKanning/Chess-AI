@@ -46,6 +46,9 @@ Version Notes:
 	 - Call PVS research as PV
 	 - Mate score pruning
 1.40 - SEE working
+	 - Fixed futility pruning bug
+	 - Increased mate score to prevent error with 9 queens (never going to happen)
+
 
 
 

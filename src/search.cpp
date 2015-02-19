@@ -386,7 +386,7 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 			&& !IS_KILLER(move_list.list[move].score)
 			&& !checking_move)
 			{
-				//if (moves_searched >= 9 && depth > 2) reduction_depth = 2; //On tenth move and beyond
+				//if (moves_made >= 9 && depth > 2) reduction_depth = 2; //On tenth move and beyond
 				reduction_depth = 1;
 
 				score = -Alpha_Beta(-alpha - 1, -alpha, depth - 1 - reduction_depth, NOT_PV, board, info); //Null window search
@@ -467,8 +467,7 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 	}
 
 	/***** Futility Check *****/
-	/* If all move have been pruned (moves_searched == 0)
-	* set bestcore to alpha */
+	/* If all moves have been pruned (moves_searched == 0) set best_score to alpha */
 	if (moves_searched == 0) best_score = alpha;
 
 	//For exact and upper nodes

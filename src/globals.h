@@ -39,7 +39,7 @@
 #define MAX_MOVE_LIST_LENGTH		218 //Maximum moves in any position
 #define INF							100000 //Large enough number to be infinite
 #define INVALID						1000001 //Larger than infinity, always out of bounds
-#define MATE_SCORE					10000
+#define MATE_SCORE					15000
 #define IS_MATE(x)					(abs(x) >= MATE_SCORE - MAX_SEARCH_DEPTH && abs(x) <= MATE_SCORE)
 #define ADJUST_MATE_SCORE(score,ply)		((score < 0) ? -MATE_SCORE + ply : MATE_SCORE -ply)
 
