@@ -108,7 +108,7 @@ int Search_Position(BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info)
 		printf("\n\n");
 
 		//End if time is one third gone because next depth is unlikely to finish
-		if (info->time_set && info->end_early && (Get_Time_Ms() - info->start_time) >= ((info->stop_time - info->start_time) / 3.0)) break;
+		//if (info->time_set && info->end_early && (Get_Time_Ms() - info->start_time) >= ((info->stop_time - info->start_time) / 3.0)) break;
 
 		//End search if mate found and full pv shown
 		if (IS_MATE(score) && (currentDepth >= ((score > 0) ? MATE_SCORE - score : MATE_SCORE + score))) break; 
@@ -168,6 +168,7 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 	int move;
 	int moves_searched = 0; //Number of legal moves searched (not futility pruned)
 	int moves_made = 0; //Number of legal moves
+	int raised_alpha = FALSE; 
 	int alpha_orig = alpha;
 	int best_score = -INF;
 	int best_move = 0;
@@ -272,7 +273,7 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 	&& !is_pv 
 	&& board->hply 
 	&& !in_check 
-	&& (board->white_big_material + board->black_big_material) >= 2000)
+	&& ((board->side == WHITE) ? board->white_big_material : board->black_big_material) >= 1000)
 	{
 		info->null_available = 0;
 		Make_Null_Move(board);
@@ -378,32 +379,47 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 			/* Does a reduced search if the move is eligible, otherwise goes straight into PVS search */
 			/* Moves that raise alpha are re-searched in PVS */
 			if (moves_made >= LATE_MOVE_NUM
-			&& use_late_move_reduction
-			&& !in_check
-			&& !is_pv
-			&& CAN_REDUCE(current_move) 
-			&& depth >= REDUCTION_LIMIT
-			&& !IS_KILLER(move_list.list[move].score)
-			&& !checking_move)
+				&& use_late_move_reduction
+				&& !in_check
+				&& !is_pv
+				&& CAN_REDUCE(current_move)
+				&& depth >= REDUCTION_LIMIT
+				&& !IS_KILLER(move_list.list[move].score)
+				&& !checking_move)
 			{
 				//if (moves_made >= 9 && depth > 2) reduction_depth = 2; //On tenth move and beyond
 				reduction_depth = 1;
 
-				score = -Alpha_Beta(-alpha - 1, -alpha, depth - 1 - reduction_depth, NOT_PV, board, info); //Null window search
+				if (!raised_alpha) //PV search
+				{
+					score = -Alpha_Beta(-alpha, -beta, depth - 1 - reduction_depth, is_pv, board, info);
+				}
+				else //Null Window search
+				{
+					score = -Alpha_Beta(-alpha - 1, -alpha, depth - 1 - reduction_depth, NOT_PV, board, info); 
+				}
 			}
 			else
 			{
 				score = alpha + 1; //Set score above alpha to automatically trigger PVS next
 			}
 
-			if (score > alpha) //Continue with PVS search
+			/***** Principal Variation Search *****/
+			if (score > alpha) //Continue if reduced search is improvement
 			{
-				score = -Alpha_Beta(-alpha - 1, -alpha, depth - 1, NOT_PV, board, info); //Null window search
-
-				//If move improves alpha but does not cause a cutoff, and if not in a null search already
-				if (alpha < score && beta > score)
+				if (!raised_alpha)
 				{
-					score = -Alpha_Beta(-beta, -alpha, depth - 1, PV, board, info);
+					score = -Alpha_Beta(-beta, -alpha, depth - 1, is_pv, board, info); //Full window search
+				}
+				else //Look for refutation in null window
+				{
+					score = -Alpha_Beta(-alpha - 1, -alpha, depth - 1, NOT_PV, board, info); //Null window search
+
+					//If move improves alpha but does not cause a cutoff, and if not in a null search already
+					if (alpha < score && beta > score)
+					{
+						score = -Alpha_Beta(-beta, -alpha, depth - 1, PV, board, info);
+					}
 				}
 			}
 		}
@@ -440,6 +456,7 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 			//Update alpha
 			if (score > alpha)
 			{
+				raised_alpha = TRUE;
 				alpha = score;
 				//Add_History_Move(current_move, board); //Store move in history array
 			}

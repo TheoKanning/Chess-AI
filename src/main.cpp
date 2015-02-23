@@ -18,8 +18,6 @@ using namespace std;
 
 #define HASH_TEST_FEN "r1b1r1k1/ppq2p1p/3b2pQ/3pn3/8/2P4P/PPBN1PP1/R1B1R1K1 b - - 0 0"
 
-#define ROOK_MATE_ERROR_FEN "8/8/3k4/8/5r2/3K4/8/8 b - - 0 1"
-
 BOARD_STRUCT board;
 MOVE_LIST_STRUCT move_list;
 SEARCH_INFO_STRUCT info;
@@ -62,11 +60,11 @@ int main()
 			Perft_Test("rnbqkb1r/pp1p1ppp/2p5/4P3/2B5/8/PPP1NnPP/RNBQK2R w KQkq - 0 6", 5, &board);
 		}
 		else if (!strncmp(line, "test", 4))	{
-			Parse_Fen(ROOK_MATE_ERROR_FEN, &board);
+			Parse_Fen(HASH_TEST_FEN, &board);
 			//Parse_Position(MATE_ERROR_POS, &board);
 			Print_Board(&board);
 			info.stop_time = 100000;
-			info.depth = 65;
+			info.depth = 12;
 			Search_Position(&board, &info);
 			system("PAUSE");
 			//break;

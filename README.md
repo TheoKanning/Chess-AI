@@ -48,6 +48,7 @@ Version Notes:
 1.40 - SEE working
 	 - Fixed futility pruning bug
 	 - Increased mate score to prevent error with 9 queens (never going to happen)
+	 - Full window search until alpha is raised
 
 
 
