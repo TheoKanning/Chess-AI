@@ -11,10 +11,14 @@ using namespace std;
 void Get_Next_Move(int num, MOVE_LIST_STRUCT *move_list)
 {
 	int high_index = num;
-	for (int i = num + 1; i < move_list->num; i++)
+	int high_score = -INF;
+	for (int i = num; i < move_list->num; i++)
 	{
-		if (move_list->list[i].score > move_list->list[high_index].score)
+		if (move_list->list[i].score > high_score)
+		{
+			high_score = move_list->list[i].score;
 			high_index = i; //Store new high index
+		}
 	}
 
 	//Move high scoring move to nth position so it won't be searched again
@@ -28,13 +32,18 @@ void Get_Next_Move(int num, MOVE_LIST_STRUCT *move_list)
 void Get_Next_Capture_Move(int num, MOVE_LIST_STRUCT *move_list)
 {
 	int high_index = num;
-	for (int i = num + 1; i < move_list->num; i++)
+	int high_score = -INF;
+
+	for (int i = num; i < move_list->num; i++)
 	{
-		if ((move_list->list[i].score > move_list->list[high_index].score))
+		if ((move_list->list[i].score > high_score))
+		{
+			high_score = move_list->list[i].score;
 			high_index = i; //Store new high index
+		}
 	}
 
-	if (move_list->list[high_index].score >= CAPTURE_SCORE)
+	if (move_list->list[high_index].score >= CAPTURE_SCORE) //Subtract 10000 to include negative see scores
 	{
 		//Move high scoring move to nth position so it won't be searched again
 		MOVE_STRUCT temp;
@@ -128,29 +137,63 @@ void Add_Move(MOVE_LIST_STRUCT *move_list, int from, int to, int piece, int capt
 	//Store in list and update counter
 	move_list->list[move_list->num].move = temp;
 	
-	//Update score using killer and history heuristics
-	move_list->list[move_list->num].score = 0;//Start with zero in case other heuristics miss
-	if (score != 0) //Skip if move has an MVVLVA or promote score
+	//If capture
+	if (IS_CAPTURE(temp))
 	{
-		move_list->list[move_list->num].score = score;
-	}
-	else if (temp == board->the_killers[board->hply][0])//if move matches first killer move
-	{
-		move_list->list[move_list->num].score = KILLER_MOVE_SCORE;
-	}
-	else if (temp == board->the_killers[board->hply][1])//if move matches second killer move
-	{
-		move_list->list[move_list->num].score = KILLER_MOVE_SCORE - 1;
-	}
-	else if (board->hply >= 2) //If killer moves from ply - 2 are available
-	{
-		if (temp == board->the_killers[board->hply - 2][0])//if move matches first killer move
+		if (use_SEE) //Use Static Exchange Evaluation
 		{
-			move_list->list[move_list->num].score = KILLER_MOVE_SCORE - 2;
+			int see = Static_Exchange_Evaluation(temp, board); //Calculate SEE score
+			if (see > 0)
+			{
+				move_list->list[move_list->num].score = WINNING_CAPTURE_SCORE + see;
+			}
+			else if (see < 0)
+			{
+				move_list->list[move_list->num].score = LOSING_CAPTURE_SCORE + see;
+			}
+			else
+			{
+				move_list->list[move_list->num].score = CAPTURE_SCORE + see;
+			}
 		}
-		else if (temp == board->the_killers[board->hply - 2][1])//if move matches second killer move
+		else
 		{
-			move_list->list[move_list->num].score = KILLER_MOVE_SCORE - 3;
+			move_list->list[move_list->num].score = score;
+		}
+	}
+	else if (IS_PROMOTION(temp)) //Promotion
+	{
+		move_list->list[move_list->num].score = score;//Add parameter score
+	}
+	else //Check heuristics for scoring
+	{
+		move_list->list[move_list->num].score = 0;
+
+		//Killer moves
+		if (temp == board->the_killers[board->hply][0])//if move matches first killer move
+		{
+			move_list->list[move_list->num].score = KILLER_MOVE_SCORE;
+		}
+		else if (temp == board->the_killers[board->hply][1])//if move matches second killer move
+		{
+			move_list->list[move_list->num].score = KILLER_MOVE_SCORE - 1;
+		}
+		else if (board->hply >= 2) //If killer moves from ply - 2 are available
+		{
+			if (temp == board->the_killers[board->hply - 2][0])//if move matches first killer move
+			{
+				move_list->list[move_list->num].score = KILLER_MOVE_SCORE - 2;
+			}
+			else if (temp == board->the_killers[board->hply - 2][1])//if move matches second killer move
+			{
+				move_list->list[move_list->num].score = KILLER_MOVE_SCORE - 3;
+			}
+		}
+
+		//Piece square ordering
+		if (move_list->list[move_list->num].score == 0) //If score is still zero
+		{
+			move_list->list[move_list->num].score = middle_piece_square_tables[piece][SQUARE_120_TO_64(to)] - middle_piece_square_tables[piece][SQUARE_120_TO_64(from)];
 		}
 	}
 	/*
@@ -164,6 +207,40 @@ void Add_Move(MOVE_LIST_STRUCT *move_list, int from, int to, int piece, int capt
 	}
 	*/
 	move_list->num++; //Increment counter
+}
+
+//Returns 1 if movelists are identical, otherwise 0
+int Movelists_Identical(MOVE_LIST_STRUCT *ptr1, MOVE_LIST_STRUCT *ptr2)
+{
+	ASSERT(ptr1->num == ptr2->num)
+	
+	int move, score, found;
+
+	//For each move in list 1, search all of list 2 to find an exact match
+	for (int i = 0; i < ptr1->num; i++)
+	{
+		move = ptr1->list[i].move;
+		score = ptr1->list[i].score;
+		found = 0;
+		for (int j = 0; j < ptr2->num; j++)
+		{
+			if (move == ptr2->list[j].move && score == ptr2->list[j].score) found = 1;
+		}
+		if (!found)
+		{
+			Print_Move(&ptr1->list[i]);
+			printf(" not found!\n");
+			return 0;
+		}
+	}
+	return 1;
+}
+
+//Clears a movelist
+void Clear_Movelist(MOVE_LIST_STRUCT *ptr)
+{
+	ptr->num = 0;
+	memset(ptr->list, 0, MAX_MOVE_LIST_LENGTH*sizeof(MOVE_STRUCT));
 }
 
 //Prints all moves in standard chess format

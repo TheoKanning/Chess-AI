@@ -8,11 +8,11 @@
 
 /***** Global Macros *****/
 
-#define DEBUG //Define debug mode for full assert function
+//#define DEBUG //Define debug mode for full assert function
 
 #define PROGRAM_NAME "Chess-AI"
 #define AUTHOR	"Theo Kanning"
-#define VERSION_NO	1.27
+#define VERSION_NO	1.40
 
 #ifndef DEBUG
         #define ASSERT(x)
@@ -27,15 +27,20 @@
 			   }
 #endif
 
-
+//Returns random 64 bit uint
+#define RANDOM_U64()			(((U64)rand() + \
+								((U64)rand() << 15) + \
+								((U64)rand() << 30) + \
+								((U64)rand() << 45) + \
+							   (((U64)rand() & 0x0f) << 60)))
 
 #define MAX_PLY						1028 //Maximum depth for searching
 #define MAX_SEARCH_DEPTH			64   //Max search depth, arbitrary
 #define MAX_MOVE_LIST_LENGTH		218 //Maximum moves in any position
 #define INF							100000 //Large enough number to be infinite
 #define INVALID						1000001 //Larger than infinity, always out of bounds
-#define MATE_SCORE					10000
-#define IS_MATE(x)					(abs(x) >= MATE_SCORE - MAX_SEARCH_DEPTH)
+#define MATE_SCORE					15000
+#define IS_MATE(x)					(abs(x) >= MATE_SCORE - MAX_SEARCH_DEPTH && abs(x) <= MATE_SCORE)
 #define ADJUST_MATE_SCORE(score,ply)		((score < 0) ? -MATE_SCORE + ply : MATE_SCORE -ply)
 
 #define START_FEN		"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
@@ -44,10 +49,6 @@
 //									 (61 <= x && x <= 68) || (71 <= x && x <= 78) || (81 <= x && x <= 88) || (91 <= x && x <= 98))
 #define ON_BOARD_120(x)				(ON_BOARD_64(SQUARE_120_TO_64(x)))
 #define ON_BOARD_64(x)				(x >= 0 && x < 64)
-
-//#define SQUARE_120_TO_64(x)			((x%10 -1 + 8*((x-21)/10)))
-//#define SQUARE_64_TO_120(x)			((x + 21 + 2*((x/8))))
-
 
 #define SQUARE_120_TO_64(x)			(square_120_to_64[x])
 #define SQUARE_64_TO_120(x)			(square_64_to_120[x])
@@ -62,20 +63,22 @@
 #define CLR_BIT(x,y)				(x &= ~(1i64<<y))
 #define GET_BIT(x,y)				(x & (1i64<<y))
 
-#define IS_WHITE_PIECE(x)			((x > EMPTY) && (x <= wK)) 
-#define IS_BLACK_PIECE(x)			((x > wK) && (x <= bK))
-#define IS_PAWN(x)					((x == wP) || (x == bP))
-#define IS_KNIGHT(x)				((x == wN) || (x == bN))
-#define IS_BISHOP(x)				((x == wB) || (x == bB))
-#define IS_ROOK(x)					((x == wR) || (x == bR))
-#define IS_QUEEN(x)					((x == wQ) || (x == bQ))
-#define IS_KING(x)					((x == wK) || (x == bK))
+#define IS_WHITE_PIECE(x)			(is_white[x]) //((x > EMPTY) && (x <= wK)) 
+#define IS_BLACK_PIECE(x)			(is_black[x]) //(x > wK) && (x <= bK))
+#define COLOR(x)					(color[x])
+#define IS_PAWN(x)					(is_pawn[x]) //((x == wP) || (x == bP))
+#define IS_KNIGHT(x)				(is_knight[x]) //((x == wN) || (x == bN))
+#define IS_BISHOP(x)				(is_bishop[x]) //((x == wB) || (x == bB))
+#define IS_ROOK(x)					(is_rook[x]) //((x == wR) || (x == bR))
+#define IS_QUEEN(x)					(is_queen[x]) //((x == wQ) || (x == bQ))
+#define IS_KING(x)					(is_king[x]) //((x == wK) || (x == bK))
 
 //Late move reduction macros
 #define CAN_REDUCE(move)			(!IS_CAPTURE(move) && !IS_PROMOTION(move)) //Returns 1 if move is not a promotion or capture
 #define REDUCTION_LIMIT				3 //Minimum depth to consider reductions
 #define LATE_MOVE_NUM				5 //First move number to consider reducing, 6th move = 5
 #define LATE_MOVE_REDUCTION			1 //Number of ply to shorten late move searches
+
 
 /***** Global structures and typedefs *****/
 typedef unsigned long long U64; //64 bit integer
@@ -159,13 +162,18 @@ typedef struct
 	int time_set;
 	int end_early; //Enable ending early if using normal clock
 	int stopped;
-	int nodes;
+	long nodes;
 
 	int depth;
+	int max_depth; //Max depth reached in normal search
 	int null_available;
 
 	int age; //Number of irreversible moves made
-	int hash_hits;
+	long hash_probes;
+	long hash_hits;
+
+	int best_index[MAX_MOVE_LIST_LENGTH];
+	int beta_cutoff_index[MAX_MOVE_LIST_LENGTH];
 
 	int quit;
 	
@@ -234,6 +242,24 @@ typedef struct
 
 
 /***** Global Functions *****/
+//attack
+extern int Under_Attack(int target120, int side, BOARD_STRUCT *board);
+extern int Under_Attack_Fast(int sq, int side, BOARD_STRUCT *board);
+extern int In_Check(int side, BOARD_STRUCT *board);
+extern U64 between[64][64]; 
+extern void Generate_Between_Squares(void);
+
+//attack masks
+extern const U64 knight_attack_masks[64];
+extern const U64 king_attack_masks[64];
+extern const U64 wpawn_attack_masks[64];
+extern const U64 bpawn_attack_masks[64];
+extern const U64 rook_attack_masks[64];
+extern const U64 bishop_attack_masks[64];
+extern void Generate_King_Knight_Attack_Masks(void);
+extern void Generate_Pawn_Attack_Masks(void);
+extern void Generate_Rook_Bishop_Attack_Masks(void);
+
 //board
 extern void Init_Board(BOARD_STRUCT *board);
 extern void Update_Piece_Lists(BOARD_STRUCT *board);
@@ -247,24 +273,36 @@ extern int Is_Repetition(BOARD_STRUCT *board);
 extern int Is_Material_Draw(BOARD_STRUCT *board);
 extern void Check_Board(BOARD_STRUCT *board);
 extern void Print_Board(BOARD_STRUCT *board);
-extern void Print_Bitboards(BOARD_STRUCT *board);
+extern void Print_Bitboard(U64 bb);
 
 //data
+extern int use_SEE;
+extern int use_aspiration_window;
+extern int use_dual_hash;
+extern int use_futility;
+extern int use_late_move_reduction;
 extern int square_120_to_64[120];
 extern int square_64_to_120[64];
 extern char* file_names;
 extern char* rank_names;
 extern char* piece_names;
-extern short pawn_piece_square_table[64];
-extern short knight_piece_square_table[64];
-extern short bishop_piece_square_table[64];
-extern short rook_piece_square_table[64];
-extern short queen_piece_square_table[64];
-extern short king_piece_square_table[64];
-extern short king_endgame_piece_square_table[64];
+extern int is_white[13];
+extern int is_black[13];
+extern int color[13];
+extern int is_pawn[13];
+extern int is_knight[13];
+extern int is_bishop[13];
+extern int is_rook[13];
+extern int is_queen[13];
+extern int is_king[13];
+extern const U64 rank_masks[8];
+extern const U64 file_masks[8];
+extern int futility_margins[4];
+extern int aspiration_windows[4];
+extern int piece_values[13];
+extern int passed_pawn_rank_bonus[8];
 extern short middle_piece_square_tables[13][64];
 extern short end_piece_square_tables[13][64];
-extern int GetTimeMs(void);
 
 //eval
 extern int Evaluate_Board(BOARD_STRUCT *board);
@@ -272,24 +310,55 @@ extern int Get_Board_Piece_Square_Score(BOARD_STRUCT *board);
 extern int Get_Piece_Square_Score(int index64, int piece, float phase);
 extern int Get_Pawn_Eval_Score(BOARD_STRUCT *board);
 extern int Get_King_Safety_Score(BOARD_STRUCT *board);
+extern int Get_Pawn_And_King_Score(BOARD_STRUCT *board);
 extern void Init_Pawn_Masks(void);
 
 //hashkeys
 extern void Init_Hashkeys(void);
-extern void Init_Hash_Table(void);
+extern void Clear_Hash_Table(void);
 extern void Compute_Hash(BOARD_STRUCT *board);
 extern void Add_Hash_Entry(HASH_ENTRY_STRUCT *hash_ptr, int ply, SEARCH_INFO_STRUCT *info);
 extern void Remove_Hash_Entry(U64 hash);
-extern int Get_Hash_Entry(U64 hash, int alpha, int beta, int depth, int ply, int * hash_move);
+extern int  Get_Hash_Entry(U64 hash, int alpha, int beta, int depth, int ply, int * hash_move);
+extern void Add_Dual_Hash_Entry(HASH_ENTRY_STRUCT *hash_ptr, int ply, SEARCH_INFO_STRUCT *info);
+extern int  Get_Dual_Hash_Entry(U64 hash, int alpha, int beta, int depth, int ply, int * hash_move);
 extern void Fill_Hash_Entry(int age, int depth, int eval, int flag, U64 hash, int move, HASH_ENTRY_STRUCT *hash_ptr);
 
 //history
 extern void Add_History_Move(int move, BOARD_STRUCT *board);
 extern void Find_History_Moves(MOVE_LIST_STRUCT *move_list, BOARD_STRUCT *board);
 extern void Clear_History_Data(BOARD_STRUCT *board);
+
+//input
+extern int Get_Time_Ms(void);
+extern void ReadInput(SEARCH_INFO_STRUCT *info);
+
 //killers
 extern void Find_Killer_Moves(MOVE_LIST_STRUCT *move_list, BOARD_STRUCT *board);
 extern void Add_Killer_Move(int move, BOARD_STRUCT *board);
+
+//magic_data
+extern const U64 R_Magic[64];
+extern const U64 B_Magic[64];
+extern const U64 R_Occ[64];
+extern const U64 B_Occ[64];
+extern const int R_Bits[64];
+extern const int B_Bits[64];
+extern int count_1s(U64 b);
+extern const int BitTable[64];
+extern int pop_1st_bit(U64 *bb); //Make inline
+extern int transform(U64 b, U64 magic, int bits);
+extern U64 magicMovesRook[64][4096];
+extern U64 magicMovesBishop[64][512];
+extern void Generate_Occupancy_Masks(void);
+extern void Generate_Magic_Numbers(void);
+extern void Generate_Magic_Moves(void);
+
+//magic_movegen
+extern U64 Rook_Attacks(U64 occ, int sq);
+extern U64 Bishop_Attacks(U64 occ, int sq);
+extern void Magic_Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *list);
+extern void Magic_Generate_Capture_Promote_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *move_list);
 
 //makemove
 extern int Make_Move(int move_num, BOARD_STRUCT *board);
@@ -300,11 +369,8 @@ extern int Is_Checking_Move(int move_num, BOARD_STRUCT *board);
 extern void Print_Move(MOVE_STRUCT *move);
 extern char* UCI_Move_String(MOVE_STRUCT *move);
 
-
 //movegen
 extern void Generate_Moves(BOARD_STRUCT*, MOVE_LIST_STRUCT*);
-extern int Under_Attack(int target120, int side, BOARD_STRUCT *board);
-extern int In_Check(int side, BOARD_STRUCT *board);
 
 //movelist
 extern void Sort_Moves(MOVE_LIST_STRUCT *move_list);
@@ -313,11 +379,20 @@ extern int Get_Capture_Moves(MOVE_LIST_STRUCT *move_list);
 extern void Get_Next_Move(int num, MOVE_LIST_STRUCT *move_list); 
 extern void Get_Next_Capture_Move(int num, MOVE_LIST_STRUCT *move_list);
 extern void Add_Move(MOVE_LIST_STRUCT *move_list, int from, int to, int piece, int capture, int special, int score, BOARD_STRUCT *board);
+extern int Movelists_Identical(MOVE_LIST_STRUCT *ptr1, MOVE_LIST_STRUCT *ptr2);
+extern void Clear_Movelist(MOVE_LIST_STRUCT *ptr);
 extern void Print_Move_List(MOVE_LIST_STRUCT *move_list);
+
+//pawn_hash_table
+extern void Add_Pawn_Hash_Entry(int score, U64 hash);
+extern int Get_Pawn_Hash_Entry(U64 hash);
+extern void Clear_Pawn_Hash_Table(void);
 
 //perft
 extern int Perft_Test(char *fen, int depth, BOARD_STRUCT *board);
 extern int Search(BOARD_STRUCT *board, int depth);
+extern int Magic_Perft_Test(char *fen, int depth, BOARD_STRUCT *board);
+extern int Magic_Search(BOARD_STRUCT *board, int depth);
 
 //pv_table
 extern void Clear_PV_List(PV_LIST_STRUCT *pv);
@@ -330,15 +405,28 @@ extern int Iterative_Deepening(int depth, BOARD_STRUCT *board, SEARCH_INFO_STRUC
 extern int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info);
 extern int Quiescent_Search(int alpha, int beta, BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info);
 extern int Search_Position(BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info);
-extern int Get_Time_Ms(void);
 extern int Draw_Error_Found(int move, BOARD_STRUCT *board);
+extern void Internal_Iterative_Deepening(int alpha, int beta, int depth, MOVE_LIST_STRUCT *move_list, BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info);
+
+//search_info
+extern void Clear_Search_Info(SEARCH_INFO_STRUCT *info);
+extern void Print_Move_Index_Data(SEARCH_INFO_STRUCT *info);
+
+
+//search_test
+extern void Search_Test(void);
+
+//see
+extern int Static_Exchange_Evaluation(int move, BOARD_STRUCT *board);
+extern void Set_Quiescent_SEE_Scores(MOVE_LIST_STRUCT *move_list, BOARD_STRUCT *board);
 
 //tuning
 extern int king_end_piece_square_tuning_values[8];
 extern int pawn_end_piece_square_tuning_values[7];
-extern int passed_pawn_rank_bonus[8];
+extern float passed_pawn_tuning_parameters[3];
 extern void Set_King_End_Values(void);
 extern void Set_Pawn_End_Values(void);
+extern void Set_Passed_Pawn_Rank_Bonuses(void);
 
 //uci
 extern void Parse_Go(char* line, SEARCH_INFO_STRUCT *info, BOARD_STRUCT *board);

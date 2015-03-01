@@ -32,4 +32,24 @@ Version Notes:
 	 - Use only big pieces for phase
 	 - Encourage trading while ahead
 	 - Score adjustments for bishop, knight, and rook pairs
+1.28 - Can be told to quit mid-search
+	 - Won't null prune if mate found
+	 - Can change options before entering UCI loop
+	 - Tuned passed pawn and king endgame values
+1.30 - Won't see if move causes check unless pruning is available
+	 - Faster under attack function
+	 - Better movelist clearing
+	 - Piece-square move ordering
+	 - SEE added, but not fully tested
+	 - Two-tiered hash table, still depth-based
+	 - No LMR in PV nodes
+	 - Call PVS research as PV
+	 - Mate score pruning
+1.40 - SEE working
+	 - Fixed futility pruning bug
+	 - Increased mate score to prevent error with 9 queens (never going to happen)
+	 - Full window search until alpha is raised
+
+
+
 

@@ -5,23 +5,18 @@
 #include "stdlib.h"
 #include "time.h"
 
-//Returns random 64 bit uint
-#define RANDOM_U64()			(((U64)rand() + \
-								((U64)rand() << 15) + \
-								((U64)rand() << 30) + \
-								((U64)rand() << 45) + \
-							   (((U64)rand() & 0x0f) << 60)))
-
 //Hashkey data
 U64 piece_keys[13][64];//[square][piece]
 U64 side_keys[2];
 U64 ep_keys[101]; //NO_SQUARE = 100;
 U64 castle_keys[16];
 
-int HASH_SIZE = 1000000; //Number of hash entries stored
+#define HASH_SIZE  1000000 //Number of hash entries stored
+#define DUAL_HASH_SIZE 500000
 int HASH_SIZE_MB = 0;
 
-HASH_ENTRY_STRUCT hash_table[1000000];
+HASH_ENTRY_STRUCT hash_table[HASH_SIZE];
+HASH_ENTRY_STRUCT dual_hash_table[2][DUAL_HASH_SIZE];
 
 static void Copy_Hash_Entry(HASH_ENTRY_STRUCT *ptr1, HASH_ENTRY_STRUCT *ptr2);
 
@@ -121,7 +116,7 @@ int Get_Hash_Entry(U64 hash, int alpha, int beta, int depth, int ply, int * hash
 	}
 	else //keys do not match
 	{
-		*hash_move = 0; //Reset move
+		//*hash_move = 0; //Reset move (unecessary since it starts at 0)
 	}
 
 	return INVALID;
@@ -165,6 +160,9 @@ void Add_Hash_Entry(HASH_ENTRY_STRUCT *hash_ptr, int ply, SEARCH_INFO_STRUCT *in
 	if (hash_ptr->eval >= MATE_SCORE - MAX_SEARCH_DEPTH) hash_ptr->eval += ply;
 	if (hash_ptr->eval <= -MATE_SCORE + MAX_SEARCH_DEPTH) hash_ptr->eval -= ply;
 
+	//Copy_Hash_Entry(hash_ptr, &hash_table[hash_index]);
+	//return;
+
 	//If stored entry is empty, replace
 	if (hash_table[hash_index].hash == 0)
 	{
@@ -173,7 +171,7 @@ void Add_Hash_Entry(HASH_ENTRY_STRUCT *hash_ptr, int ply, SEARCH_INFO_STRUCT *in
 	}
 
 	//If stored entry is too old, replace
-	if (hash_table[hash_index].age + 3 < info->age)
+	if (hash_table[hash_index].age < info->age)
 	{
 		Copy_Hash_Entry(hash_ptr, &hash_table[hash_index]);
 		return;
@@ -246,9 +244,99 @@ void Add_Hash_Entry(HASH_ENTRY_STRUCT *hash_ptr, int ply, SEARCH_INFO_STRUCT *in
 		//Copy_Hash_Entry(hash_ptr, &hash_table[hash_index]);
 		return;
 	}
-
-
 }
+
+//Adds an entry to the two-tiered hash table
+void Add_Dual_Hash_Entry(HASH_ENTRY_STRUCT *hash_ptr, int ply, SEARCH_INFO_STRUCT *info)
+{
+	if (!use_dual_hash) return Add_Hash_Entry(hash_ptr, ply, info);
+
+	int hash_index = hash_ptr->hash % DUAL_HASH_SIZE;
+
+	//Adjust mate score for ply
+	if (hash_ptr->eval >= MATE_SCORE - MAX_SEARCH_DEPTH && hash_ptr->eval <= MATE_SCORE) hash_ptr->eval += ply;
+	if (hash_ptr->eval <= -MATE_SCORE + MAX_SEARCH_DEPTH && hash_ptr->eval >= -MATE_SCORE) hash_ptr->eval -= ply;
+
+	//Replace first slot if deeper or newer
+	if (dual_hash_table[0][hash_index].depth < hash_ptr->depth || dual_hash_table[0][hash_index].age < hash_ptr->age)
+	{
+		Copy_Hash_Entry(hash_ptr, &dual_hash_table[0][hash_index]);
+	}
+	else //Copy into second slot
+	{
+		Copy_Hash_Entry(hash_ptr, &dual_hash_table[1][hash_index]);
+	}
+}
+
+//Returns the value of probing the dual hash table
+int Get_Dual_Hash_Entry(U64 hash, int alpha, int beta, int depth, int ply, int * hash_move)
+{
+	if(!use_dual_hash) Get_Hash_Entry(hash, alpha, beta, depth, ply, hash_move);
+
+	//Get hash data
+	HASH_ENTRY_STRUCT *hash_temp = &dual_hash_table[0][hash % DUAL_HASH_SIZE];
+
+	//Try first slot
+	if (hash_temp->hash == hash) //If hash keys match
+	{
+		*hash_move = hash_temp->move; //Store hash move in pointer
+
+		if (hash_temp->depth >= depth) //If depth is greater than or equal to search depth
+		{
+			//Adjust mate score for ply
+			int eval = hash_temp->eval;
+
+			if (eval >= MATE_SCORE - MAX_SEARCH_DEPTH) eval -= ply;
+			else if (eval <= -MATE_SCORE + MAX_SEARCH_DEPTH) eval += ply;
+
+			if (hash_temp->flag == HASH_EXACT)
+			{
+				return eval;
+			}
+			else if (hash_temp->flag == HASH_UPPER && (eval <= alpha))
+			{
+				return eval;
+			}
+			else if (hash_temp->flag == HASH_LOWER && (eval >= beta))
+			{
+				return eval;
+			}
+			//return INVALID;
+		}
+	}
+	
+	//Check second slot
+	hash_temp = &dual_hash_table[1][hash % DUAL_HASH_SIZE];
+	if (hash_temp->hash == hash) //If hash keys match
+	{
+		*hash_move = hash_temp->move; //Store hash move in pointer
+
+		if (hash_temp->depth >= depth) //If depth is greater than or equal to search depth
+		{
+			//Adjust mate score for ply
+			int eval = hash_temp->eval;
+
+			if (eval >= MATE_SCORE - MAX_SEARCH_DEPTH) eval -= ply;
+			else if (eval <= -MATE_SCORE + MAX_SEARCH_DEPTH) eval += ply;
+
+			if (hash_temp->flag == HASH_EXACT)
+			{
+				return eval;
+			}
+			else if (hash_temp->flag == HASH_UPPER && (eval <= alpha))
+			{
+				return eval;
+			}
+			else if (hash_temp->flag == HASH_LOWER && (eval >= beta))
+			{
+				return eval;
+			}
+		}
+	}
+	
+	return INVALID;
+}
+
 
 //Fills a hash entry with the given parameters
 void Fill_Hash_Entry(int age, int depth, int eval, int flag, U64 hash, int move, HASH_ENTRY_STRUCT *hash_ptr)
@@ -288,7 +376,8 @@ void Remove_Hash_Entry(U64 hash)
 }
 
 //Initializes hash table and clears all entries
-void Init_Hash_Table(void)
+void Clear_Hash_Table(void)
 {
 	memset(hash_table, 0, sizeof(hash_table));
+	memset(dual_hash_table, 0, sizeof(dual_hash_table));
 }

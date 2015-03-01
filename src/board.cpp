@@ -8,8 +8,6 @@
 //#include "stdafx.h"
 using namespace std;
 
-extern int piece_values[13];
-
 //Private functions
 void Update_Board_Array_120(BOARD_STRUCT *board);
 
@@ -105,8 +103,6 @@ void Init_Board(BOARD_STRUCT *board)
 	Update_Piece_Lists(board);
 
 	Compute_Hash(board);
-
-	Evaluate_Board(board);
 
 	board->age = 0;
 
@@ -269,8 +265,6 @@ void Parse_Fen(char *fen, BOARD_STRUCT *board)
 	Update_Board_Array_120(board);
 
 	Compute_Hash(board);
-
-	Evaluate_Board(board);
 
 #ifdef DEBUG
 	Check_Board(board);
@@ -857,39 +851,34 @@ void Print_Board(BOARD_STRUCT *board)
 	cout << "Hply: " << board->hply << endl;
 
 	//Material score
-	cout << "Eval: " << board->eval_score / 100.0 << endl;
+	cout << "Eval: " << Evaluate_Board(board) / 100.0 << endl;
 }
 
-//Prints all three pawn bitboards using the same format as the Print_Board function
-void Print_Bitboards(BOARD_STRUCT *board)
+//Prints a bitboards using the same format as the Print_Board function
+void Print_Bitboard(U64 bb)
 {
-	int rank, file, color;
-	char* names[3] = { "White", "Black", "Both" };
+	int rank, file;
 	//Print board
-	for (color = WHITE; color <= BOTH; color++)
+	cout << endl << "    A B C D E F G H" << endl;
+	for (rank = RANK_8; rank >= RANK_1; rank--)
 	{
-		cout << names[color] << endl;
-		cout << endl << "    A B C D E F G H" << endl;
-		for (rank = RANK_8; rank >= RANK_1; rank--)
+		cout << "   -----------------" << endl; //17 Underscores
+		cout << " " << rank + 1 << " ";
+		for (file = FILE_A; file <= FILE_H; file++)
 		{
-			cout << "   -----------------" << endl; //17 Underscores
-			cout << " " << rank + 1 << " ";
-			for (file = FILE_A; file <= FILE_H; file++)
+			cout << (char)179; //Bar
+
+			if (GET_BIT(bb, RANK_FILE_TO_SQUARE_64(rank, file)))
 			{
-				cout << (char)179; //Bar
-
-				if (GET_BIT(board->pawn_bitboards[color], RANK_FILE_TO_SQUARE_64(rank, file)))
-				{
-					cout << 1;
-				}
-				else
-				{
-					cout << " ";
-				}
-
+				cout << 1;
 			}
-			cout << (char)179 << endl; //Bar
+			else
+			{
+				cout << " ";
+			}
+
 		}
-		cout << "   -----------------" << endl << endl; //End box
+		cout << (char)179 << endl; //Bar
 	}
+	cout << "   -----------------" << endl << endl; //End box
 }

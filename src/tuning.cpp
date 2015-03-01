@@ -4,9 +4,9 @@
 
 #include "globals.h"
 
-int king_end_piece_square_tuning_values[8] = { -50, -30, -30, -30, -10, 10, 20, 40 }; //Starting values
+int king_end_piece_square_tuning_values[8] = { -46, -32, -18, 0, -10, 18, 44, 58 }; //Starting values
 int pawn_end_piece_square_tuning_values[7] = { 0, 0, 10, 20, 30, 40, 50 }; //Starting values
-int passed_pawn_rank_bonus[8] = { 0, 0, 0, 5, 10, 15, 20, 0};
+float passed_pawn_tuning_parameters[3] = { 0, 0, 0 };
 
 static int king_end_tuning_zones[64] =
 {
@@ -53,5 +53,17 @@ void Set_Pawn_End_Values(void)
 	{
 		end_piece_square_tables[wP][index] = pawn_end_piece_square_tuning_values[pawn_end_tuning_zones[index]];
 		end_piece_square_tables[bP][index] = pawn_end_piece_square_tuning_values[pawn_end_tuning_zones[63 - index]];
+	}
+}
+
+//Calculates passed pawn bonuses given tuning data
+void Set_Passed_Pawn_Rank_Bonuses(void)
+{
+	for (int i = 1; i < 7; i++)
+	{
+		//Quadratic equation
+		passed_pawn_rank_bonus[i] = (int)(passed_pawn_tuning_parameters[2] * i * i +
+			passed_pawn_tuning_parameters[1] * i +
+			passed_pawn_tuning_parameters[0]);
 	}
 }
