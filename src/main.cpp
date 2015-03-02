@@ -57,7 +57,9 @@ int main()
 			continue;
 		}
 		if (!strncmp(line, "perft", 5)){
-			Perft_Test("rnbqkb1r/pp1p1ppp/2p5/4P3/2B5/8/PPP1NnPP/RNBQK2R w KQkq - 0 6", 5, &board);
+			//Perft_Test("rnbqkb1r/pp1p1ppp/2p5/4P3/2B5/8/PPP1NnPP/RNBQK2R w KQkq - 0 6", 5, &board);
+			Perft_Test(KIWIPETE_FEN, 5, &board);
+			printf("Perft Complete\n");
 		}
 		else if (!strncmp(line, "test", 4))	{
 			Parse_Fen(HASH_TEST_FEN, &board);
@@ -72,7 +74,7 @@ int main()
 		else if (!strncmp(line, "see", 3))	{
 			Parse_Fen(SEE_TEST_FEN3, &board);
 			Print_Board(&board);
-			Generate_Moves(&board, &move_list);
+			Magic_Generate_Moves(&board, &move_list);
 			for (int i = 0; i < move_list.num; i++)
 			{
 				if (IS_CAPTURE(move_list.list[i].move))
@@ -147,10 +149,11 @@ int main()
 		}
 	}
 
-	/*
+	Parse_Fen(START_FEN, &board);
+	Print_Board(&board);
 	while (!done)
 	{
-		Generate_Moves(&board, &move_list);
+		Magic_Generate_Moves(&board, &move_list);
 		Sort_Moves(&move_list);
 		Print_Move_List(&move_list);
 
@@ -171,7 +174,6 @@ int main()
 		board.eval_score = Evaluate_Board(&board);
 		Print_Board(&board);
 	}
-	*/
 	
 	
 	

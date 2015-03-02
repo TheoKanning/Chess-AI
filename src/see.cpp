@@ -36,7 +36,7 @@ int Static_Exchange_Evaluation(int move, BOARD_STRUCT *board)
 	if (IS_EP_CAPTURE(move)) return 0; //Handle ep captures later
 
 	int attacker = GET_PIECE(move);
-	int square = SQUARE_120_TO_64(GET_TO_SQ(move));
+	int square = GET_TO_SQ(move);
 
 	int score[32] = { 0 };
 
@@ -46,7 +46,7 @@ int Static_Exchange_Evaluation(int move, BOARD_STRUCT *board)
 	U64 all_pieces = board->side_bitboards[BOTH];
 
 	//Remove attacking piece
-	all_pieces &= ~(1i64 << SQUARE_120_TO_64(GET_FROM_SQ(move)));
+	all_pieces &= ~(1i64 << GET_FROM_SQ(move));
 
 	U64 all_attackers = ((bpawn_attack_masks[square] & board->piece_bitboards[wP]) |
 		(wpawn_attack_masks[square] & board->piece_bitboards[bP]) |
@@ -56,7 +56,7 @@ int Static_Exchange_Evaluation(int move, BOARD_STRUCT *board)
 		(king_attack_masks[square] & (board->piece_bitboards[wK] | board->piece_bitboards[bK])));
 
 	//Remove attacking piece
-	all_attackers &= ~(1i64 << SQUARE_120_TO_64(GET_FROM_SQ(move)));
+	all_attackers &= ~(1i64 << GET_FROM_SQ(move));
 	
 	//Store initial score
 	score[0] = piece_values[GET_CAPTURE(move)];

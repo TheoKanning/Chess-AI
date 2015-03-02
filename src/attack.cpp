@@ -9,7 +9,7 @@ U64 between[64][64] = { 0i64 }; //Masks for squares in between pairs of squares
 
 
 //Returns 1 if square is under attack by given side
-int Under_Attack_Fast(int sq, int side, BOARD_STRUCT *board)
+int Under_Attack(int sq, int side, BOARD_STRUCT *board)
 {
 	U64 pawns, knights, bishops, rooks, king;
 	int from;
@@ -92,182 +92,23 @@ int Under_Attack_Fast(int sq, int side, BOARD_STRUCT *board)
 }
 
 
-//Sees if the specified square is under attack by the given side
-//Returns 1 if under attack, else 0
-int Under_Attack(int target120, int side, BOARD_STRUCT *board)
-{
-	int piece, direction, slider_num, from120;
-
-	ASSERT(ON_BOARD_120(target120));
-
-	if (side == WHITE)
-	{
-		//Pawns
-		if (board->board_array120[target120 - 9] == wP) return 1; //Check both directions
-		if (board->board_array120[target120 - 11] == wP) return 1;
-
-		//Knights
-		for (direction = 0; direction < NUM_KNIGHT_MOVES; direction++)
-		{
-			if (board->board_array120[target120 + KNIGHT_MOVES[direction]] == wN) return 1; //Check all knight sources, return 1 if found
-		}
-
-		//Bishops and queens
-		for (direction = 0; direction < NUM_BISHOP_MOVES; direction++)
-		{
-			for (slider_num = 1; slider_num < 8; slider_num++)
-			{
-				from120 = target120 + slider_num*BISHOP_MOVES[direction];
-				if (!ON_BOARD_120(from120))
-				{
-					break; //End this direction
-				}
-				else //Continue searching in this direction
-				{
-					piece = board->board_array120[from120];
-					if ((piece == wB) || (piece == wQ))
-					{
-						return 1;
-					}
-					else if (piece != EMPTY) //Piece in the way
-					{
-						break; //End direction
-					}
-				}
-			}
-		}
-
-		//Rooks and queens
-		for (direction = 0; direction < NUM_ROOK_MOVES; direction++)
-		{
-			for (slider_num = 1; slider_num < 8; slider_num++)
-			{
-				from120 = target120 + slider_num*ROOK_MOVES[direction];
-				if (!ON_BOARD_120(from120))
-				{
-					break; //End this direction
-				}
-				else //Continue searching in this direction
-				{
-					piece = board->board_array120[from120];
-					if ((piece == wR) || (piece == wQ))
-					{
-						return 1;
-					}
-					else if (piece != EMPTY) //Piece in the way
-					{
-						break; //End direction
-					}
-				}
-			}
-		}
-
-		//King
-		for (direction = 0; direction < NUM_KING_MOVES; direction++)
-		{
-			if (board->board_array120[target120 + KING_MOVES[direction]] == wK) return 1; //Check all knight sources, return 1 if found
-		}
-
-	}
-	else //side == BLACK
-	{
-		//Pawns
-		if (board->board_array120[target120 + 9] == bP) return 1; //Check both directions
-		if (board->board_array120[target120 + 11] == bP) return 1;
-
-		//Knights
-		for (direction = 0; direction < NUM_KNIGHT_MOVES; direction++)
-		{
-			if (board->board_array120[target120 + KNIGHT_MOVES[direction]] == bN) return 1; //Check all knight sources, return 1 if found
-		}
-
-		//Bishops and queens
-		for (direction = 0; direction < NUM_BISHOP_MOVES; direction++)
-		{
-			for (slider_num = 1; slider_num < 8; slider_num++)
-			{
-				from120 = target120 + slider_num*BISHOP_MOVES[direction];
-				if (!ON_BOARD_120(from120))
-				{
-					break; //End this direction
-				}
-				else //Continue searching in this direction
-				{
-					piece = board->board_array120[from120];
-					if ((piece == bB) || (piece == bQ))
-					{
-						return 1;
-					}
-					else if (piece != EMPTY) //Piece in the way
-					{
-						break; //End direction
-					}
-				}
-			}
-		}
-
-		//Rooks and queens
-		for (direction = 0; direction < NUM_ROOK_MOVES; direction++)
-		{
-			for (slider_num = 1; slider_num < 8; slider_num++)
-			{
-				from120 = target120 + slider_num*ROOK_MOVES[direction];
-				if (!ON_BOARD_120(from120))
-				{
-					break; //End this direction
-				}
-				else //Continue searching in this direction
-				{
-					piece = board->board_array120[from120];
-					if ((piece == bR) || (piece == bQ))
-					{
-						return 1;
-					}
-					else if (piece != EMPTY) //Piece in the way
-					{
-						break; //End direction
-					}
-				}
-			}
-		}
-
-		//King
-		for (direction = 0; direction < NUM_KING_MOVES; direction++)
-		{
-			if (board->board_array120[target120 + KING_MOVES[direction]] == bK) return 1; //Check all knight sources, return 1 if found
-		}
-	}
-
-	return 0; //If no attacks were found
-
-}
 
 //Returns 1 if the current side's king is in check
 int In_Check(int side, BOARD_STRUCT *board)
 {
 	int king_square = 0;
-	int result;
 	if (side == WHITE)
 	{
-		king_square = board->piece_list120[wK][0];
+		U64 temp = board->piece_bitboards[wK];
+		king_square = pop_1st_bit(&temp);
 	}
 	else
 	{
-		king_square = board->piece_list120[bK][0];
+		U64 temp = board->piece_bitboards[bK];
+		king_square = pop_1st_bit(&temp);
 	}
 
-	return Under_Attack_Fast(SQUARE_120_TO_64(king_square), side ^ 1, board);
-
-	result = Under_Attack(king_square, side ^ 1, board);
-	if (result != Under_Attack_Fast(SQUARE_120_TO_64(king_square), side ^ 1, board))
-	{
-		Print_Board(board);
-		printf("Under Attack values do not match\n");
-		printf("Side %d Normal: %d    Fast: %d\n", side, result, Under_Attack_Fast(SQUARE_120_TO_64(king_square), side ^ 1, board));
-		Under_Attack_Fast(SQUARE_120_TO_64(king_square), side ^ 1, board);
-		system("PAUSE");
-	}
-	return result;
+	return Under_Attack(king_square, side ^ 1, board);
 }
 
 

@@ -121,8 +121,8 @@ void Add_Move(MOVE_LIST_STRUCT *move_list, int from, int to, int piece, int capt
 	int temp = 0;
 
 	//Check all fields within bounds
-	ASSERT(ON_BOARD_120(from));
-	ASSERT(ON_BOARD_120(to));
+	ASSERT(ON_BOARD_64(from));
+	ASSERT(ON_BOARD_64(to));
 	ASSERT((piece >= wP) && (piece <= bK)); //Piece is not empty
 	ASSERT((piece >= EMPTY) && (piece <= bK)); //Piece can be empty
 	ASSERT((special >= NOT_SPECIAL) && (special <= KNIGHT_PROMOTE));
@@ -193,7 +193,7 @@ void Add_Move(MOVE_LIST_STRUCT *move_list, int from, int to, int piece, int capt
 		//Piece square ordering
 		if (move_list->list[move_list->num].score == 0) //If score is still zero
 		{
-			move_list->list[move_list->num].score = middle_piece_square_tables[piece][SQUARE_120_TO_64(to)] - middle_piece_square_tables[piece][SQUARE_120_TO_64(from)];
+			move_list->list[move_list->num].score = middle_piece_square_tables[piece][to] - middle_piece_square_tables[piece][from];
 		}
 	}
 	/*

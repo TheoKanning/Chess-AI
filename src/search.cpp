@@ -176,7 +176,6 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 	int mate = 1; //If no legal moves are found
 	int f_prune_allowed = 0; //If futility pruning is allowed at this node
 	MOVE_LIST_STRUCT move_list;
-	MOVE_LIST_STRUCT magic_move_list;
 	int current_move;
 	int current_move_score;
 	HASH_ENTRY_STRUCT hash_entry;
@@ -273,7 +272,7 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 	&& !is_pv 
 	&& board->hply 
 	&& !in_check 
-	&& ((board->side == WHITE) ? board->white_big_material : board->black_big_material) >= 1000)
+	&& (board->big_material[board->side] >= 950))
 	{
 		info->null_available = 0;
 		Make_Null_Move(board);
@@ -295,7 +294,7 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 		f_prune_allowed = 1;
 
 	/***** Move generation and sorting *****/
-	Generate_Moves(board, &move_list);
+	Magic_Generate_Moves(board, &move_list);
 	//Magic_Generate_Moves(board, &magic_move_list);
 	/*
 	if (!Movelists_Identical(&move_list, &magic_move_list))
@@ -580,69 +579,6 @@ int Quiescent_Search(int alpha, int beta, BOARD_STRUCT *board, SEARCH_INFO_STRUC
 	return best_score;
 }
 
-
-//Performs the given move at a position, checks for a draw, the performs all moves at that position and checks for draws
-int Draw_Error_Found(int move, BOARD_STRUCT *board)
-{
-	int count, next_move;
-	int draw = 0;
-	MOVE_LIST_STRUCT move_list;
-	HASH_ENTRY_STRUCT hash_entry;
-	int ply = board->hply;
-	U64 hash = board->hash_key;
-
-	//Make hash move
-	if (!Make_Move(move, board)) return 0;
-	//Check first ply
-	
-	if (board->move_counter >= 100 || Is_Threefold_Repetition(board))
-	{
-		Take_Move(board);
-		ASSERT(ply == board->hply);
-		ASSERT(hash == board->hash_key);
-		return 1;
-	}
-
-	//Check all possible opponent moves for draws, starting with hash move
-	Generate_Moves(board, &move_list);
-	//Find hash move
-	Get_Hash_Entry(board->hash_key, 0, 0, 0, board->hply, &hash_entry.move);
-	Find_PV_Move(hash_entry.move, &move_list);
-
-	//Search all moves in sorted order, return 1 if draw is found
-	count = 0;
-
-	while( count < move_list.num && !draw)
-	{
-		Get_Next_Move(count, &move_list);
-		next_move = move_list.list[count].move;
-
-		if (Make_Move(next_move, board))
-		{
-			if (board->move_counter >= 100 || Is_Threefold_Repetition(board))
-			{
-				draw = 1;
-			}
-			
-			if (board->hply != (ply + 2))
-			{
-				printf("board->hply: %d, ply %d\n\r", board->hply, ply);
-			}
-
-			ASSERT(board->hply == (ply + 2));
-
-			Take_Move(board);
-		}
-		count++;
-	}
-
-	Take_Move(board);
-
-	ASSERT(ply == board->hply);
-	ASSERT(hash == board->hash_key);
-
-	return draw;
-}
 
 //Searches every move in the list, and sorts them according to their scores 
 void Internal_Iterative_Deepening(int alpha, int beta, int depth, MOVE_LIST_STRUCT *move_list, BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info)

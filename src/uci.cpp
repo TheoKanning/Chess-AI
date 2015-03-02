@@ -216,13 +216,11 @@ int Parse_Move(char *ptrChar, BOARD_STRUCT *board) {
 
 	int from64 = RANK_FILE_TO_SQUARE_64((int)(ptrChar[1] - '1'), (int)(ptrChar[0] - 'a'));
 	int to64 = RANK_FILE_TO_SQUARE_64((int)(ptrChar[3] - '1'), (int)(ptrChar[2] - 'a'));
-	int from120 = SQUARE_64_TO_120(from64);
-	int to120 = SQUARE_64_TO_120(to64);
 
 	ASSERT(ON_BOARD_64(from64) && ON_BOARD_64(to64));
 
 	MOVE_LIST_STRUCT move_list;
-	Generate_Moves(board, &move_list);
+	Magic_Generate_Moves(board, &move_list);
 
 	int index = 0;
 	int move_num = 0;
@@ -230,7 +228,7 @@ int Parse_Move(char *ptrChar, BOARD_STRUCT *board) {
 
 	for (index = 0; index < move_list.num; index++) {
 		move_num = move_list.list[index].move;
-		if (GET_FROM_SQ(move_num) == from120 && GET_TO_SQ(move_num) == to120) 
+		if (GET_FROM_SQ(move_num) == from64 && GET_TO_SQ(move_num) == to64) 
 		{
 			if (IS_PROMOTION(move_num)) 
 			{
