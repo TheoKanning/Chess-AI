@@ -49,6 +49,8 @@ Version Notes:
 	 - Fixed futility pruning bug
 	 - Increased mate score to prevent error with 9 queens (never going to happen)
 	 - Full window search until alpha is raised
+2.00 - Magic bitboard generation
+	 - All 120 index data removed
 
 
 

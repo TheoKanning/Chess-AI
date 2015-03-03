@@ -50,24 +50,24 @@ U64 nmask(int sq) {
 
 U64 wpmask(int sq)
 {
-	int rank = GET_RANK_64(sq);
-	int file = GET_FILE_64(sq);
+	int rank = GET_RANK(sq);
+	int file = GET_FILE(sq);
 	U64 mask = 0i64;
 
-	if (file > FILE_A) SET_BIT(mask, RANK_FILE_TO_SQUARE_64((rank + 1), (file - 1))); //left attack
-	if (file < FILE_H) SET_BIT(mask, RANK_FILE_TO_SQUARE_64((rank + 1), (file + 1))); //right attack
+	if (file > FILE_A) SET_BIT(mask, RANK_FILE_TO_SQUARE((rank + 1), (file - 1))); //left attack
+	if (file < FILE_H) SET_BIT(mask, RANK_FILE_TO_SQUARE((rank + 1), (file + 1))); //right attack
 
 	return mask;
 }
 
 U64 bpmask(int sq)
 {
-	int rank = GET_RANK_64(sq);
-	int file = GET_FILE_64(sq);
+	int rank = GET_RANK(sq);
+	int file = GET_FILE(sq);
 	U64 mask = 0i64;
 
-	if (file > FILE_A) SET_BIT(mask, RANK_FILE_TO_SQUARE_64((rank - 1), (file - 1))); //left attack
-	if (file < FILE_H) SET_BIT(mask, RANK_FILE_TO_SQUARE_64((rank - 1), (file + 1))); //right attack
+	if (file > FILE_A) SET_BIT(mask, RANK_FILE_TO_SQUARE((rank - 1), (file - 1))); //left attack
+	if (file < FILE_H) SET_BIT(mask, RANK_FILE_TO_SQUARE((rank - 1), (file + 1))); //right attack
 
 	return mask;
 }

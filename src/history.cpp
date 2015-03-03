@@ -49,9 +49,9 @@ void Clear_History_Data(BOARD_STRUCT *board)
 	int index1, index2;
 
 	//Set all values to zero
-	for (index1 = 0; index1 < 120; index1++)
+	for (index1 = 0; index1 < 64; index1++)
 	{
-		for (index2 = 0; index2 < 120; index2++)
+		for (index2 = 0; index2 < 64; index2++)
 		{
 			board->history[index1][index2] = 0;
 		}
