@@ -214,10 +214,10 @@ int Parse_Move(char *ptrChar, BOARD_STRUCT *board) {
 	if (ptrChar[0] > 'h' || ptrChar[0] < 'a') return 0;
 	if (ptrChar[2] > 'h' || ptrChar[2] < 'a') return 0;
 
-	int from64 = RANK_FILE_TO_SQUARE_64((int)(ptrChar[1] - '1'), (int)(ptrChar[0] - 'a'));
-	int to64 = RANK_FILE_TO_SQUARE_64((int)(ptrChar[3] - '1'), (int)(ptrChar[2] - 'a'));
+	int from = RANK_FILE_TO_SQUARE((int)(ptrChar[1] - '1'), (int)(ptrChar[0] - 'a'));
+	int to = RANK_FILE_TO_SQUARE((int)(ptrChar[3] - '1'), (int)(ptrChar[2] - 'a'));
 
-	ASSERT(ON_BOARD_64(from64) && ON_BOARD_64(to64));
+	ASSERT(ON_BOARD(from) && ON_BOARD(to));
 
 	MOVE_LIST_STRUCT move_list;
 	Magic_Generate_Moves(board, &move_list);
@@ -228,7 +228,7 @@ int Parse_Move(char *ptrChar, BOARD_STRUCT *board) {
 
 	for (index = 0; index < move_list.num; index++) {
 		move_num = move_list.list[index].move;
-		if (GET_FROM_SQ(move_num) == from64 && GET_TO_SQ(move_num) == to64) 
+		if (GET_FROM_SQ(move_num) == from && GET_TO_SQ(move_num) == to) 
 		{
 			if (IS_PROMOTION(move_num)) 
 			{

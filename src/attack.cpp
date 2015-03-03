@@ -119,8 +119,8 @@ void Generate_Between_Squares(void)
 
 	for (start = 0; start < 64; start++)
 	{
-		f_rank = GET_RANK_64(start);
-		f_file = GET_FILE_64(start);
+		f_rank = GET_RANK(start);
+		f_file = GET_FILE(start);
 
 		//Rook moves up
 		t_file = f_file;
@@ -128,7 +128,7 @@ void Generate_Between_Squares(void)
 		{
 			for (b_rank = f_rank + 1; b_rank < t_rank; b_rank++)
 			{
-				SET_BIT(between[start][RANK_FILE_TO_SQUARE_64(t_rank, t_file)], RANK_FILE_TO_SQUARE_64(b_rank, t_file));
+				SET_BIT(between[start][RANK_FILE_TO_SQUARE(t_rank, t_file)], RANK_FILE_TO_SQUARE(b_rank, t_file));
 			}
 		}
 		//Rook moves right
@@ -137,7 +137,7 @@ void Generate_Between_Squares(void)
 		{
 			for (b_file = f_file + 1; b_file < t_file; b_file++)
 			{
-				SET_BIT(between[start][RANK_FILE_TO_SQUARE_64(t_rank, t_file)], RANK_FILE_TO_SQUARE_64(t_rank, b_file));
+				SET_BIT(between[start][RANK_FILE_TO_SQUARE(t_rank, t_file)], RANK_FILE_TO_SQUARE(t_rank, b_file));
 			}
 		}
 		//Rook moves down
@@ -146,7 +146,7 @@ void Generate_Between_Squares(void)
 		{
 			for (b_rank = f_rank - 1; b_rank > t_rank; b_rank--)
 			{
-				SET_BIT(between[start][RANK_FILE_TO_SQUARE_64(t_rank, t_file)], RANK_FILE_TO_SQUARE_64(b_rank, t_file));
+				SET_BIT(between[start][RANK_FILE_TO_SQUARE(t_rank, t_file)], RANK_FILE_TO_SQUARE(b_rank, t_file));
 			}
 		}
 		//Rook moves left
@@ -155,7 +155,7 @@ void Generate_Between_Squares(void)
 		{
 			for (b_file = f_file - 1; b_file > t_file; b_file--)
 			{
-				SET_BIT(between[start][RANK_FILE_TO_SQUARE_64(t_rank, t_file)], RANK_FILE_TO_SQUARE_64(t_rank, b_file));
+				SET_BIT(between[start][RANK_FILE_TO_SQUARE(t_rank, t_file)], RANK_FILE_TO_SQUARE(t_rank, b_file));
 			}
 		}
 		//Bishop moves up and right
@@ -163,7 +163,7 @@ void Generate_Between_Squares(void)
 		{
 			for (b_file = f_file + 1, b_rank = f_rank + 1; b_file < t_file, b_rank < t_rank; b_file++, b_rank++)
 			{
-				SET_BIT(between[start][RANK_FILE_TO_SQUARE_64(t_rank, t_file)], RANK_FILE_TO_SQUARE_64(b_rank, b_file));
+				SET_BIT(between[start][RANK_FILE_TO_SQUARE(t_rank, t_file)], RANK_FILE_TO_SQUARE(b_rank, b_file));
 			}
 		}
 		//Bishop moves up and left
@@ -171,7 +171,7 @@ void Generate_Between_Squares(void)
 		{
 			for (b_file = f_file - 1, b_rank = f_rank + 1; b_file > t_file, b_rank < t_rank; b_file--, b_rank++)
 			{
-				SET_BIT(between[start][RANK_FILE_TO_SQUARE_64(t_rank, t_file)], RANK_FILE_TO_SQUARE_64(b_rank, b_file));
+				SET_BIT(between[start][RANK_FILE_TO_SQUARE(t_rank, t_file)], RANK_FILE_TO_SQUARE(b_rank, b_file));
 			}
 		}
 		//Bishop moves down and right
@@ -179,7 +179,7 @@ void Generate_Between_Squares(void)
 		{
 			for (b_file = f_file + 1, b_rank = f_rank - 1; b_file < t_file, b_rank > t_rank; b_file++, b_rank--)
 			{
-				SET_BIT(between[start][RANK_FILE_TO_SQUARE_64(t_rank, t_file)], RANK_FILE_TO_SQUARE_64(b_rank, b_file));
+				SET_BIT(between[start][RANK_FILE_TO_SQUARE(t_rank, t_file)], RANK_FILE_TO_SQUARE(b_rank, b_file));
 			}
 		}
 		//Bishop moves down and left
@@ -191,7 +191,7 @@ void Generate_Between_Squares(void)
 		{
 			for (b_file = f_file - 1, b_rank = f_rank - 1; b_file > t_file, b_rank > t_rank; b_file--, b_rank--)
 			{
-				SET_BIT(between[start][RANK_FILE_TO_SQUARE_64(t_rank, t_file)], RANK_FILE_TO_SQUARE_64(b_rank, b_file));
+				SET_BIT(between[start][RANK_FILE_TO_SQUARE(t_rank, t_file)], RANK_FILE_TO_SQUARE(b_rank, b_file));
 			}
 		}
 		

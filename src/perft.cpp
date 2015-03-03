@@ -25,7 +25,7 @@ int Perft_Test(char *fen, int depth, BOARD_STRUCT *board)
 		start = Get_Time_Ms(); //Get start time
 		leaves = 0;//Reset leaf count
 		Search(board, i);
-		cout << "Normal: Search Depth: " << i << " Leaf Nodes: " << leaves;
+		cout << "Search Depth: " << i << " Leaf Nodes: " << leaves;
 		cout << " Nodes/Sec: " << leaves / ((Get_Time_Ms() - start + 1) / 1000.0);
 		cout << endl;
 	}

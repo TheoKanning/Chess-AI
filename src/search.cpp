@@ -293,21 +293,8 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 		&& (Evaluate_Board(board) + futility_margins[depth] <= alpha))
 		f_prune_allowed = 1;
 
-	/***** Move generation and sorting *****/
+	/***** Move generation *****/
 	Magic_Generate_Moves(board, &move_list);
-	//Magic_Generate_Moves(board, &magic_move_list);
-	/*
-	if (!Movelists_Identical(&move_list, &magic_move_list))
-	{
-		Print_Board(board);
-		cout << "Normal" << endl;
-		Print_Move_List(&move_list);
-		cout << "Magic" << endl;
-		Print_Move_List(&magic_move_list);
-		Magic_Generate_Moves(board, &magic_move_list);
-		system("PAUSE");
-	}
-	*/
 	
 	if (!Find_PV_Move(hash_entry.move, &move_list)) //If hash move not found
 	{
@@ -513,7 +500,7 @@ int Quiescent_Search(int alpha, int beta, BOARD_STRUCT *board, SEARCH_INFO_STRUC
 	MOVE_LIST_STRUCT move_list;
 	int next_move;
 	int score = Evaluate_Board(board);
-	int best_score = -INF;
+	int best_score = score;
 	
 	info->nodes++;
 
@@ -536,18 +523,10 @@ int Quiescent_Search(int alpha, int beta, BOARD_STRUCT *board, SEARCH_INFO_STRUC
 
 	if (score >= beta) return score;
 	if (score > best_score) best_score = score;
-	if (alpha < score) alpha = score;
+	if (score > alpha) alpha = score;
 
-	if (abs(best_score) > MATE_SCORE)
-	{
-		printf("bestscore:%d alpha:%d \n", best_score, alpha);
-		ASSERT(abs(best_score) <= MATE_SCORE)
-	}
 
 	Magic_Generate_Capture_Promote_Moves(board, &move_list);
-	//Generate_Moves(board, &move_list);
-
-	//Set_Quiescent_SEE_Scores(&move_list, board);
 
 	for (move = 0; move < move_list.num; move++) //For all moves in list
 	{
@@ -575,7 +554,6 @@ int Quiescent_Search(int alpha, int beta, BOARD_STRUCT *board, SEARCH_INFO_STRUC
 			alpha = score;
 		}
 	}
-	ASSERT(abs(best_score) <= MATE_SCORE)
 	return best_score;
 }
 

@@ -56,7 +56,7 @@ void Magic_Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *move_list)
 		while (single_pushes)
 		{
 			to = pop_1st_bit(&single_pushes);
-			if (GET_RANK_64(to) == RANK_8)//Promotions
+			if (GET_RANK(to) == RANK_8)//Promotions
 			{
 				Add_Move(move_list, to - 8, to, wP, 0, QUEEN_PROMOTE, QUEEN_PROMOTE_SCORE, board);
 				Add_Move(move_list, to - 8, to, wP, 0, ROOK_PROMOTE, UNDER_PROMOTE_SCORE, board);
@@ -84,9 +84,9 @@ void Magic_Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *move_list)
 		while (left_captures)
 		{
 			to = pop_1st_bit(&left_captures);
-			capture = board->board_array64[to];
+			capture = board->board_array[to];
 			ASSERT(capture != EMPTY);
-			if (GET_RANK_64(to) == RANK_8) //Promotions
+			if (GET_RANK(to) == RANK_8) //Promotions
 			{
 				Add_Move(move_list, to - 7, to, wP, capture, QUEEN_PROMOTE, QUEEN_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, wP), board);
 				Add_Move(move_list, to - 7, to, wP, capture, ROOK_PROMOTE, UNDER_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, wP), board);
@@ -109,9 +109,9 @@ void Magic_Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *move_list)
 		while (right_captures)
 		{
 			to = pop_1st_bit(&right_captures);
-			capture = board->board_array64[to];
+			capture = board->board_array[to];
 			ASSERT(capture != EMPTY);
-			if (GET_RANK_64(to) == RANK_8) //Promotions
+			if (GET_RANK(to) == RANK_8) //Promotions
 			{
 				Add_Move(move_list, to - 9, to, wP, capture, QUEEN_PROMOTE, QUEEN_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, wP), board);
 				Add_Move(move_list, to - 9, to, wP, capture, ROOK_PROMOTE, UNDER_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, wP), board);
@@ -129,13 +129,13 @@ void Magic_Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *move_list)
 		if (left_ep_attacks)
 		{
 			to = pop_1st_bit(&left_ep_attacks);
-			ASSERT(GET_RANK_64(to) == RANK_6)
+			ASSERT(GET_RANK(to) == RANK_6)
 			Add_Move(move_list, to - 7, to, wP, bP, EP_CAPTURE, GET_MMVLVA_SCORE(bP, wP), board);
 		}
 		if (right_ep_attacks)
 		{
 			to = pop_1st_bit(&right_ep_attacks);
-			ASSERT(GET_RANK_64(to) == RANK_6)
+			ASSERT(GET_RANK(to) == RANK_6)
 				Add_Move(move_list, to - 9, to, wP, bP, EP_CAPTURE, GET_MMVLVA_SCORE(bP, wP), board);
 		}
 
@@ -158,7 +158,7 @@ void Magic_Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *move_list)
 				//If capture
 				if (GET_BIT(board->side_bitboards[BLACK], to)) //If to square is occupied
 				{
-					Add_Move(move_list, from, to, wN, board->board_array64[to], NOT_SPECIAL, GET_MMVLVA_SCORE(board->board_array64[to], wN), board);
+					Add_Move(move_list, from, to, wN, board->board_array[to], NOT_SPECIAL, GET_MMVLVA_SCORE(board->board_array[to], wN), board);
 				}							 
 				else //Quiet move			 
 				{							 
@@ -184,7 +184,7 @@ void Magic_Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *move_list)
 				//If capture
 				if (GET_BIT(board->side_bitboards[BLACK], to)) //If to square is occupied
 				{
-					Add_Move(move_list, from, to, wB, board->board_array64[to], NOT_SPECIAL, GET_MMVLVA_SCORE(board->board_array64[to], wB), board);
+					Add_Move(move_list, from, to, wB, board->board_array[to], NOT_SPECIAL, GET_MMVLVA_SCORE(board->board_array[to], wB), board);
 				}
 				else //Quiet move
 				{
@@ -212,7 +212,7 @@ void Magic_Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *move_list)
 				//If capture
 				if (GET_BIT(board->side_bitboards[BLACK], to)) //If to square is occupied
 				{
-					Add_Move(move_list, from, to, wR, board->board_array64[to], NOT_SPECIAL, GET_MMVLVA_SCORE(board->board_array64[to], wR), board);
+					Add_Move(move_list, from, to, wR, board->board_array[to], NOT_SPECIAL, GET_MMVLVA_SCORE(board->board_array[to], wR), board);
 				}
 				else //Quiet move
 				{
@@ -241,7 +241,7 @@ void Magic_Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *move_list)
 				//If capture
 				if (GET_BIT(board->side_bitboards[BLACK], to)) //If to square is occupied
 				{
-					Add_Move(move_list, from, to, wQ, board->board_array64[to], NOT_SPECIAL, GET_MMVLVA_SCORE(board->board_array64[to], wQ), board);
+					Add_Move(move_list, from, to, wQ, board->board_array[to], NOT_SPECIAL, GET_MMVLVA_SCORE(board->board_array[to], wQ), board);
 				}
 				else //Quiet move
 				{
@@ -266,7 +266,7 @@ void Magic_Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *move_list)
 			//If capture
 			if (GET_BIT(board->side_bitboards[BLACK], to)) //If to square is occupied
 			{
-				Add_Move(move_list, from, to, wK, board->board_array64[to], NOT_SPECIAL, GET_MMVLVA_SCORE(board->board_array64[to], wK), board);
+				Add_Move(move_list, from, to, wK, board->board_array[to], NOT_SPECIAL, GET_MMVLVA_SCORE(board->board_array[to], wK), board);
 			}
 			else //Quiet move
 			{
@@ -278,7 +278,7 @@ void Magic_Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *move_list)
 		if ((board->castle_rights & WK_CASTLE))
 		{
 			//Castling rights active
-			if ((board->board_array64[F1] == EMPTY) && (board->board_array64[G1] == EMPTY) //Travel squares are empty
+			if ((board->board_array[F1] == EMPTY) && (board->board_array[G1] == EMPTY) //Travel squares are empty
 				&& !Under_Attack(E1, BLACK, board) && !Under_Attack(F1, BLACK, board) && !Under_Attack(G1, BLACK, board)) //King does not move through check
 			{
 				Add_Move(move_list, E1, G1, wK, 0, KING_CASTLE, 0, board); //Always moves to G1	
@@ -288,7 +288,7 @@ void Magic_Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *move_list)
 		if ((board->castle_rights & WQ_CASTLE))
 		{
 			//Castling rights active
-			if ((board->board_array64[B1] == EMPTY) && (board->board_array64[C1] == EMPTY) && (board->board_array64[D1] == EMPTY) //Travel squares are empty
+			if ((board->board_array[B1] == EMPTY) && (board->board_array[C1] == EMPTY) && (board->board_array[D1] == EMPTY) //Travel squares are empty
 				&& !Under_Attack(C1, BLACK, board) && !Under_Attack(D1, BLACK, board) && !Under_Attack(E1, BLACK, board)) //King does not move through check
 			{
 				Add_Move(move_list, E1, C1, wK, 0, QUEEN_CASTLE, 0, board); //Always moves to C1	
@@ -312,7 +312,7 @@ void Magic_Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *move_list)
 		while (single_pushes)
 		{
 			to = pop_1st_bit(&single_pushes);
-			if (GET_RANK_64(to) == RANK_1)//Promotions
+			if (GET_RANK(to) == RANK_1)//Promotions
 			{
 				Add_Move(move_list, to + 8, to, bP, 0, QUEEN_PROMOTE, QUEEN_PROMOTE_SCORE, board);
 				Add_Move(move_list, to + 8, to, bP, 0, ROOK_PROMOTE, UNDER_PROMOTE_SCORE, board);
@@ -340,9 +340,9 @@ void Magic_Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *move_list)
 		while (left_captures)
 		{
 			to = pop_1st_bit(&left_captures);
-			capture = board->board_array64[to];
+			capture = board->board_array[to];
 			ASSERT(capture != EMPTY);
-			if (GET_RANK_64(to) == RANK_1) //Promotions
+			if (GET_RANK(to) == RANK_1) //Promotions
 			{
 				Add_Move(move_list, to + 9, to, bP, capture, QUEEN_PROMOTE, QUEEN_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, bP), board);
 				Add_Move(move_list, to + 9, to, bP, capture, ROOK_PROMOTE, UNDER_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, bP), board);
@@ -364,9 +364,9 @@ void Magic_Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *move_list)
 		while (right_captures)
 		{
 			to = pop_1st_bit(&right_captures);
-			capture = board->board_array64[to];
+			capture = board->board_array[to];
 			ASSERT(capture != EMPTY);
-			if (GET_RANK_64(to) == RANK_1) //Promotions
+			if (GET_RANK(to) == RANK_1) //Promotions
 			{
 				Add_Move(move_list, to + 7, to, bP, capture, QUEEN_PROMOTE, QUEEN_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, bP), board);
 				Add_Move(move_list, to + 7, to, bP, capture, ROOK_PROMOTE, UNDER_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, bP), board);
@@ -384,13 +384,13 @@ void Magic_Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *move_list)
 		if (left_ep_attacks)
 		{
 			to = pop_1st_bit(&left_ep_attacks);
-			ASSERT(GET_RANK_64(to) == RANK_3)
+			ASSERT(GET_RANK(to) == RANK_3)
 				Add_Move(move_list, to + 9, to, bP, wP, EP_CAPTURE, GET_MMVLVA_SCORE(wP, bP), board);
 		}
 		if (right_ep_attacks)
 		{
 			to = pop_1st_bit(&right_ep_attacks);
-			ASSERT(GET_RANK_64(to) == RANK_3)
+			ASSERT(GET_RANK(to) == RANK_3)
 				Add_Move(move_list, to + 7, to, bP, wP, EP_CAPTURE, GET_MMVLVA_SCORE(wP, bP), board);
 		}
 
@@ -412,7 +412,7 @@ void Magic_Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *move_list)
 				//If capture
 				if (GET_BIT(board->side_bitboards[WHITE], to)) //If to square is occupied
 				{
-					Add_Move(move_list, from, to, bN, board->board_array64[to], NOT_SPECIAL, GET_MMVLVA_SCORE(board->board_array64[to], bN), board);
+					Add_Move(move_list, from, to, bN, board->board_array[to], NOT_SPECIAL, GET_MMVLVA_SCORE(board->board_array[to], bN), board);
 				}
 				else //Quiet move
 				{
@@ -439,7 +439,7 @@ void Magic_Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *move_list)
 				//If capture
 				if (GET_BIT(board->side_bitboards[WHITE], to)) //If to square is occupied
 				{
-					Add_Move(move_list, from, to, bB, board->board_array64[to], NOT_SPECIAL, GET_MMVLVA_SCORE(board->board_array64[to], bB), board);
+					Add_Move(move_list, from, to, bB, board->board_array[to], NOT_SPECIAL, GET_MMVLVA_SCORE(board->board_array[to], bB), board);
 				}
 				else //Quiet move
 				{
@@ -465,7 +465,7 @@ void Magic_Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *move_list)
 				//If capture
 				if (GET_BIT(board->side_bitboards[WHITE], to)) //If to square is occupied
 				{
-					Add_Move(move_list, from, to, bR, board->board_array64[to], NOT_SPECIAL, GET_MMVLVA_SCORE(board->board_array64[to], bR), board);
+					Add_Move(move_list, from, to, bR, board->board_array[to], NOT_SPECIAL, GET_MMVLVA_SCORE(board->board_array[to], bR), board);
 				}
 				else //Quiet move
 				{
@@ -495,7 +495,7 @@ void Magic_Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *move_list)
 				//If capture
 				if (GET_BIT(board->side_bitboards[WHITE], to)) //If to square is occupied
 				{
-					Add_Move(move_list, from, to, bQ, board->board_array64[to], NOT_SPECIAL, GET_MMVLVA_SCORE(board->board_array64[to], bQ), board);
+					Add_Move(move_list, from, to, bQ, board->board_array[to], NOT_SPECIAL, GET_MMVLVA_SCORE(board->board_array[to], bQ), board);
 				}
 				else //Quiet move
 				{
@@ -518,7 +518,7 @@ void Magic_Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *move_list)
 			//If capture
 			if (GET_BIT(board->side_bitboards[WHITE], to)) //If to square is occupied
 			{
-				Add_Move(move_list, from, to, bK, board->board_array64[to], NOT_SPECIAL, GET_MMVLVA_SCORE(board->board_array64[to], bK), board);
+				Add_Move(move_list, from, to, bK, board->board_array[to], NOT_SPECIAL, GET_MMVLVA_SCORE(board->board_array[to], bK), board);
 			}
 			else //Quiet move
 			{
@@ -532,7 +532,7 @@ void Magic_Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *move_list)
 		if ((board->castle_rights & BK_CASTLE))
 		{
 			//Castling rights active
-			if ((board->board_array64[F8] == EMPTY) && (board->board_array64[G8] == EMPTY) //Travel squares are empty
+			if ((board->board_array[F8] == EMPTY) && (board->board_array[G8] == EMPTY) //Travel squares are empty
 				&& !Under_Attack(E8, WHITE, board) && !Under_Attack(F8, WHITE, board) && !Under_Attack(G8, WHITE, board)) //King does not move through check
 			{
 				Add_Move(move_list, E8, G8, bK, 0, KING_CASTLE, 0, board); //Always moves to G8
@@ -542,7 +542,7 @@ void Magic_Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *move_list)
 		if ((board->castle_rights & BQ_CASTLE))
 		{
 			//Castling rights active
-			if ((board->board_array64[B8] == EMPTY) && (board->board_array64[C8] == EMPTY) && (board->board_array64[D8] == EMPTY) //Travel squares are empty
+			if ((board->board_array[B8] == EMPTY) && (board->board_array[C8] == EMPTY) && (board->board_array[D8] == EMPTY) //Travel squares are empty
 				&& !Under_Attack(C8, WHITE, board) && !Under_Attack(D8, WHITE, board) && !Under_Attack(E8, WHITE, board)) //King does not move through check
 			{
 				Add_Move(move_list, E8, C8, bK, 0, QUEEN_CASTLE, 0, board); //Always moves to C8	
@@ -580,7 +580,7 @@ void Magic_Generate_Capture_Promote_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT 
 		while (single_pushes)
 		{
 			to = pop_1st_bit(&single_pushes);
-			if (GET_RANK_64(to) == RANK_8)//Promotions
+			if (GET_RANK(to) == RANK_8)//Promotions
 			{
 				Add_Move(move_list, to - 8, to, wP, 0, QUEEN_PROMOTE, QUEEN_PROMOTE_SCORE, board);
 				Add_Move(move_list, to - 8, to, wP, 0, ROOK_PROMOTE, UNDER_PROMOTE_SCORE, board);
@@ -597,9 +597,9 @@ void Magic_Generate_Capture_Promote_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT 
 		while (left_captures)
 		{
 			to = pop_1st_bit(&left_captures);
-			capture = board->board_array64[to];
+			capture = board->board_array[to];
 			ASSERT(capture != EMPTY);
-			if (GET_RANK_64(to) == RANK_8) //Promotions
+			if (GET_RANK(to) == RANK_8) //Promotions
 			{
 				Add_Move(move_list, to - 7, to, wP, capture, QUEEN_PROMOTE, QUEEN_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, wP), board);
 				Add_Move(move_list, to - 7, to, wP, capture, ROOK_PROMOTE, UNDER_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, wP), board);
@@ -622,9 +622,9 @@ void Magic_Generate_Capture_Promote_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT 
 		while (right_captures)
 		{
 			to = pop_1st_bit(&right_captures);
-			capture = board->board_array64[to];
+			capture = board->board_array[to];
 			ASSERT(capture != EMPTY);
-			if (GET_RANK_64(to) == RANK_8) //Promotions
+			if (GET_RANK(to) == RANK_8) //Promotions
 			{
 				Add_Move(move_list, to - 9, to, wP, capture, QUEEN_PROMOTE, QUEEN_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, wP), board);
 				Add_Move(move_list, to - 9, to, wP, capture, ROOK_PROMOTE, UNDER_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, wP), board);
@@ -642,13 +642,13 @@ void Magic_Generate_Capture_Promote_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT 
 		if (left_ep_attacks)
 		{
 			to = pop_1st_bit(&left_ep_attacks);
-			ASSERT(GET_RANK_64(to) == RANK_6)
+			ASSERT(GET_RANK(to) == RANK_6)
 				Add_Move(move_list, to - 7, to, wP, bP, EP_CAPTURE, GET_MMVLVA_SCORE(bP, wP), board);
 		}
 		if (right_ep_attacks)
 		{
 			to = pop_1st_bit(&right_ep_attacks);
-			ASSERT(GET_RANK_64(to) == RANK_6)
+			ASSERT(GET_RANK(to) == RANK_6)
 				Add_Move(move_list, to - 9, to, wP, bP, EP_CAPTURE, GET_MMVLVA_SCORE(bP, wP), board);
 		}
 
@@ -672,7 +672,7 @@ void Magic_Generate_Capture_Promote_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT 
 				//If capture
 				if (GET_BIT(board->side_bitboards[BLACK], to)) //If to square is occupied
 				{
-					Add_Move(move_list, from, to, wN, board->board_array64[to], NOT_SPECIAL, GET_MMVLVA_SCORE(board->board_array64[to], wN), board);
+					Add_Move(move_list, from, to, wN, board->board_array[to], NOT_SPECIAL, GET_MMVLVA_SCORE(board->board_array[to], wN), board);
 				}
 				else //Quiet move
 				{
@@ -699,7 +699,7 @@ void Magic_Generate_Capture_Promote_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT 
 				//If capture
 				if (GET_BIT(board->side_bitboards[BLACK], to)) //If to square is occupied
 				{
-					Add_Move(move_list, from, to, wB, board->board_array64[to], NOT_SPECIAL, GET_MMVLVA_SCORE(board->board_array64[to], wB), board);
+					Add_Move(move_list, from, to, wB, board->board_array[to], NOT_SPECIAL, GET_MMVLVA_SCORE(board->board_array[to], wB), board);
 				}
 				else //Quiet move
 				{
@@ -728,7 +728,7 @@ void Magic_Generate_Capture_Promote_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT 
 				//If capture
 				if (GET_BIT(board->side_bitboards[BLACK], to)) //If to square is occupied
 				{
-					Add_Move(move_list, from, to, wR, board->board_array64[to], NOT_SPECIAL, GET_MMVLVA_SCORE(board->board_array64[to], wR), board);
+					Add_Move(move_list, from, to, wR, board->board_array[to], NOT_SPECIAL, GET_MMVLVA_SCORE(board->board_array[to], wR), board);
 				}
 				else //Quiet move
 				{
@@ -758,7 +758,7 @@ void Magic_Generate_Capture_Promote_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT 
 				//If capture
 				if (GET_BIT(board->side_bitboards[BLACK], to)) //If to square is occupied
 				{
-					Add_Move(move_list, from, to, wQ, board->board_array64[to], NOT_SPECIAL, GET_MMVLVA_SCORE(board->board_array64[to], wQ), board);
+					Add_Move(move_list, from, to, wQ, board->board_array[to], NOT_SPECIAL, GET_MMVLVA_SCORE(board->board_array[to], wQ), board);
 				}
 				else //Quiet move
 				{
@@ -785,7 +785,7 @@ void Magic_Generate_Capture_Promote_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT 
 			//If capture
 			if (GET_BIT(board->side_bitboards[BLACK], to)) //If to square is occupied
 			{
-				Add_Move(move_list, from, to, wK, board->board_array64[to], NOT_SPECIAL, GET_MMVLVA_SCORE(board->board_array64[to], wK), board);
+				Add_Move(move_list, from, to, wK, board->board_array[to], NOT_SPECIAL, GET_MMVLVA_SCORE(board->board_array[to], wK), board);
 			}
 			else //Quiet move
 			{
@@ -808,7 +808,7 @@ void Magic_Generate_Capture_Promote_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT 
 		while (single_pushes)
 		{
 			to = pop_1st_bit(&single_pushes);
-			if (GET_RANK_64(to) == RANK_1)//Promotions
+			if (GET_RANK(to) == RANK_1)//Promotions
 			{
 				Add_Move(move_list, to + 8, to, bP, 0, QUEEN_PROMOTE, QUEEN_PROMOTE_SCORE, board);
 				Add_Move(move_list, to + 8, to, bP, 0, ROOK_PROMOTE, UNDER_PROMOTE_SCORE, board);
@@ -829,9 +829,9 @@ void Magic_Generate_Capture_Promote_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT 
 		while (left_captures)
 		{
 			to = pop_1st_bit(&left_captures);
-			capture = board->board_array64[to];
+			capture = board->board_array[to];
 			ASSERT(capture != EMPTY);
-			if (GET_RANK_64(to) == RANK_1) //Promotions
+			if (GET_RANK(to) == RANK_1) //Promotions
 			{
 				Add_Move(move_list, to + 9, to, bP, capture, QUEEN_PROMOTE, QUEEN_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, bP), board);
 				Add_Move(move_list, to + 9, to, bP, capture, ROOK_PROMOTE, UNDER_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, bP), board);
@@ -853,9 +853,9 @@ void Magic_Generate_Capture_Promote_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT 
 		while (right_captures)
 		{
 			to = pop_1st_bit(&right_captures);
-			capture = board->board_array64[to];
+			capture = board->board_array[to];
 			ASSERT(capture != EMPTY);
-			if (GET_RANK_64(to) == RANK_1) //Promotions
+			if (GET_RANK(to) == RANK_1) //Promotions
 			{
 				Add_Move(move_list, to + 7, to, bP, capture, QUEEN_PROMOTE, QUEEN_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, bP), board);
 				Add_Move(move_list, to + 7, to, bP, capture, ROOK_PROMOTE, UNDER_PROMOTE_SCORE + GET_MMVLVA_SCORE(capture, bP), board);
@@ -873,13 +873,13 @@ void Magic_Generate_Capture_Promote_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT 
 		if (left_ep_attacks)
 		{
 			to = pop_1st_bit(&left_ep_attacks);
-			ASSERT(GET_RANK_64(to) == RANK_3)
+			ASSERT(GET_RANK(to) == RANK_3)
 				Add_Move(move_list, to + 9, to, bP, wP, EP_CAPTURE, GET_MMVLVA_SCORE(wP, bP), board);
 		}
 		if (right_ep_attacks)
 		{
 			to = pop_1st_bit(&right_ep_attacks);
-			ASSERT(GET_RANK_64(to) == RANK_3)
+			ASSERT(GET_RANK(to) == RANK_3)
 				Add_Move(move_list, to + 7, to, bP, wP, EP_CAPTURE, GET_MMVLVA_SCORE(wP, bP), board);
 		}
 
@@ -902,7 +902,7 @@ void Magic_Generate_Capture_Promote_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT 
 				//If capture
 				if (GET_BIT(board->side_bitboards[WHITE], to)) //If to square is occupied
 				{
-					Add_Move(move_list, from, to, bN, board->board_array64[to], NOT_SPECIAL, GET_MMVLVA_SCORE(board->board_array64[to], bN), board);
+					Add_Move(move_list, from, to, bN, board->board_array[to], NOT_SPECIAL, GET_MMVLVA_SCORE(board->board_array[to], bN), board);
 				}
 				else //Quiet move
 				{
@@ -930,7 +930,7 @@ void Magic_Generate_Capture_Promote_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT 
 				//If capture
 				if (GET_BIT(board->side_bitboards[WHITE], to)) //If to square is occupied
 				{
-					Add_Move(move_list, from, to, bB, board->board_array64[to], NOT_SPECIAL, GET_MMVLVA_SCORE(board->board_array64[to], bB), board);
+					Add_Move(move_list, from, to, bB, board->board_array[to], NOT_SPECIAL, GET_MMVLVA_SCORE(board->board_array[to], bB), board);
 				}
 				else //Quiet move
 				{
@@ -958,7 +958,7 @@ void Magic_Generate_Capture_Promote_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT 
 				//If capture
 				if (GET_BIT(board->side_bitboards[WHITE], to)) //If to square is occupied
 				{
-					Add_Move(move_list, from, to, bR, board->board_array64[to], NOT_SPECIAL, GET_MMVLVA_SCORE(board->board_array64[to], bR), board);
+					Add_Move(move_list, from, to, bR, board->board_array[to], NOT_SPECIAL, GET_MMVLVA_SCORE(board->board_array[to], bR), board);
 				}
 				else //Quiet move
 				{
@@ -989,7 +989,7 @@ void Magic_Generate_Capture_Promote_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT 
 				//If capture
 				if (GET_BIT(board->side_bitboards[WHITE], to)) //If to square is occupied
 				{
-					Add_Move(move_list, from, to, bQ, board->board_array64[to], NOT_SPECIAL, GET_MMVLVA_SCORE(board->board_array64[to], bQ), board);
+					Add_Move(move_list, from, to, bQ, board->board_array[to], NOT_SPECIAL, GET_MMVLVA_SCORE(board->board_array[to], bQ), board);
 				}
 				else //Quiet move
 				{
@@ -1014,7 +1014,7 @@ void Magic_Generate_Capture_Promote_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT 
 			//If capture
 			if (GET_BIT(board->side_bitboards[WHITE], to)) //If to square is occupied
 			{
-				Add_Move(move_list, from, to, bK, board->board_array64[to], NOT_SPECIAL, GET_MMVLVA_SCORE(board->board_array64[to], bK), board);
+				Add_Move(move_list, from, to, bK, board->board_array[to], NOT_SPECIAL, GET_MMVLVA_SCORE(board->board_array[to], bK), board);
 			}
 			else //Quiet move
 			{

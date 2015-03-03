@@ -65,7 +65,7 @@ void Compute_Hash(BOARD_STRUCT *board)
 	//Piece keys
 	for (index = 0; index < 64; index++)
 	{
-		piece = board->board_array64[index];
+		piece = board->board_array[index];
 		HASH_IN(board->hash_key, piece_keys[piece][index]);//Add the hash value of the piece at each index
 		if (IS_KING(piece) || IS_PAWN(piece)) HASH_IN(board->pawn_hash_key, piece_keys[piece][index]); //Add only pawn and king moves into pawn hash
 	}

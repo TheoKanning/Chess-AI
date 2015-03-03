@@ -73,7 +73,7 @@ int Evaluate_Board(BOARD_STRUCT *board)
 //Returns pawn evaluation score
 int Get_Pawn_Eval_Score(BOARD_STRUCT *board)
 {
-	int index, sq64;
+	int sq64;
 	int score = 0;
 	const U64 white_pawns = board->piece_bitboards[wP];
 	const U64 black_pawns = board->piece_bitboards[bP];
@@ -88,7 +88,7 @@ int Get_Pawn_Eval_Score(BOARD_STRUCT *board)
 		sq64 = pop_1st_bit(&temp); //pawn location in 64 square array
 
 		//if no black pawns in passed mask area
-		if ((black_pawns & white_passed_masks[sq64]) == 0) score += passed_pawn_rank_bonus[GET_RANK_64(sq64)];
+		if ((black_pawns & white_passed_masks[sq64]) == 0) score += passed_pawn_rank_bonus[GET_RANK(sq64)];
 		
 		//if no white pawns in isolated mask area
 		if ((white_pawns & isolated_masks[sq64]) == 0) score += ISOLATED_PAWN_SCORE;
@@ -105,7 +105,7 @@ int Get_Pawn_Eval_Score(BOARD_STRUCT *board)
 		sq64 = pop_1st_bit(&temp); //pawn location in 64 square array
 
 		//if no white pawns in passed mask area
-		if ((white_pawns & black_passed_masks[sq64]) == 0)	score -= passed_pawn_rank_bonus[RANK_8 - GET_RANK_64(sq64)];
+		if ((white_pawns & black_passed_masks[sq64]) == 0)	score -= passed_pawn_rank_bonus[RANK_8 - GET_RANK(sq64)];
 		
 		//if no black pawns in isolated mask area
 		if ((black_pawns & isolated_masks[sq64]) == 0) score -= ISOLATED_PAWN_SCORE;
@@ -136,8 +136,8 @@ void Init_Pawn_Masks(void)
 	//For each square on the board
 	for (index = 0; index < 64; index++)
 	{
-		rank = GET_RANK_64(index);
-		file = GET_FILE_64(index);
+		rank = GET_RANK(index);
+		file = GET_FILE(index);
 		for (rank_index = RANK_1; rank_index <= RANK_8; rank_index++)
 		{
 			for (file_index = FILE_A; file_index <= FILE_H; file_index++)
@@ -146,28 +146,28 @@ void Init_Pawn_Masks(void)
 				//If file is neighboring and space is above index
 				if (abs(file - file_index) <= 1 && rank_index > rank)
 				{
-					SET_BIT(white_passed_masks[index], RANK_FILE_TO_SQUARE_64(rank_index, file_index));
+					SET_BIT(white_passed_masks[index], RANK_FILE_TO_SQUARE(rank_index, file_index));
 				}
 
 				//black passed mask
 				//If file is neighboring and space is below index
 				if (abs(file - file_index) <= 1 && rank_index < rank)
 				{
-					SET_BIT(black_passed_masks[index], RANK_FILE_TO_SQUARE_64(rank_index, file_index));
+					SET_BIT(black_passed_masks[index], RANK_FILE_TO_SQUARE(rank_index, file_index));
 				}
 
 				//isolated mask
 				//If file is neighboring and space is not equal to index
 				if (abs(file - file_index) <= 1 && (file != file_index || rank != rank_index))
 				{
-					SET_BIT(isolated_masks[index], RANK_FILE_TO_SQUARE_64(rank_index, file_index));
+					SET_BIT(isolated_masks[index], RANK_FILE_TO_SQUARE(rank_index, file_index));
 				}
 
 				//Doubled mask
 				//If file is the same and rank is different
 				if (file == file_index && rank != rank_index)
 				{
-					SET_BIT(doubled_masks[index], RANK_FILE_TO_SQUARE_64(rank_index, file_index));
+					SET_BIT(doubled_masks[index], RANK_FILE_TO_SQUARE(rank_index, file_index));
 				}
 			}
 		}
@@ -187,52 +187,52 @@ int Get_King_Safety_Score(BOARD_STRUCT *board)
 	int black_king_square = pop_1st_bit(&temp);
 
 	//White king on kingside
-	if (GET_FILE_64(white_king_square) > FILE_E && GET_RANK_64(white_king_square) == RANK_1) {
+	if (GET_FILE(white_king_square) > FILE_E && GET_RANK(white_king_square) == RANK_1) {
 
-		if (board->board_array64[F2] == wP)  white_score += PAWN_SHIELD_SCORE;
-		else if (board->board_array64[F3] == wP)  white_score += PAWN_SHIELD_SCORE / 2;
+		if (board->board_array[F2] == wP)  white_score += PAWN_SHIELD_SCORE;
+		else if (board->board_array[F3] == wP)  white_score += PAWN_SHIELD_SCORE / 2;
 
-		if (board->board_array64[G2] == wP)  white_score += PAWN_SHIELD_SCORE;
-		else if (board->board_array64[G3] == wP)  white_score += PAWN_SHIELD_SCORE / 2;
+		if (board->board_array[G2] == wP)  white_score += PAWN_SHIELD_SCORE;
+		else if (board->board_array[G3] == wP)  white_score += PAWN_SHIELD_SCORE / 2;
 
-		if (board->board_array64[H2] == wP)  white_score += PAWN_SHIELD_SCORE;
-		else if (board->board_array64[H3] == wP)  white_score += PAWN_SHIELD_SCORE / 2;
+		if (board->board_array[H2] == wP)  white_score += PAWN_SHIELD_SCORE;
+		else if (board->board_array[H3] == wP)  white_score += PAWN_SHIELD_SCORE / 2;
 	}
-	else if (GET_FILE_64(white_king_square) < FILE_D && GET_RANK_64(white_king_square) == RANK_1) {
+	else if (GET_FILE(white_king_square) < FILE_D && GET_RANK(white_king_square) == RANK_1) {
 
-		if (board->board_array64[A2] == wP)  white_score += PAWN_SHIELD_SCORE;
-		else if (board->board_array64[A3] == wP)  white_score += PAWN_SHIELD_SCORE / 2;
+		if (board->board_array[A2] == wP)  white_score += PAWN_SHIELD_SCORE;
+		else if (board->board_array[A3] == wP)  white_score += PAWN_SHIELD_SCORE / 2;
 
-		if (board->board_array64[B2] == wP)  white_score += PAWN_SHIELD_SCORE;
-		else if (board->board_array64[B3] == wP)  white_score += PAWN_SHIELD_SCORE / 2;
+		if (board->board_array[B2] == wP)  white_score += PAWN_SHIELD_SCORE;
+		else if (board->board_array[B3] == wP)  white_score += PAWN_SHIELD_SCORE / 2;
 
-		if (board->board_array64[C2] == wP)  white_score += PAWN_SHIELD_SCORE;
-		else if (board->board_array64[C3] == wP)  white_score += PAWN_SHIELD_SCORE / 2;
+		if (board->board_array[C2] == wP)  white_score += PAWN_SHIELD_SCORE;
+		else if (board->board_array[C3] == wP)  white_score += PAWN_SHIELD_SCORE / 2;
 	}
 	
 
 	//Black king on kingside
-	if (GET_FILE_64(black_king_square) > FILE_E && GET_RANK_64(black_king_square) == RANK_8) {
+	if (GET_FILE(black_king_square) > FILE_E && GET_RANK(black_king_square) == RANK_8) {
 
-		if (board->board_array64[F7] == bP)  black_score += PAWN_SHIELD_SCORE;
-		else if (board->board_array64[F6] == bP)  black_score += PAWN_SHIELD_SCORE / 2;
+		if (board->board_array[F7] == bP)  black_score += PAWN_SHIELD_SCORE;
+		else if (board->board_array[F6] == bP)  black_score += PAWN_SHIELD_SCORE / 2;
 
-		if (board->board_array64[G7] == bP)  black_score += PAWN_SHIELD_SCORE;
-		else if (board->board_array64[G6] == bP)  black_score += PAWN_SHIELD_SCORE / 2;
+		if (board->board_array[G7] == bP)  black_score += PAWN_SHIELD_SCORE;
+		else if (board->board_array[G6] == bP)  black_score += PAWN_SHIELD_SCORE / 2;
 
-		if (board->board_array64[H7] == bP)  black_score += PAWN_SHIELD_SCORE;
-		else if (board->board_array64[H6] == bP)  black_score += PAWN_SHIELD_SCORE / 2;
+		if (board->board_array[H7] == bP)  black_score += PAWN_SHIELD_SCORE;
+		else if (board->board_array[H6] == bP)  black_score += PAWN_SHIELD_SCORE / 2;
 	}
-	else if (GET_FILE_64(black_king_square) < FILE_D && GET_RANK_64(black_king_square) == RANK_8) {
+	else if (GET_FILE(black_king_square) < FILE_D && GET_RANK(black_king_square) == RANK_8) {
 
-		if (board->board_array64[A7] == bP)  black_score += PAWN_SHIELD_SCORE;
-		else if (board->board_array64[A6] == bP)  black_score += PAWN_SHIELD_SCORE / 2;
+		if (board->board_array[A7] == bP)  black_score += PAWN_SHIELD_SCORE;
+		else if (board->board_array[A6] == bP)  black_score += PAWN_SHIELD_SCORE / 2;
 
-		if (board->board_array64[B7] == bP)  black_score += PAWN_SHIELD_SCORE;
-		else if (board->board_array64[B6] == bP)  black_score += PAWN_SHIELD_SCORE / 2;
+		if (board->board_array[B7] == bP)  black_score += PAWN_SHIELD_SCORE;
+		else if (board->board_array[B6] == bP)  black_score += PAWN_SHIELD_SCORE / 2;
 
-		if (board->board_array64[C7] == bP)  black_score += PAWN_SHIELD_SCORE;
-		else if (board->board_array64[C6] == bP)  black_score += PAWN_SHIELD_SCORE / 2;
+		if (board->board_array[C7] == bP)  black_score += PAWN_SHIELD_SCORE;
+		else if (board->board_array[C6] == bP)  black_score += PAWN_SHIELD_SCORE / 2;
 	}
 
 	return white_score - black_score;

@@ -12,9 +12,9 @@ extern U64 side_keys[2];
 extern U64 ep_keys[101]; //NO_SQUARE = 100;
 extern U64 castle_keys[16];
 
-static void Move_Piece(int from64, int to64, BOARD_STRUCT *board);
-static void Remove_Piece(int index64, BOARD_STRUCT *board);
-static void Add_Piece(int piece, int index64, BOARD_STRUCT *board);
+static void Move_Piece(int from, int to, BOARD_STRUCT *board);
+static void Remove_Piece(int square, BOARD_STRUCT *board);
+static void Add_Piece(int piece, int square, BOARD_STRUCT *board);
 
 /* Move data structure
 32 bit integer
@@ -35,25 +35,25 @@ bit  [22:24] Special flags
 
 int Make_Move(int move_num, BOARD_STRUCT *board)
 {
-	int from64, to64, piece, capture, side, castle_temp, ep_capture64;
+	int from, to, piece, capture, side, castle_temp, ep_capture;
 
 	if (move_num == 0) return 0;
 
-	from64 = GET_FROM_SQ(move_num);
-	to64 = GET_TO_SQ(move_num);
+	from = GET_FROM_SQ(move_num);
+	to = GET_TO_SQ(move_num);
 
 	piece = GET_PIECE(move_num);
 	capture = GET_CAPTURE(move_num);
 	side = board->side;
 
 	ASSERT((!side && IS_WHITE_PIECE(piece)) || (side && IS_BLACK_PIECE(piece)));
-	ASSERT(ON_BOARD_64(from64));
-	ASSERT(ON_BOARD_64(to64));
+	ASSERT(ON_BOARD(from));
+	ASSERT(ON_BOARD(to));
 	ASSERT((EMPTY < piece) && (piece <= bK));
 	ASSERT((EMPTY <= capture) && (capture <= bK));
 
-	ASSERT(board->board_array64[from64] == piece);
-	ASSERT(board->board_array64[to64] == capture || IS_EP_CAPTURE(move_num));
+	ASSERT(board->board_array[from] == piece);
+	ASSERT(board->board_array[to] == capture || IS_EP_CAPTURE(move_num));
 
 	/***** Update Undo Move Structure *****/
 	board->undo_list.list[board->undo_list.num].move_num = move_num;
@@ -70,16 +70,16 @@ int Make_Move(int move_num, BOARD_STRUCT *board)
 	/***** Quiet Moves and Captures *****/
 	if (IS_NOT_SPECIAL(move_num))
 	{
-		Move_Piece(from64, to64, board);
+		Move_Piece(from, to, board);
 
 
 		if (piece == wP)
 		{
-			if (from64 + 16 == to64) board->ep = from64 + 8; //If double push
+			if (from + 16 == to) board->ep = from + 8; //If double push
 		}
 		else if (piece == bP)
 		{
-			if (from64 - 16 == to64) board->ep = from64 - 8; //If double push
+			if (from - 16 == to) board->ep = from - 8; //If double push
 		}
 		//HASH_IN(board->hash_key, ep_keys[board->ep]); //Re add ep key
 	}
@@ -87,21 +87,21 @@ int Make_Move(int move_num, BOARD_STRUCT *board)
 	{
 		if (side == WHITE)
 		{
-			ep_capture64 = to64 - 8; //Square with captured pawn on it
+			ep_capture = to - 8; //Square with captured pawn on it
 			capture = bP;
 		}
 		else
 		{
-			ep_capture64 = to64 + 8;
+			ep_capture = to + 8;
 			capture = wP;
 		}
 
-		ASSERT(board->board_array64[from64] == piece);
-		ASSERT(board->board_array64[to64] == EMPTY);
-		ASSERT(board->board_array64[ep_capture64] == capture);
+		ASSERT(board->board_array[from] == piece);
+		ASSERT(board->board_array[to] == EMPTY);
+		ASSERT(board->board_array[ep_capture] == capture);
 
-		Move_Piece(from64, to64, board); //Move active pawn
-		Remove_Piece(ep_capture64, board); //Remove captured pawn
+		Move_Piece(from, to, board); //Move active pawn
+		Remove_Piece(ep_capture, board); //Remove captured pawn
 
 		//HASH_OUT(board->hash_key, ep_keys[board->ep]);
 		//board->ep = NO_SQUARE; //Reset ep square
@@ -111,9 +111,9 @@ int Make_Move(int move_num, BOARD_STRUCT *board)
 	{
 		if (piece == wK)
 		{
-			ASSERT(from64 == E1);
-			ASSERT(to64 == G1);
-			ASSERT(board->board_array64[to64] == EMPTY);
+			ASSERT(from == E1);
+			ASSERT(to == G1);
+			ASSERT(board->board_array[to] == EMPTY);
 			ASSERT(board->castle_rights & WK_CASTLE);
 
 			//Move king
@@ -131,9 +131,9 @@ int Make_Move(int move_num, BOARD_STRUCT *board)
 		}
 		else if (piece == bK)
 		{
-			ASSERT(from64 == E8);
-			ASSERT(to64 == G8);
-			ASSERT(board->board_array64[to64] == EMPTY);
+			ASSERT(from == E8);
+			ASSERT(to == G8);
+			ASSERT(board->board_array[to] == EMPTY);
 			ASSERT(board->castle_rights & BK_CASTLE);
 
 			//Move king
@@ -153,9 +153,9 @@ int Make_Move(int move_num, BOARD_STRUCT *board)
 	{
 		if (piece == wK)
 		{
-			ASSERT(from64 == E1);
-			ASSERT(to64 == C1);
-			ASSERT(board->board_array64[to64] == EMPTY);
+			ASSERT(from == E1);
+			ASSERT(to == C1);
+			ASSERT(board->board_array[to] == EMPTY);
 			ASSERT(board->castle_rights & WQ_CASTLE);
 
 			//Move king
@@ -173,9 +173,9 @@ int Make_Move(int move_num, BOARD_STRUCT *board)
 		}
 		else if (piece == bK)
 		{
-			ASSERT(from64 == E8);
-			ASSERT(to64 == C8);
-			ASSERT(board->board_array64[to64] == EMPTY);
+			ASSERT(from == E8);
+			ASSERT(to == C8);
+			ASSERT(board->board_array[to] == EMPTY);
 			ASSERT(board->castle_rights & BQ_CASTLE);
 
 			//Move king
@@ -195,39 +195,39 @@ int Make_Move(int move_num, BOARD_STRUCT *board)
 	{
 		if (side == WHITE)
 		{
-			ASSERT(GET_RANK_64(from64) == RANK_7);
-			ASSERT(GET_RANK_64(to64) == RANK_8);
+			ASSERT(GET_RANK(from) == RANK_7);
+			ASSERT(GET_RANK(to) == RANK_8);
 			ASSERT(piece == wP);
 
 			//Remove pawn
-			Remove_Piece(from64, board);
+			Remove_Piece(from, board);
 
 			//Remove captured piece, if any
-			if (capture != EMPTY) Remove_Piece(to64, board);
+			if (capture != EMPTY) Remove_Piece(to, board);
 
 			//Add piece
-			if (IS_QUEEN_PROMOTION(move_num)) Add_Piece(wQ, to64, board);
-			if (IS_ROOK_PROMOTION(move_num)) Add_Piece(wR, to64, board);
-			if (IS_BISHOP_PROMOTION(move_num)) Add_Piece(wB, to64, board);
-			if (IS_KNIGHT_PROMOTION(move_num)) Add_Piece(wN, to64, board);
+			if (IS_QUEEN_PROMOTION(move_num)) Add_Piece(wQ, to, board);
+			if (IS_ROOK_PROMOTION(move_num)) Add_Piece(wR, to, board);
+			if (IS_BISHOP_PROMOTION(move_num)) Add_Piece(wB, to, board);
+			if (IS_KNIGHT_PROMOTION(move_num)) Add_Piece(wN, to, board);
 		}
 		else
 		{
-			ASSERT(GET_RANK_64(from64) == RANK_2);
-			ASSERT(GET_RANK_64(to64) == RANK_1);
+			ASSERT(GET_RANK(from) == RANK_2);
+			ASSERT(GET_RANK(to) == RANK_1);
 			ASSERT(piece == bP);
 
 			//Remove pawn
-			Remove_Piece(from64, board);
+			Remove_Piece(from, board);
 
 			//Remove captured piece, if any
-			if (capture != EMPTY) Remove_Piece(to64, board);
+			if (capture != EMPTY) Remove_Piece(to, board);
 
 			//Add promoted piece
-			if (IS_QUEEN_PROMOTION(move_num)) Add_Piece(bQ, to64, board);
-			if (IS_ROOK_PROMOTION(move_num)) Add_Piece(bR, to64, board);
-			if (IS_BISHOP_PROMOTION(move_num)) Add_Piece(bB, to64, board);
-			if (IS_KNIGHT_PROMOTION(move_num)) Add_Piece(bN, to64, board);
+			if (IS_QUEEN_PROMOTION(move_num)) Add_Piece(bQ, to, board);
+			if (IS_ROOK_PROMOTION(move_num)) Add_Piece(bR, to, board);
+			if (IS_BISHOP_PROMOTION(move_num)) Add_Piece(bB, to, board);
+			if (IS_KNIGHT_PROMOTION(move_num)) Add_Piece(bN, to, board);
 		}
 	}
 	else
@@ -262,7 +262,7 @@ int Make_Move(int move_num, BOARD_STRUCT *board)
 	//Check if rights are available, then test conditions to prevent hashing twice
 	if (board->castle_rights & WK_CASTLE)
 	{
-		if (piece == wK || board->board_array64[H1] != wR)
+		if (piece == wK || board->board_array[H1] != wR)
 		{
 			castle_temp = board->castle_rights;
 			HASH_OUT(board->hash_key, castle_keys[castle_temp]);
@@ -272,7 +272,7 @@ int Make_Move(int move_num, BOARD_STRUCT *board)
 	}
 	if (board->castle_rights & WQ_CASTLE)
 	{
-		if (piece == wK || board->board_array64[A1] != wR)
+		if (piece == wK || board->board_array[A1] != wR)
 		{
 			castle_temp = board->castle_rights;
 			HASH_OUT(board->hash_key, castle_keys[castle_temp]);
@@ -282,7 +282,7 @@ int Make_Move(int move_num, BOARD_STRUCT *board)
 	}
 	if (board->castle_rights & BK_CASTLE)
 	{
-		if (piece == bK || board->board_array64[H8] != bR)
+		if (piece == bK || board->board_array[H8] != bR)
 		{
 			castle_temp = board->castle_rights;
 			HASH_OUT(board->hash_key, castle_keys[castle_temp]);
@@ -292,7 +292,7 @@ int Make_Move(int move_num, BOARD_STRUCT *board)
 	}
 	if (board->castle_rights & BQ_CASTLE)
 	{
-		if (piece == bK || board->board_array64[A8] != bR)
+		if (piece == bK || board->board_array[A8] != bR)
 		{
 			castle_temp = board->castle_rights;
 			HASH_OUT(board->hash_key, castle_keys[castle_temp]);
@@ -320,7 +320,7 @@ int Make_Move(int move_num, BOARD_STRUCT *board)
 //Undoes most recent move stored in board history
 void Take_Move(BOARD_STRUCT *board)
 {
-	int from64, to64, piece, capture, side, ep_capture64;
+	int from, to, piece, capture, side, ep_capture;
 
 	//Read data from undo struct
 	int move_num = board->undo_list.list[board->undo_list.num - 1].move_num;
@@ -331,8 +331,8 @@ void Take_Move(BOARD_STRUCT *board)
 
 
 
-	from64 = GET_FROM_SQ(move_num);
-	to64 = GET_TO_SQ(move_num);
+	from = GET_FROM_SQ(move_num);
+	to = GET_TO_SQ(move_num);
 
 	piece = GET_PIECE(move_num);
 	capture = GET_CAPTURE(move_num);
@@ -343,8 +343,8 @@ void Take_Move(BOARD_STRUCT *board)
 	HASH_IN(board->hash_key, side_keys[board->side]);
 	side = board->side; //Side of move being undones
 
-	ASSERT(ON_BOARD_64(from64));
-	ASSERT(ON_BOARD_64(to64));
+	ASSERT(ON_BOARD(from));
+	ASSERT(ON_BOARD(to));
 	ASSERT((EMPTY < piece) && (piece <= bK));
 	ASSERT((EMPTY <= capture) && (capture <= bK));
 
@@ -352,8 +352,8 @@ void Take_Move(BOARD_STRUCT *board)
 	/***** Quiet Moves and Captures *****/
 	if (IS_NOT_SPECIAL(move_num))
 	{
-		Move_Piece(to64, from64, board);
-		if (capture != EMPTY) Add_Piece(capture, to64, board);
+		Move_Piece(to, from, board);
+		if (capture != EMPTY) Add_Piece(capture, to, board);
 	}
 
 	else if (IS_EP_CAPTURE(move_num))
@@ -361,17 +361,17 @@ void Take_Move(BOARD_STRUCT *board)
 
 		if (side == WHITE)
 		{
-			ep_capture64 = to64 - 8; //Square with captured pawn on it
+			ep_capture = to - 8; //Square with captured pawn on it
 			capture = bP;
 		}
 		else
 		{
-			ep_capture64 = to64 + 8;
+			ep_capture = to + 8;
 			capture = wP;
 		}
 
-		Move_Piece(to64, from64, board); //Move active pawn
-		Add_Piece(capture, ep_capture64, board); //Remove captured pawn
+		Move_Piece(to, from, board); //Move active pawn
+		Add_Piece(capture, ep_capture, board); //Remove captured pawn
 
 	}
 	else if (IS_KING_CASTLE(move_num))
@@ -415,14 +415,14 @@ void Take_Move(BOARD_STRUCT *board)
 	else if (IS_QUEEN_PROMOTION(move_num) || IS_ROOK_PROMOTION(move_num) || IS_BISHOP_PROMOTION(move_num) || IS_KNIGHT_PROMOTION(move_num))
 	{
 		//Remove promoted piece
-		Remove_Piece(to64, board);
+		Remove_Piece(to, board);
 
 		//Add pawn
-		if (side == WHITE)  Add_Piece(wP, from64, board);
-		if (side == BLACK)  Add_Piece(bP, from64, board);
+		if (side == WHITE)  Add_Piece(wP, from, board);
+		if (side == BLACK)  Add_Piece(bP, from, board);
 
 		//Add captured piece, if any
-		if (capture != EMPTY) Add_Piece(capture, to64, board);
+		if (capture != EMPTY) Add_Piece(capture, to, board);
 	}
 	else
 	{
@@ -550,80 +550,80 @@ void Take_Null_Move(BOARD_STRUCT *board)
 
 
 //Moves one piece, updating all lists, bitboards, and hashes
-void Move_Piece(int from64, int to64, BOARD_STRUCT *board)
+void Move_Piece(int from, int to, BOARD_STRUCT *board)
 {
 	int piece, capture;
 
-	ASSERT(board->board_array64[from64] != EMPTY);
-	ASSERT(ON_BOARD_64(from64));
-	ASSERT(ON_BOARD_64(to64));
+	ASSERT(board->board_array[from] != EMPTY);
+	ASSERT(ON_BOARD(from));
+	ASSERT(ON_BOARD(to));
 
-	piece = board->board_array64[from64];
-	capture = board->board_array64[to64];
+	piece = board->board_array[from];
+	capture = board->board_array[to];
 
 	//Remove captured piece from piecelists, remove before updating arrays
-	if (capture != EMPTY) Remove_Piece(to64, board);
+	if (capture != EMPTY) Remove_Piece(to, board);
 
 	//Clear from square
-	board->board_array64[from64] = EMPTY;
-	Remove_From_Piecelists(piece, from64, board);
-	HASH_OUT(board->hash_key, piece_keys[piece][from64]);
-	HASH_IN(board->hash_key, piece_keys[EMPTY][from64]);
+	board->board_array[from] = EMPTY;
+	Remove_From_Piecelists(piece, from, board);
+	HASH_OUT(board->hash_key, piece_keys[piece][from]);
+	HASH_IN(board->hash_key, piece_keys[EMPTY][from]);
 
 	//Add to new square
-	board->board_array64[to64] = piece;
-	Add_To_Piecelists(piece, to64, board);
+	board->board_array[to] = piece;
+	Add_To_Piecelists(piece, to, board);
 
 	//Update hash key
-	HASH_OUT(board->hash_key, piece_keys[EMPTY][to64]); //Capture already removed earlier
-	HASH_IN(board->hash_key, piece_keys[piece][to64]);
+	HASH_OUT(board->hash_key, piece_keys[EMPTY][to]); //Capture already removed earlier
+	HASH_IN(board->hash_key, piece_keys[piece][to]);
 
 	//Update pawn_hash_key
 	if (IS_PAWN(piece) || IS_KING(piece))
 	{
-		HASH_OUT(board->pawn_hash_key, piece_keys[piece][from64]);
-		HASH_IN(board->pawn_hash_key, piece_keys[piece][to64]);
+		HASH_OUT(board->pawn_hash_key, piece_keys[piece][from]);
+		HASH_IN(board->pawn_hash_key, piece_keys[piece][to]);
 	}
 }
 
 //Removes a piece from the board, updating all lists, bitboards, and hashes
-void Remove_Piece(int index64, BOARD_STRUCT *board)
+void Remove_Piece(int square, BOARD_STRUCT *board)
 {
 	int piece;
 
-	ASSERT(board->board_array64[index64] != EMPTY);
+	ASSERT(board->board_array[square] != EMPTY);
 
-	piece = board->board_array64[index64];
+	piece = board->board_array[square];
 
 	//Clear from square
-	board->board_array64[index64] = EMPTY;
-	Remove_From_Piecelists(piece, index64, board);
-	HASH_OUT(board->hash_key, piece_keys[piece][index64]);
-	HASH_IN(board->hash_key, piece_keys[EMPTY][index64]);
+	board->board_array[square] = EMPTY;
+	Remove_From_Piecelists(piece, square, board);
+	HASH_OUT(board->hash_key, piece_keys[piece][square]);
+	HASH_IN(board->hash_key, piece_keys[EMPTY][square]);
 
 	//Update pawn_hash_key
 	if (IS_PAWN(piece) || IS_KING(piece))
 	{
-		HASH_OUT(board->pawn_hash_key, piece_keys[piece][index64]);
+		HASH_OUT(board->pawn_hash_key, piece_keys[piece][square]);
 	}
 }
 //Adds piece to board after promotion
-void Add_Piece(int piece, int index64, BOARD_STRUCT *board)
+void Add_Piece(int piece, int square, BOARD_STRUCT *board)
 {
 
-	ASSERT(board->board_array64[index64] == EMPTY);
-	ASSERT(ON_BOARD_64(index64));
+	ASSERT(board->board_array[square] == EMPTY);
+	ASSERT(ON_BOARD(square));
 
 	//Clear from square
-	board->board_array64[index64] = piece;
-	Add_To_Piecelists(piece, index64, board);
-	HASH_OUT(board->hash_key, piece_keys[EMPTY][index64]);
-	HASH_IN(board->hash_key, piece_keys[piece][index64]);
+	board->board_array[square] = piece;
+	Add_To_Piecelists(piece, square, board);
+	HASH_OUT(board->hash_key, piece_keys[EMPTY][square]);
+	HASH_IN(board->hash_key, piece_keys[piece][square]);
 
 	//Update pawn_hash_key
 	if (IS_PAWN(piece) || IS_KING(piece))
 	{
-		HASH_IN(board->pawn_hash_key, piece_keys[piece][index64]);
+		HASH_IN(board->pawn_hash_key, piece_keys[piece][square]);
 	}
 }
 
@@ -655,9 +655,9 @@ void Print_Move(MOVE_STRUCT *move)
 	//Get rank and file of ending position
 	from = GET_FROM_SQ(move_num);
 	square = GET_TO_SQ(move_num);
-	ASSERT(ON_BOARD_64(square));
-	rank = GET_RANK_64(square);
-	file = GET_FILE_64(square);
+	ASSERT(ON_BOARD(square));
+	rank = GET_RANK(square);
+	file = GET_FILE(square);
 
 	/***** Print *****/
 	//Castle
@@ -677,7 +677,7 @@ void Print_Move(MOVE_STRUCT *move)
 		}
 		else if (GET_CAPTURE(move_num) != 0) //If piece is a pawn, and a capture occured
 		{
-			cout << file_names[GET_FILE_64(from)];
+			cout << file_names[GET_FILE(from)];
 		}
 
 		if (GET_CAPTURE(move_num) != 0) cout << "x"; //If Capture occured
@@ -702,10 +702,10 @@ char* UCI_Move_String(MOVE_STRUCT *move)
 	static char MvStr[6];
 	int move_num = move->move;
 
-	int from_file = GET_FILE_64(GET_FROM_SQ(move_num));
-	int from_rank = GET_RANK_64(GET_FROM_SQ(move_num));
-	int to_file = GET_FILE_64(GET_TO_SQ(move_num));
-	int to_rank = GET_RANK_64(GET_TO_SQ(move_num));
+	int from_file = GET_FILE(GET_FROM_SQ(move_num));
+	int from_rank = GET_RANK(GET_FROM_SQ(move_num));
+	int to_file = GET_FILE(GET_TO_SQ(move_num));
+	int to_rank = GET_RANK(GET_TO_SQ(move_num));
 
 	
 	//Get prmotion char, if any

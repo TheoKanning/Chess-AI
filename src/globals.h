@@ -12,7 +12,7 @@
 
 #define PROGRAM_NAME "Chess-AI"
 #define AUTHOR	"Theo Kanning"
-#define VERSION_NO	1.40
+#define VERSION_NO	2.0
 
 #ifndef DEBUG
         #define ASSERT(x)
@@ -45,17 +45,11 @@
 
 #define START_FEN		"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 
-#define ON_BOARD_120(x)				(ON_BOARD_64(SQUARE_120_TO_64(x)))
-#define ON_BOARD_64(x)				(x >= 0 && x < 64)
+#define ON_BOARD(x)					(x >= 0 && x < 64)
 
-#define SQUARE_120_TO_64(x)			(square_120_to_64[x])
-#define SQUARE_64_TO_120(x)			(square_64_to_120[x])
-
-#define RANK_FILE_TO_SQUARE_64(r,f)	(f+8*r)
-#define GET_RANK_64(x)				(x>>3)
-#define GET_FILE_64(x)				(x&7)
-#define GET_RANK_120(x)				GET_RANK_64(SQUARE_120_TO_64(x))
-#define GET_FILE_120(x)				GET_FILE_64(SQUARE_120_TO_64(x))
+#define RANK_FILE_TO_SQUARE(r,f)	(f+8*r)
+#define GET_RANK(x)					(x>>3)
+#define GET_FILE(x)					(x&7)
 
 #define SET_BIT(x,y)				(x |= (1i64<<y))
 #define CLR_BIT(x,y)				(x &= ~(1i64<<y))
@@ -195,8 +189,7 @@ typedef struct
 
 typedef struct
 {
-	//int board_array120[120];
-	int board_array64[64]; 
+	int board_array[64]; 
 
 	int ep; //64 index
 	int side;
@@ -206,8 +199,7 @@ typedef struct
 	int move_counter; //100 move counter
 
 	int piece_num[13]; //Stores the number of each type of piece
-	int piece_list120[13][10]; //[Piece][instance] contains index of pieces on board, empty cells are 0, which is off the 120 board
-
+	
 	int phase; //Calculated at beginning of eval function
 
 	int big_material[2]; //Non-pawn material
@@ -225,7 +217,7 @@ typedef struct
 
 	int the_killers[MAX_SEARCH_DEPTH][2];
 
-	int history[120][120];
+	int history[64][64];
 	int history_max;
 
 	U64 hash_key;
@@ -257,8 +249,8 @@ extern void Generate_Rook_Bishop_Attack_Masks(void);
 extern void Init_Board(BOARD_STRUCT *board);
 extern void Update_Piece_Lists(BOARD_STRUCT *board);
 extern void Update_Bitboards(BOARD_STRUCT *board);
-extern void Add_To_Piecelists(int piece, int index64, BOARD_STRUCT *board);
-extern void Remove_From_Piecelists(int piece, int index64, BOARD_STRUCT *board);
+extern void Add_To_Piecelists(int piece, int square, BOARD_STRUCT *board);
+extern void Remove_From_Piecelists(int piece, int square, BOARD_STRUCT *board);
 extern void Parse_Fen(char *fen, BOARD_STRUCT *board);
 extern void Clear_Undo_List(BOARD_STRUCT *board);
 extern int  Is_Threefold_Repetition(BOARD_STRUCT *board);
@@ -274,8 +266,6 @@ extern int use_aspiration_window;
 extern int use_dual_hash;
 extern int use_futility;
 extern int use_late_move_reduction;
-extern int square_120_to_64[120];
-extern int square_64_to_120[64];
 extern char* file_names;
 extern char* rank_names;
 extern char* piece_names;
@@ -300,7 +290,7 @@ extern short end_piece_square_tables[13][64];
 //eval
 extern int Evaluate_Board(BOARD_STRUCT *board);
 extern int Get_Board_Piece_Square_Score(BOARD_STRUCT *board);
-extern int Get_Piece_Square_Score(int index64, int piece, float phase);
+extern int Get_Piece_Square_Score(int square, int piece, float phase);
 extern int Get_Pawn_Eval_Score(BOARD_STRUCT *board);
 extern int Get_King_Safety_Score(BOARD_STRUCT *board);
 extern int Get_Pawn_And_King_Score(BOARD_STRUCT *board);

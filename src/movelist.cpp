@@ -121,8 +121,8 @@ void Add_Move(MOVE_LIST_STRUCT *move_list, int from, int to, int piece, int capt
 	int temp = 0;
 
 	//Check all fields within bounds
-	ASSERT(ON_BOARD_64(from));
-	ASSERT(ON_BOARD_64(to));
+	ASSERT(ON_BOARD(from));
+	ASSERT(ON_BOARD(to));
 	ASSERT((piece >= wP) && (piece <= bK)); //Piece is not empty
 	ASSERT((piece >= EMPTY) && (piece <= bK)); //Piece can be empty
 	ASSERT((special >= NOT_SPECIAL) && (special <= KNIGHT_PROMOTE));

@@ -18,26 +18,26 @@ void Init_Board(BOARD_STRUCT *board)
 	//8x8 board, set all spaces to empty
 	for (index = 0; index < 64; index++)
 	{
-		board->board_array64[index] = EMPTY;
+		board->board_array[index] = EMPTY;
 	}
 
 	/**** Adding Pieces *****/
 
 	//Add in pieces to 8x8 board, not in any particularly intelligent fashion
 	//Rank 1
-	board->board_array64[0] = wR;
-	board->board_array64[1] = wN;
-	board->board_array64[2] = wB;
-	board->board_array64[3] = wQ;
-	board->board_array64[4] = wK;
-	board->board_array64[5] = wB;
-	board->board_array64[6] = wN;
-	board->board_array64[7] = wR;
+	board->board_array[0] = wR;
+	board->board_array[1] = wN;
+	board->board_array[2] = wB;
+	board->board_array[3] = wQ;
+	board->board_array[4] = wK;
+	board->board_array[5] = wB;
+	board->board_array[6] = wN;
+	board->board_array[7] = wR;
 
 	//Rank 2
 	for (file = FILE_A; file <= FILE_H; file++)
 	{
-		board->board_array64[RANK_FILE_TO_SQUARE_64(RANK_2,file)] = wP;
+		board->board_array[RANK_FILE_TO_SQUARE(RANK_2,file)] = wP;
 	}
 	
 	//Ranks 3-6 empty
@@ -45,25 +45,25 @@ void Init_Board(BOARD_STRUCT *board)
 	{
 		for (rank = RANK_3; rank <= RANK_6; rank++)
 		{
-			board->board_array64[RANK_FILE_TO_SQUARE_64(rank, file)] = EMPTY; 
+			board->board_array[RANK_FILE_TO_SQUARE(rank, file)] = EMPTY; 
 		}
 	}
 
 	//Rank 7
 	for (file = FILE_A; file <= FILE_H; file++)
 	{
-		board->board_array64[RANK_FILE_TO_SQUARE_64(RANK_7, file)] = bP;
+		board->board_array[RANK_FILE_TO_SQUARE(RANK_7, file)] = bP;
 	}
 
 	//Rank 8
-	board->board_array64[56] = bR;
-	board->board_array64[57] = bN;
-	board->board_array64[58] = bB;
-	board->board_array64[59] = bQ;
-	board->board_array64[60] = bK;
-	board->board_array64[61] = bB;
-	board->board_array64[62] = bN;
-	board->board_array64[63] = bR;
+	board->board_array[56] = bR;
+	board->board_array[57] = bN;
+	board->board_array[58] = bB;
+	board->board_array[59] = bQ;
+	board->board_array[60] = bK;
+	board->board_array[61] = bB;
+	board->board_array[62] = bN;
+	board->board_array[63] = bR;
 
 	
 
@@ -101,10 +101,10 @@ void Parse_Fen(char *fen, BOARD_STRUCT *board)
 
 	Clear_Undo_List(board);
 
-	//Empty board_array64
+	//Empty board_array
 	for (index = 0; index < 64; index++)
 	{
-		board->board_array64[index] = EMPTY;
+		board->board_array[index] = EMPTY;
 	}
 
 	//Read piece data
@@ -112,26 +112,26 @@ void Parse_Fen(char *fen, BOARD_STRUCT *board)
 	{
 		file = FILE_A + ((square - 1) % 8);
 		rank = RANK_8 - ((square - 1) / 8);
-		index = RANK_FILE_TO_SQUARE_64(rank, file);
+		index = RANK_FILE_TO_SQUARE(rank, file);
 		ASSERT(index >= 0 && index < 64);
 
 		switch (*fen)//Read current character
 		{
 		//White pieces
-		case 'P': board->board_array64[index] = wP; break;
-		case 'N': board->board_array64[index] = wN; break;
-		case 'B': board->board_array64[index] = wB; break;
-		case 'R': board->board_array64[index] = wR; break;
-		case 'Q': board->board_array64[index] = wQ; break;
-		case 'K': board->board_array64[index] = wK; break;
+		case 'P': board->board_array[index] = wP; break;
+		case 'N': board->board_array[index] = wN; break;
+		case 'B': board->board_array[index] = wB; break;
+		case 'R': board->board_array[index] = wR; break;
+		case 'Q': board->board_array[index] = wQ; break;
+		case 'K': board->board_array[index] = wK; break;
 
 		//Black pieces
-		case 'p': board->board_array64[index] = bP; break;
-		case 'n': board->board_array64[index] = bN; break;
-		case 'b': board->board_array64[index] = bB; break;
-		case 'r': board->board_array64[index] = bR; break;
-		case 'q': board->board_array64[index] = bQ; break;
-		case 'k': board->board_array64[index] = bK; break;
+		case 'p': board->board_array[index] = bP; break;
+		case 'n': board->board_array[index] = bN; break;
+		case 'b': board->board_array[index] = bB; break;
+		case 'r': board->board_array[index] = bR; break;
+		case 'q': board->board_array[index] = bQ; break;
+		case 'k': board->board_array[index] = bK; break;
 
 		//Spaces
 		case '/': square--; break;
@@ -191,8 +191,8 @@ void Parse_Fen(char *fen, BOARD_STRUCT *board)
 	{
 		file = (int)fen[0] - 97;
 		rank = (int)fen[1] - 49;
-		ASSERT(ON_BOARD_64(RANK_FILE_TO_SQUARE_64(rank, file)));
-		board->ep = RANK_FILE_TO_SQUARE_64(rank, file);
+		ASSERT(ON_BOARD(RANK_FILE_TO_SQUARE(rank, file)));
+		board->ep = RANK_FILE_TO_SQUARE(rank, file);
 		fen ++; //Skip one extra space
 	}
 	fen++;
@@ -252,21 +252,22 @@ void Parse_Fen(char *fen, BOARD_STRUCT *board)
 }
 
 //Adds a piece and location to a piece list
-void Add_To_Piecelists(int piece, int index64, BOARD_STRUCT *board)
+void Add_To_Piecelists(int piece, int square, BOARD_STRUCT *board)
 {
-	ASSERT(ON_BOARD_64(index64));
+	ASSERT(ON_BOARD(square));
 	if (piece != EMPTY) //Ignore empty pieces
 	{
-		SET_BIT(board->piece_bitboards[piece], index64);
+		SET_BIT(board->piece_bitboards[piece], square);
+		board->piece_num[piece]++;
 	}
 
 	if (IS_WHITE_PIECE(piece))
 	{
-		SET_BIT(board->side_bitboards[WHITE], index64);
-		SET_BIT(board->side_bitboards[BOTH], index64);
+		SET_BIT(board->side_bitboards[WHITE], square);
+		SET_BIT(board->side_bitboards[BOTH], square);
 
-		board->middle_piece_square_score += middle_piece_square_tables[piece][index64];
-		board->end_piece_square_score += end_piece_square_tables[piece][index64];
+		board->middle_piece_square_score += middle_piece_square_tables[piece][square];
+		board->end_piece_square_score += end_piece_square_tables[piece][square];
 
 		if (piece == wP) //Update pawn material
 		{
@@ -279,11 +280,11 @@ void Add_To_Piecelists(int piece, int index64, BOARD_STRUCT *board)
 	}
 	if (IS_BLACK_PIECE(piece))
 	{
-		SET_BIT(board->side_bitboards[BLACK], index64);
-		SET_BIT(board->side_bitboards[BOTH], index64);
+		SET_BIT(board->side_bitboards[BLACK], square);
+		SET_BIT(board->side_bitboards[BOTH], square);
 
-		board->middle_piece_square_score -= middle_piece_square_tables[piece][index64];
-		board->end_piece_square_score -= end_piece_square_tables[piece][index64];
+		board->middle_piece_square_score -= middle_piece_square_tables[piece][square];
+		board->end_piece_square_score -= end_piece_square_tables[piece][square];
 
 		if (piece == bP) //Update pawn material
 		{
@@ -298,23 +299,24 @@ void Add_To_Piecelists(int piece, int index64, BOARD_STRUCT *board)
 
 //Removes a piece and location from piece list
 //Updates piece_square evaluation
-void Remove_From_Piecelists(int piece, int index64, BOARD_STRUCT *board)
+void Remove_From_Piecelists(int piece, int square, BOARD_STRUCT *board)
 {
 	int found = 0;
-	ASSERT(ON_BOARD_64(index64));
+	ASSERT(ON_BOARD(square));
 	if (piece != EMPTY)
 	{
-		CLR_BIT(board->piece_bitboards[piece], index64); //Remove from bitboards
+		CLR_BIT(board->piece_bitboards[piece], square); //Remove from bitboards
+		board->piece_num[piece]--;
 	}
 
 	if (IS_WHITE_PIECE(piece))
 	{
 
-		CLR_BIT(board->side_bitboards[WHITE], index64);
-		CLR_BIT(board->side_bitboards[BOTH], index64);
+		CLR_BIT(board->side_bitboards[WHITE], square);
+		CLR_BIT(board->side_bitboards[BOTH], square);
 
-		board->middle_piece_square_score -= middle_piece_square_tables[piece][index64];
-		board->end_piece_square_score -= end_piece_square_tables[piece][index64];
+		board->middle_piece_square_score -= middle_piece_square_tables[piece][square];
+		board->end_piece_square_score -= end_piece_square_tables[piece][square];
 
 		if (piece == wP) //Update pawn material
 		{
@@ -327,11 +329,11 @@ void Remove_From_Piecelists(int piece, int index64, BOARD_STRUCT *board)
 	}
 	if (IS_BLACK_PIECE(piece))
 	{
-		CLR_BIT(board->side_bitboards[BLACK], index64);
-		CLR_BIT(board->side_bitboards[BOTH], index64);
+		CLR_BIT(board->side_bitboards[BLACK], square);
+		CLR_BIT(board->side_bitboards[BOTH], square);
 
-		board->middle_piece_square_score += middle_piece_square_tables[piece][index64];
-		board->end_piece_square_score += end_piece_square_tables[piece][index64];
+		board->middle_piece_square_score += middle_piece_square_tables[piece][square];
+		board->end_piece_square_score += end_piece_square_tables[piece][square];
 
 		if (piece == bP) //Update pawn material
 		{
@@ -345,7 +347,7 @@ void Remove_From_Piecelists(int piece, int index64, BOARD_STRUCT *board)
 }
 
 
-//Updates piecelist and piecenum using data in board_array64
+//Updates piecelist and piecenum using data in board_array
 void Update_Piece_Lists(BOARD_STRUCT *board)
 {
 	int index,piece;
@@ -359,12 +361,19 @@ void Update_Piece_Lists(BOARD_STRUCT *board)
 	board->end_piece_square_score = 0;
 	board->middle_piece_square_score = 0;
 
+	for (int i = 0; i <= bK; i++)
+	{
+		board->piece_num[i] = 0;
+	}
+
 	//Index through all 64 squares and adjust piece list and num accordingly
 	for (index = 0; index < 64; index++)
 	{
-		piece = board->board_array64[index];
+		piece = board->board_array[index];
 		if (piece != EMPTY)
 		{
+			board->piece_num[piece]++;
+
 			if (IS_WHITE_PIECE(piece))
 			{
 				if (piece == wP) //Update pawn material
@@ -397,7 +406,7 @@ void Update_Piece_Lists(BOARD_STRUCT *board)
 	}
 }
 
-//Fills pawn bitboards using board_array64
+//Fills pawn bitboards using board_array
 void Update_Bitboards(BOARD_STRUCT *board)
 {
 	int index;
@@ -415,7 +424,7 @@ void Update_Bitboards(BOARD_STRUCT *board)
 	//Loop through all squares and add appropriate data to bitboards
 	for (index = 0; index < 64; index++)
 	{
-		piece = board->board_array64[index];
+		piece = board->board_array[index];
 
 		if (piece != EMPTY)
 		{
@@ -524,18 +533,14 @@ int Is_Material_Draw(BOARD_STRUCT *board)
 //Asserts will fail if anything is incorrect
 void Check_Board(BOARD_STRUCT *board)
 {
-	int index64, piece;
+	int square, piece;
 
 	int big_material_temp[2] = { 0 };
 	int pawn_material_temp[2] = { 0 };
 
-
 	int middle_piece_square_temp = 0;
 	int end_piece_square_temp = 0;
 
-	//int piece_square_temp = 0;
-
-	int piecelist_temp[13][10] = { 0 };
 	int piece_num_temp[13] = { 0 };
 	U64 hash_temp = 0;
 	U64 pawn_hash_temp = 0;
@@ -544,16 +549,16 @@ void Check_Board(BOARD_STRUCT *board)
 	U64 piece_bitboards_temp[13] = { 0 };
 
 	//Check board arrays for consistency
-	for (index64 = 0; index64 < 64; index64++)
+	for (square = 0; square < 64; square++)
 	{
-		piece = board->board_array64[index64];
+		piece = board->board_array[square];
 		
 		/***** Regenerate piece lists *****/
 		if (piece != EMPTY)
 		{
-			SET_BIT(piece_bitboards_temp[piece], index64); //Update bitboard
-			SET_BIT(side_bitboards_temp[BOTH], index64);
-
+			SET_BIT(piece_bitboards_temp[piece], square); //Update bitboard
+			SET_BIT(side_bitboards_temp[BOTH], square);
+			piece_num_temp[piece]++;
 		}
 
 		if (IS_WHITE_PIECE(piece))
@@ -561,20 +566,20 @@ void Check_Board(BOARD_STRUCT *board)
 			if (piece == wP) pawn_material_temp[WHITE] += piece_values[piece];
 			else if (piece != wK) big_material_temp[WHITE] += piece_values[piece];
 
-			middle_piece_square_temp += middle_piece_square_tables[piece][index64];
-			end_piece_square_temp += end_piece_square_tables[piece][index64];
+			middle_piece_square_temp += middle_piece_square_tables[piece][square];
+			end_piece_square_temp += end_piece_square_tables[piece][square];
 
-			SET_BIT(side_bitboards_temp[WHITE], index64);
+			SET_BIT(side_bitboards_temp[WHITE], square);
 		}
 		if (IS_BLACK_PIECE(piece))
 		{
 			if (piece == bP) pawn_material_temp[BLACK] += piece_values[piece];
 			else if (piece != bK) big_material_temp[BLACK] += piece_values[piece];
 
-			middle_piece_square_temp -= middle_piece_square_tables[piece][index64];
-			end_piece_square_temp -= end_piece_square_tables[piece][index64];
+			middle_piece_square_temp -= middle_piece_square_tables[piece][square];
+			end_piece_square_temp -= end_piece_square_tables[piece][square];
 
-			SET_BIT(side_bitboards_temp[BLACK], index64);
+			SET_BIT(side_bitboards_temp[BLACK], square);
 		}		
 	}
 
@@ -586,14 +591,10 @@ void Check_Board(BOARD_STRUCT *board)
 	for (int index = 0; index < bK; index++)
 	{
 		ASSERT(piece_bitboards_temp[index] == board->piece_bitboards[index]);
+		ASSERT(piece_num_temp[index] == board->piece_num[index]);
 	}
 
 	/***** Material Score *****/
-	if (big_material_temp[WHITE] != board->big_material[WHITE])
-	{
-		int x = 1;
-	}
-
 	ASSERT(big_material_temp[WHITE] == board->big_material[WHITE]);
 	ASSERT(big_material_temp[BLACK] == board->big_material[BLACK]);
 	ASSERT(pawn_material_temp[WHITE] == board->pawn_material[WHITE]);
@@ -633,7 +634,7 @@ void Print_Board(BOARD_STRUCT *board)
 		for (file = FILE_A; file <= FILE_H; file++)
 		{
 			cout  << (char)179; //Bar
-			switch (board->board_array64[RANK_FILE_TO_SQUARE_64(rank, file)])
+			switch (board->board_array[RANK_FILE_TO_SQUARE(rank, file)])
 			{
 			case EMPTY:
 				cout << " ";
@@ -751,7 +752,7 @@ void Print_Bitboard(U64 bb)
 		{
 			cout << (char)179; //Bar
 
-			if (GET_BIT(bb, RANK_FILE_TO_SQUARE_64(rank, file)))
+			if (GET_BIT(bb, RANK_FILE_TO_SQUARE(rank, file)))
 			{
 				cout << 1;
 			}
