@@ -263,11 +263,6 @@ extern void Print_Board(BOARD_STRUCT *board);
 extern void Print_Bitboard(U64 bb);
 
 //data
-extern int use_SEE;
-extern int use_aspiration_window;
-extern int use_dual_hash;
-extern int use_futility;
-extern int use_late_move_reduction;
 extern char* file_names;
 extern char* rank_names;
 extern char* piece_names;
@@ -282,7 +277,7 @@ extern int is_queen[13];
 extern int is_king[13];
 extern const U64 rank_masks[8];
 extern const U64 file_masks[8];
-extern int futility_margins[4];
+extern int futility_margins[6];
 extern int aspiration_windows[4];
 extern int piece_values[13];
 extern int passed_pawn_rank_bonus[8];
@@ -302,16 +297,14 @@ extern void Init_Pawn_Masks(void);
 extern void Init_Hashkeys(void);
 extern void Clear_Hash_Table(void);
 extern void Compute_Hash(BOARD_STRUCT *board);
-extern void Add_Hash_Entry(HASH_ENTRY_STRUCT *hash_ptr, int ply, SEARCH_INFO_STRUCT *info);
-extern void Remove_Hash_Entry(U64 hash);
-extern int  Get_Hash_Entry(U64 hash, int alpha, int beta, int depth, int ply, int * hash_move);
 extern void Add_Dual_Hash_Entry(HASH_ENTRY_STRUCT *hash_ptr, int ply, SEARCH_INFO_STRUCT *info);
 extern int  Get_Dual_Hash_Entry(U64 hash, int alpha, int beta, int depth, int ply, int * hash_move);
 extern void Fill_Hash_Entry(int age, int depth, int eval, int flag, U64 hash, int move, HASH_ENTRY_STRUCT *hash_ptr);
 
 //history
-extern void Add_History_Move(int move, BOARD_STRUCT *board);
+extern void Add_History_Move(int move, int depth, BOARD_STRUCT *board);
 extern void Find_History_Moves(MOVE_LIST_STRUCT *move_list, BOARD_STRUCT *board);
+extern void Age_History_Data(BOARD_STRUCT *board);
 extern void Clear_History_Data(BOARD_STRUCT *board);
 
 //input
@@ -398,6 +391,15 @@ extern void Search_Test(void);
 //see
 extern int Static_Exchange_Evaluation(int move, BOARD_STRUCT *board);
 extern void Set_Quiescent_SEE_Scores(MOVE_LIST_STRUCT *move_list, BOARD_STRUCT *board);
+
+//settings
+extern int use_SEE;
+extern int use_aspiration_window;
+extern int use_history;
+extern int use_null_window_first;
+extern int use_futility;
+extern int use_late_move_reduction;
+extern void Set_Option(char *line);
 
 //tuning
 extern int king_end_piece_square_tuning_values[8];

@@ -37,6 +37,8 @@ int main()
 	Generate_Magic_Moves();
 	Generate_Between_Squares();
 	Set_King_End_Values();
+	Clear_History_Data(&board);
+
 
 	char line[256];
 
@@ -91,59 +93,8 @@ int main()
 			Search_Test();
 			system("PAUSE");
 		}
-		else if (!strncmp(line, "setoption name keps", 18)) {
-
-			int value = 0;
-			int index = line[19] - '0';
-			sscanf_s(line, "%*s %*s %*s %*s %d", &value);
-			printf("Set keps%d to %d\n", index, value);
-			king_end_piece_square_tuning_values[index] = value;
-			Set_King_End_Values();
-		}
-		else if (!strncmp(line, "setoption name peps", 18)) {
-
-			int value = 0;
-			int index = line[19] - '0';
-			sscanf_s(line, "%*s %*s %*s %*s %d", &value);
-			printf("Set peps%d to %d\n", index, value);
-			pawn_end_piece_square_tuning_values[index] = value;
-			Set_Pawn_End_Values();
-		}
-		else if (!strncmp(line, "setoption name pprb", 18)) {
-			int value = 0;
-			int index = line[19] - '0';
-			sscanf_s(line, "%*s %*s %*s %*s %d", &value);
-			printf("Set pprb%d to %d\n", index, value);
-			passed_pawn_rank_bonus[index] = value;
-			//passed_pawn_tuning_parameters[index] = value;
-			//Set_Passed_Pawn_Rank_Bonuses();
-		}
-		else if (!strncmp(line, "setoption name fmrg", 18)) {
-			int value = 0;
-			int index = line[19] - '0';
-			sscanf_s(line, "%*s %*s %*s %*s %d", &value);
-			printf("Set fmrg%d to %d\n", index, value);
-			futility_margins[index] = value;
-		}
-		else if (!strncmp(line, "setoption name dual_hash", 23)) {
-			int value = 0;
-			sscanf_s(line, "%*s %*s %*s %*s %d", &value);
-			printf("Set dual_hash to %d\n", value);
-			use_dual_hash = value;
-		}
-		else if (!strncmp(line, "setoption name SEE", 17)) {
-			int value = 0;
-			sscanf_s(line, "%*s %*s %*s %*s %d", &value);
-			printf("Set SEE to %d\n", value);
-			use_SEE = value * 10;
-		}
-		else if (!strncmp(line, "setoption name aspiration", 24)) {
-			int value = 0;
-			int index = line[25] - '0';
-			sscanf_s(line, "%*s %*s %*s %*s %d", &value);
-			printf("Set aspiration%d to %d\n", index, value);
-			use_aspiration_window = 1;
-			aspiration_windows[index] = value * 10;
+		else if (!strncmp(line, "setoption", 9)) {
+			Set_Option(line);
 		}
 		else if (!strncmp(line, "quit", 4))	{
 			break;

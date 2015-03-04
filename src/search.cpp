@@ -119,6 +119,7 @@ int Search_Position(BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info)
 	printf("bestmove %s\n", UCI_Move_String(&best_move));
 	
 	info->age++;
+	Age_History_Data(board);
 
 	return 1;
 }
@@ -231,7 +232,6 @@ int Search_Root(int alpha, int beta, int depth, BOARD_STRUCT *board, SEARCH_INFO
 			if (score > alpha)
 			{
 				alpha = score;
-				//Add_History_Move(current_move, board); //Store move in history array
 			}
 			best_score = score;
 			best_move_index = move;
@@ -255,7 +255,7 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 	int move;
 	int moves_searched = 0; //Number of legal moves searched (not futility pruned)
 	int moves_made = 0; //Number of legal moves
-	int raised_alpha = false; 
+	int raised_alpha = use_null_window_first; 
 	int alpha_orig = alpha;
 	int best_score = -INF;
 	int best_move = 0;
@@ -370,7 +370,7 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 
 	/***** Futility Pruning *****/
 	/* Here we determine if this node is elegible for futility pruning */
-	if (depth <= 2
+	if (depth <= 5
 		&& use_futility
 		&& !is_pv
 		&& !in_check
@@ -392,7 +392,7 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 			Internal_Iterative_Deepening(alpha, beta, depth, &move_list, board, info);
 		}
 	}
-	//Find_Best_Recapture(&move_list, board);
+	Find_Best_Recapture(&move_list, board);
 
 	/***** Search *****/
 	for (move = 0; move < move_list.num; move++) //For all moves in list
@@ -421,7 +421,7 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 			&& !IS_PROMOTION(current_move)
 			&& !checking_move) 
 		{
-			if (depth <= 3)
+			if (depth <= 2)
 			{
 				Take_Move(board);
 				continue;
@@ -458,7 +458,7 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 				&& !IS_KILLER(move_list.list[move].score)
 				&& !checking_move)
 			{
-				//if (moves_made >= 9 && depth > 2) reduction_depth = 2; //On tenth move and beyond
+				//if (moves_made >= 10 && depth > 2) reduction_depth = 2; //On tenth move and beyond
 				reduction_depth = 1;
 
 				if (!raised_alpha) //PV search
@@ -517,7 +517,7 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 			if (current_move_score <= KILLER_MOVE_SCORE)
 			{				 
 				Add_Killer_Move(current_move, board); //Store killer move
-				//Add_History_Move(current_move, board); //Store move in history array
+				Add_History_Move(current_move, depth, board); //Store move in history array
 			}
 			return score; //Beta cutoff
 		}
@@ -529,7 +529,6 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 			{
 				raised_alpha = TRUE;
 				alpha = score;
-				//Add_History_Move(current_move, board); //Store move in history array
 			}
 			best_score = score;
 			best_move_index = move;

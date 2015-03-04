@@ -6,7 +6,7 @@
 #include "globals.h"
 
 #define NUM_POSITIONS			53
-#define TEST_TIME				1000 //Time (ms) to search each position
+#define TEST_TIME				10000 //Time (ms) to search each position
 
 char *fens[NUM_POSITIONS] = {
 	"rnbqkb1r/pp1p1ppp/2p5/4P3/2B5/8/PPP1NnPP/RNBQK2R w KQkq - 0 6",
@@ -99,6 +99,7 @@ void Search_Test(void)
 		Clear_Pawn_Hash_Table();
 		Clear_Hash_Table();
 		Clear_Search_Info(&info);
+		Clear_History_Data(&board);
 		board.hply = 0;
 
 		info.start_time = Get_Time_Ms();

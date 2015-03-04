@@ -11,11 +11,9 @@ U64 side_keys[2];
 U64 ep_keys[101]; //NO_SQUARE = 100;
 U64 castle_keys[16];
 
-#define HASH_SIZE  1000000 //Number of hash entries stored
-#define DUAL_HASH_SIZE 500000
+#define DUAL_HASH_SIZE 500000 //Number of hash entries stored
 int HASH_SIZE_MB = 0;
 
-HASH_ENTRY_STRUCT hash_table[HASH_SIZE];
 HASH_ENTRY_STRUCT dual_hash_table[2][DUAL_HASH_SIZE];
 
 static void Copy_Hash_Entry(HASH_ENTRY_STRUCT *ptr1, HASH_ENTRY_STRUCT *ptr2);
@@ -82,175 +80,9 @@ void Compute_Hash(BOARD_STRUCT *board)
 	HASH_IN(board->hash_key, castle_keys[board->castle_rights]);
 }
 
-//Reads hash table and returns pointer if entry is found
-int Get_Hash_Entry(U64 hash, int alpha, int beta, int depth, int ply, int * hash_move)
-{
-	//Get hash data
-	HASH_ENTRY_STRUCT *hash_temp = &hash_table[hash % HASH_SIZE];
-
-	if (hash_temp->hash == hash) //If hash keys match
-	{
-		*hash_move = hash_temp->move; //Store hash move in pointer
-
-		if (hash_temp->depth >= depth) //If depth is greater than or equal to search depth
-		{
-			//Adjust mate score for ply
-			int eval = hash_temp->eval;
-
-			if (eval >= MATE_SCORE - MAX_SEARCH_DEPTH) eval -= ply;
-			else if (eval <= -MATE_SCORE + MAX_SEARCH_DEPTH) eval += ply;
-
-			if (hash_temp->flag == HASH_EXACT)
-			{
-				return eval;
-			}
-			else if (hash_temp->flag == HASH_UPPER && (eval <= alpha))
-			{
-				return eval;
-			}
-			else if (hash_temp->flag == HASH_LOWER && (eval >= beta))
-			{
-				return eval;
-			}
-		}
-	}
-	else //keys do not match
-	{
-		//*hash_move = 0; //Reset move (unecessary since it starts at 0)
-	}
-
-	return INVALID;
-}
-int Get_Hash_Entry(U64 hash, HASH_ENTRY_STRUCT *hash_ptr)
-{
-	int hash_index = hash % HASH_SIZE;
-	//See if hash is a match, if not, end and return zero
-	if (hash_table[hash_index].hash != hash)
-	{
-		//Check next index
-		hash_index++;
-		if (hash_index >= HASH_SIZE) hash_index = 0;
-
-		if (hash_table[hash_index].hash == hash)
-		{
-			Copy_Hash_Entry(&hash_table[hash_index], hash_ptr);
-			return 1;
-		}
-		else
-		{
-			//Remove move field from pointer
-			hash_ptr->move = 0;
-			return 0;
-		}
-	}
-
-	//Fill hash_ptr and return 1
-	Copy_Hash_Entry(&hash_table[hash_index], hash_ptr);
-
-	return 1;
-	
-}
-
-//Adds a hash entry to the table, checking if replacement is approriate
-void Add_Hash_Entry(HASH_ENTRY_STRUCT *hash_ptr, int ply, SEARCH_INFO_STRUCT *info)
-{
-	int hash_index = hash_ptr->hash % HASH_SIZE;
-
-	//Adjust mate score for ply
-	if (hash_ptr->eval >= MATE_SCORE - MAX_SEARCH_DEPTH) hash_ptr->eval += ply;
-	if (hash_ptr->eval <= -MATE_SCORE + MAX_SEARCH_DEPTH) hash_ptr->eval -= ply;
-
-	//Copy_Hash_Entry(hash_ptr, &hash_table[hash_index]);
-	//return;
-
-	//If stored entry is empty, replace
-	if (hash_table[hash_index].hash == 0)
-	{
-		Copy_Hash_Entry(hash_ptr, &hash_table[hash_index]);
-		return;
-	}
-
-	//If stored entry is too old, replace
-	if (hash_table[hash_index].age < info->age)
-	{
-		Copy_Hash_Entry(hash_ptr, &hash_table[hash_index]);
-		return;
-	}
-	
-	//If new entry is exact
-	if (hash_ptr->flag == HASH_EXACT)
-	{
-		//If both are exact and have the same hash, keep deeper entry
-		if ((hash_table[hash_index].flag == HASH_EXACT))
-		{
-			if (hash_ptr->hash == hash_table[hash_index].hash)
-			{
-				if (hash_ptr->depth >= hash_table[hash_index].depth)
-				{
-					Copy_Hash_Entry(hash_ptr, &hash_table[hash_index]);
-					return;
-				}
-			}
-			else //Hashes not identical, store in index above if empty
-			{
-				//Increment index
-				hash_index++;
-				if (hash_index >= HASH_SIZE) hash_index = 0;
-
-				//If spot above is not exact
-				if (hash_table[hash_index].flag != HASH_EXACT)
-				{
-					Copy_Hash_Entry(hash_ptr, &hash_table[hash_index]);
-					return;
-				}
-
-				//If spot above is old
-				if (hash_table[hash_index].age + 3 < info->age)
-				{
-					Copy_Hash_Entry(hash_ptr, &hash_table[hash_index]);
-					return;
-				}
-
-				//If hash is identical, and depth is greater or equal
-				if (hash_ptr->hash == hash_table[hash_index].hash && hash_ptr->depth >= hash_table[hash_index].depth)
-				{
-					Copy_Hash_Entry(hash_ptr, &hash_table[hash_index]);
-					return;
-				}
-			}
-		}
-		else
-		{
-			//If new entry is exact and stored is not, replace
-			Copy_Hash_Entry(hash_ptr, &hash_table[hash_index]);
-			return;
-		}
-	}
-
-	
-	//Return if stored is exact and new is not
-	if (hash_table[hash_index].flag == HASH_EXACT) return;
-
-	//If new entry has high depth, replace
-	if (hash_ptr->depth > hash_table[hash_index].depth)
-	{
-		Copy_Hash_Entry(hash_ptr, &hash_table[hash_index]);
-		return;
-	}
-
-	//If entry at index+1 is empty, store there (add later)
-	if (hash_table[(hash_index + 1) % HASH_SIZE].hash == 0)
-	{
-		//Copy_Hash_Entry(hash_ptr, &hash_table[hash_index]);
-		return;
-	}
-}
-
 //Adds an entry to the two-tiered hash table
 void Add_Dual_Hash_Entry(HASH_ENTRY_STRUCT *hash_ptr, int ply, SEARCH_INFO_STRUCT *info)
 {
-	if (!use_dual_hash) return Add_Hash_Entry(hash_ptr, ply, info);
-
 	int hash_index = hash_ptr->hash % DUAL_HASH_SIZE;
 
 	//Adjust mate score for ply
@@ -271,8 +103,6 @@ void Add_Dual_Hash_Entry(HASH_ENTRY_STRUCT *hash_ptr, int ply, SEARCH_INFO_STRUC
 //Returns the value of probing the dual hash table
 int Get_Dual_Hash_Entry(U64 hash, int alpha, int beta, int depth, int ply, int * hash_move)
 {
-	if(!use_dual_hash) Get_Hash_Entry(hash, alpha, beta, depth, ply, hash_move);
-
 	//Get hash data
 	HASH_ENTRY_STRUCT *hash_temp = &dual_hash_table[0][hash % DUAL_HASH_SIZE];
 
@@ -362,22 +192,9 @@ void Copy_Hash_Entry(HASH_ENTRY_STRUCT *ptr1, HASH_ENTRY_STRUCT *ptr2)
 	ptr2->move = ptr1->move;
 }
 
-//Removes entry with the guven hash key
-void Remove_Hash_Entry(U64 hash)
-{
-	int hash_index = hash % HASH_SIZE;
-
-	hash_table[hash_index].age = 0;
-	hash_table[hash_index].depth = 0;
-	hash_table[hash_index].eval = 0;
-	hash_table[hash_index].flag = HASH_EMPTY;
-	hash_table[hash_index].hash = 0;
-	hash_table[hash_index].move = 0;
-}
 
 //Initializes hash table and clears all entries
 void Clear_Hash_Table(void)
 {
-	memset(hash_table, 0, sizeof(hash_table));
 	memset(dual_hash_table, 0, sizeof(dual_hash_table));
 }

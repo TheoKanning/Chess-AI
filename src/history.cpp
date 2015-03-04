@@ -6,12 +6,12 @@
 #include "globals.h"
 
 //Adds a move to the history array, checking if it creates a new maximum
-void Add_History_Move(int move, BOARD_STRUCT *board)
+void Add_History_Move(int move, int depth, BOARD_STRUCT *board)
 {
 	int from = GET_FROM_SQ(move);
 	int to = GET_TO_SQ(move);
 
-	board->history[from][to]++; //increment spot in array
+	board->history[from][to] += depth*depth; //increment spot in array
 
 	//Increase the max if applicable
 	if (board->history[from][to] > board->history_max)
@@ -41,6 +41,20 @@ void Find_History_Moves(MOVE_LIST_STRUCT *move_list, BOARD_STRUCT *board)
 			move_list->list[index].score += board->history[from][to] * HISTORY_SCORE_MAX  / board->history_max;
 		}
 	}
+}
+
+//Divides all history data by 10
+void Age_History_Data(BOARD_STRUCT *board)
+{
+	for (int index1 = 0; index1 < 64; index1++)
+	{
+		for (int index2 = 0; index2 < 64; index2++)
+		{
+			board->history[index1][index2] /= 10;
+		}
+	}
+
+	board->history_max /= 10; //age max value
 }
 
 //Clears history data before beginning a search

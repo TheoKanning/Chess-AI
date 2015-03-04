@@ -25,7 +25,7 @@ void Get_Next_Move(int num, MOVE_LIST_STRUCT *move_list)
 	MOVE_STRUCT temp;
 	Copy_Move(&move_list->list[num], &temp);
 	Copy_Move(&move_list->list[high_index], &move_list->list[num]);
-Copy_Move(&temp, &move_list->list[high_index]);
+	Copy_Move(&temp, &move_list->list[high_index]);
 }
 
 //Finds highest scoring capture move in list, sets its score to -1, then returns its move integer
@@ -178,11 +178,11 @@ void Add_Move(MOVE_LIST_STRUCT *move_list, int from, int to, int piece, int capt
 			int see = Static_Exchange_Evaluation(temp, board); //Calculate SEE score
 			if (see > 0)
 			{
-				move_list->list[move_list->num].score = WINNING_CAPTURE_SCORE + see;
+				move_list->list[move_list->num].score = WINNING_CAPTURE_SCORE +see;
 			}
 			else if (see < 0)
 			{
-				move_list->list[move_list->num].score = LOSING_CAPTURE_SCORE + see;
+				move_list->list[move_list->num].score = LOSING_CAPTURE_SCORE +see;
 			}
 			else
 			{
@@ -223,22 +223,24 @@ void Add_Move(MOVE_LIST_STRUCT *move_list, int from, int to, int piece, int capt
 			}
 		}
 
-		//Piece square ordering
+		
 		if (move_list->list[move_list->num].score == 0) //If score is still zero
 		{
-			move_list->list[move_list->num].score = middle_piece_square_tables[piece][to] - middle_piece_square_tables[piece][from];
+			if (use_history && board->history_max > 0)//Add history score
+			{
+				move_list->list[move_list->num].score = board->history[from][to] * HISTORY_SCORE_MAX / (1.0 * board->history_max);
+				if (move_list->list[move_list->num].score > HISTORY_SCORE_MAX)
+				{
+					printf("Higher than bound score: %d history val:%d max:%d\n\r", move_list->list[move_list->num].score, board->history[from][to], board->history_max);
+				}
+			}
+			else //Piece square ordering
+			{
+				move_list->list[move_list->num].score = middle_piece_square_tables[piece][to] - middle_piece_square_tables[piece][from];
+			}
 		}
 	}
-	/*
-	else if (board->history_max > 0)//Add history score 
-	{
-		move_list->list[move_list->num].score = board->history[from][to] * HISTORY_SCORE_MAX / (1.0 * board->history_max);
-		if (move_list->list[move_list->num].score > HISTORY_SCORE_MAX)
-		{
-			printf("Higher than bound score: %d history val:%d max:%d\n\r", move_list->list[move_list->num].score, board->history[from][to], board->history_max);
-		}
-	}
-	*/
+	
 	move_list->num++; //Increment counter
 }
 
