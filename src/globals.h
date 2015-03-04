@@ -163,6 +163,8 @@ typedef struct
 	int age; //Number of irreversible moves made
 	long hash_probes;
 	long hash_hits;
+	long pawn_hash_probes;
+	long pawn_hash_hits;
 
 	int best_index[MAX_MOVE_LIST_LENGTH];
 	int beta_cutoff_index[MAX_MOVE_LIST_LENGTH];
@@ -352,8 +354,6 @@ extern int Is_Checking_Move(int move_num, BOARD_STRUCT *board);
 extern void Print_Move(MOVE_STRUCT *move);
 extern char* UCI_Move_String(MOVE_STRUCT *move);
 
-//movegen
-
 //movelist
 extern void Sort_Moves(MOVE_LIST_STRUCT *move_list);
 extern void Copy_Move(MOVE_STRUCT *move1, MOVE_STRUCT *move2);
@@ -361,6 +361,7 @@ extern int Get_Capture_Moves(MOVE_LIST_STRUCT *move_list);
 extern void Get_Next_Move(int num, MOVE_LIST_STRUCT *move_list); 
 extern void Get_Next_Capture_Move(int num, MOVE_LIST_STRUCT *move_list);
 extern void Add_Move(MOVE_LIST_STRUCT *move_list, int from, int to, int piece, int capture, int special, int score, BOARD_STRUCT *board);
+extern void Find_Best_Recapture(MOVE_LIST_STRUCT *movelist, BOARD_STRUCT *board);
 extern int Movelists_Identical(MOVE_LIST_STRUCT *ptr1, MOVE_LIST_STRUCT *ptr2);
 extern void Clear_Movelist(MOVE_LIST_STRUCT *ptr);
 extern void Print_Move_List(MOVE_LIST_STRUCT *move_list);
@@ -381,7 +382,7 @@ extern void Print_PV_List(PV_LIST_STRUCT *pv_list);
 extern void Get_PV_Line(int depth, PV_LIST_STRUCT *pv_list, BOARD_STRUCT *board);
 
 //search
-extern int Iterative_Deepening(int depth, BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info);
+extern int Search_Root(int alpha, int beta, int depth, BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info);
 extern int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info);
 extern int Quiescent_Search(int alpha, int beta, BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info);
 extern int Search_Position(BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info);
@@ -389,8 +390,7 @@ extern void Internal_Iterative_Deepening(int alpha, int beta, int depth, MOVE_LI
 
 //search_info
 extern void Clear_Search_Info(SEARCH_INFO_STRUCT *info);
-extern void Print_Move_Index_Data(SEARCH_INFO_STRUCT *info);
-
+extern void Calc_Move_Index_Data(SEARCH_INFO_STRUCT *info, float *best, float *beta);
 
 //search_test
 extern void Search_Test(void);

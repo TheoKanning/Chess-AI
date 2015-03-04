@@ -31,6 +31,7 @@ int main()
 	cout << PROGRAM_NAME << " version " << VERSION_NO << endl << AUTHOR << endl;
 	Init_Hashkeys();
 	Clear_Hash_Table();
+	Clear_Pawn_Hash_Table();
 	Init_Pawn_Masks();
 	Init_Board(&board);
 	Generate_Magic_Moves();

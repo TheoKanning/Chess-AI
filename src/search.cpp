@@ -67,7 +67,8 @@ int Search_Position(BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info)
 		}
 		else //No aspiration window
 		{
-			score = Alpha_Beta(-INF, INF, currentDepth, PV, board, info);
+			//score = Alpha_Beta(-INF, INF, currentDepth, PV, board, info);
+			score = Search_Root(-INF, INF, currentDepth, board, info);
 		}
 
 		if (info->stopped == 1) {
@@ -122,44 +123,130 @@ int Search_Position(BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info)
 	return 1;
 }
 
-
-//Calls search functions at increasing depths
-int Iterative_Deepening(int depth, BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info)
+//Root node search
+int Search_Root(int alpha, int beta, int depth, BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info)
 {
-	int i, score;
-	score = 0;
-	time_t start, stop;
-	PV_LIST_STRUCT pv_list;
+	int move;
+	int best_score = -INF;
+	int best_move = 0;
+	int score = -MATE_SCORE; //Set in case no moves are available
+	MOVE_LIST_STRUCT move_list;
+	int current_move;
+	int current_move_score;
+	HASH_ENTRY_STRUCT hash_entry;
+	hash_entry.move = 0;
+	int valid = 0;
+	int best_move_index = 0;
 
-	info->start_time = Get_Time_Ms();
-	info->stop_time = 10000000;
-	info->stopped = 0;
-
-	for (i = 1; i <= depth; i++) //Search at each depth
+	info->nodes++;
+	//Check for timeout
+	if ((info->nodes & 4095) == 0) //every 4096 nodes
 	{
-		info->nodes = 0;
-		info->hash_hits = 0;
-		time(&start);
-		score = Alpha_Beta(-INF, INF, i, NOT_PV, board, info);
-		time(&stop);
+		if ((info->time_set) && (Get_Time_Ms() > info->stop_time - 40)) //Could be reduced to 10 ms
+		{
+			info->stopped = 1;
+			return 0;
+		}
+		ReadInput(info); //Check for input
+	}
+
+	/***** Check hash table *****/
+	info->hash_probes++;
+	int value = Get_Dual_Hash_Entry(board->hash_key, alpha, beta, depth, board->hply, &hash_entry.move);
+	if (hash_entry.move != 0) info->hash_hits++; //Count hash hit as long as a move if found
+
+	/***** Move generation *****/
+	Magic_Generate_Moves(board, &move_list);
+
+	if (!Find_PV_Move(hash_entry.move, &move_list)) //If hash move not found
+	{
+		/***** Internal Iterative Deepening *****/
+		/* This funtion is almost never called, but it's an insurance measure just in case*/
+		if (depth >= 5
+			&& info->null_available)
+		{
+			Internal_Iterative_Deepening(alpha, beta, depth, &move_list, board, info);
+		}
+	}
+
+
+	/***** Search *****/
+	for (move = 0; move < move_list.num; move++) //For all moves in list
+	{
+		/***** Get best move *****/
+		Get_Next_Move(move, &move_list);//Moves next move into move_index position
+		current_move = move_list.list[move].move;
+		current_move_score = move_list.list[move].score;
+
+		if (current_move == 0) break; //End if no moves are available
+
+		//if (current_move == hash_entry.move) continue;
+
+		if (!Make_Move(current_move, board)) continue;//If move is unsuccessful, try next move
 		
-		//Print Data
-		cout << "Depth:" << i << " ";
-		Get_PV_Line(i, &pv_list, board);
-		Print_PV_List(&pv_list);
-		cout << " Score:" << score/100.0 << " Time:" << stop - start << " seconds Nodes: " << info->nodes << " Hits: " << info->hash_hits << endl;
-		cout << "Nodes/sec: " << info->nodes * 1000 / (Get_Time_Ms() - info->start_time) << endl;
-	}
-	//If checkmate found
-	if (score == INF)
-	{
-		cout << "Black Checkmated" << endl;
-	}
-	else if (score == -INF)
-	{
-		cout << "White Checkmated" << endl;
-	}
-	return 1;
+		/***** Principal Variation Search *****/
+		if (move == 0) //If first move, use full window
+		{
+			score = -Alpha_Beta(-beta, -alpha, depth - 1, PV, board, info);
+		}
+		else //If not first move
+		{
+			score = -Alpha_Beta(-alpha - 1, -alpha, depth - 1, NOT_PV, board, info); //Full window search
+			if (score > alpha)
+			{
+				score = -Alpha_Beta(-beta, -alpha, depth - 1, PV, board, info);
+			}
+		}
+
+		Take_Move(board);
+
+		//Check if search ended while searching
+		if (info->stopped)
+		{
+			return 0;
+		}
+
+		//Update beta, storing hash entry if cutoff is found
+		if (score >= beta)
+		{
+			//Store hash entry
+			Fill_Hash_Entry(info->age, depth, score, HASH_LOWER, board->hash_key, current_move, &hash_entry);
+			Add_Dual_Hash_Entry(&hash_entry, board->hply, info);
+
+			//Update best move index
+			info->beta_cutoff_index[move]++;
+
+			//if move is not a capture or promotion
+			if (current_move_score <= KILLER_MOVE_SCORE)
+			{
+				Add_Killer_Move(current_move, board); //Store killer move
+				//Add_History_Move(current_move, board); //Store move in history array
+			}
+			return score; //Beta cutoff
+		}
+		//Update best score and best move for hash entry later
+		if (score > best_score)
+		{
+			//Update alpha
+			if (score > alpha)
+			{
+				alpha = score;
+				//Add_History_Move(current_move, board); //Store move in history array
+			}
+			best_score = score;
+			best_move_index = move;
+			best_move = current_move;
+		}
+	} //End looping through all moves
+
+	//Store hash entry
+	Fill_Hash_Entry(info->age, depth, best_score, HASH_EXACT, board->hash_key, best_move, &hash_entry);
+	Add_Dual_Hash_Entry(&hash_entry, board->hply, info);
+	
+	//Update best_index
+	info->best_index[best_move_index]++;
+
+	return best_score;
 }
 
 //Alpha beta implementation in negamax search
@@ -168,7 +255,7 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 	int move;
 	int moves_searched = 0; //Number of legal moves searched (not futility pruned)
 	int moves_made = 0; //Number of legal moves
-	int raised_alpha = FALSE; 
+	int raised_alpha = false; 
 	int alpha_orig = alpha;
 	int best_score = -INF;
 	int best_move = 0;
@@ -230,7 +317,6 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 	if (hash_entry.move != 0) info->hash_hits++; //Count hash hit as long as a move if found
 	if (value != INVALID) 
 	{
-		ASSERT(abs(value) <= MATE_SCORE)
 		if (!is_pv || (value > alpha && value < beta)) //Only return exact values in pv line
 		{
 				return value; 
@@ -279,7 +365,6 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 		score = -Alpha_Beta(-beta, -beta + 1, depth - 3, NOT_PV, board, info); //Subtract an additional 2 ply from depth
 		Take_Null_Move(board);
 		info->null_available = 1;
-		ASSERT(abs(score) <= MATE_SCORE)
 		if (score >= beta && !IS_MATE(score)) return score;
 	}
 
@@ -307,7 +392,7 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 			Internal_Iterative_Deepening(alpha, beta, depth, &move_list, board, info);
 		}
 	}
-	
+	//Find_Best_Recapture(&move_list, board);
 
 	/***** Search *****/
 	for (move = 0; move < move_list.num; move++) //For all moves in list

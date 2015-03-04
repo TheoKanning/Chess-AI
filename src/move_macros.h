@@ -70,6 +70,7 @@
 #define UNDER_PROMOTE_SCORE		500000
 #define KILLER_MOVE_SCORE		400000
 #define HISTORY_SCORE_MAX		100000
+#define RECAPTURE_BONUS			10		//Number to add to moves capturing last moved piece
 #define GET_MMVLVA_SCORE(x,y)	(CAPTURE_SCORE + MMV_SCORES[x] + LVA_SCORES[y])
 #define IS_KILLER(score)		(score > KILLER_MOVE_SCORE - 4 && score <= KILLER_MOVE_SCORE)
 

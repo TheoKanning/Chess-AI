@@ -75,6 +75,10 @@ void Search_Test(void)
 	int pos_nodes;
 	float pos_branching_factor;
 	int pos_hit_rate;
+	float best_index = 0;
+	float beta_index = 0;
+	float best_index_total = 0;
+	float beta_index_total = 0;
 	int prev_nodes;
 	int depth;
 
@@ -133,10 +137,14 @@ void Search_Test(void)
 		total_depth += depth - 1;
 		total_nps += 1000 * (pos_nodes / ((depth_finish_time - info.start_time)));
 		total_hit_rate += pos_hit_rate;
-		Print_Move_Index_Data(&info);
+		Calc_Move_Index_Data(&info, &best_index, &beta_index);
+		best_index_total += best_index;
+		beta_index_total += beta_index;
+		printf("Average Indices: Best Move:%f Beta Cutoff:%f\n", best_index, beta_index);
 
 	}
 
 	//Summary of all positions
-	printf("\nSummary Averages:\nDepth:%f NPS:%d Branching:%f HR:%d\n\n", total_depth / NUM_POSITIONS, total_nps / NUM_POSITIONS, total_branching_factor / NUM_POSITIONS, total_hit_rate / NUM_POSITIONS);
+	printf("\nSummary Averages:\nDepth:%f NPS:%d Branching:%f HR:%d\n", total_depth / NUM_POSITIONS, total_nps / NUM_POSITIONS, total_branching_factor / NUM_POSITIONS, total_hit_rate / NUM_POSITIONS);
+	printf("Average Indices: Best Move:%f Beta Cutoff:%f\n\n", best_index_total / NUM_POSITIONS, beta_index_total / NUM_POSITIONS);
 }

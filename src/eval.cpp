@@ -75,11 +75,14 @@ int Get_Pawn_Eval_Score(BOARD_STRUCT *board)
 {
 	int sq64;
 	int score = 0;
+	int hash_score = 0;
 	const U64 white_pawns = board->piece_bitboards[wP];
 	const U64 black_pawns = board->piece_bitboards[bP];
 	const U64 all_pawns = white_pawns | black_pawns;
 
 	//Check hash table for stored score (added later)
+	hash_score = Get_Pawn_Hash_Entry(board->pawn_hash_key);
+	if (hash_score != INVALID)	return hash_score;
 
 	//White pawns
 	U64 temp = white_pawns;
@@ -115,6 +118,7 @@ int Get_Pawn_Eval_Score(BOARD_STRUCT *board)
 	}
 
 	//Store in hash table (added later)
+	Add_Pawn_Hash_Entry(score, board->pawn_hash_key);
 
 	return score;
 }

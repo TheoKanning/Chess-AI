@@ -20,8 +20,8 @@ void Clear_Search_Info(SEARCH_INFO_STRUCT *info)
 	memset(info->beta_cutoff_index, 0, MAX_MOVE_LIST_LENGTH*sizeof(int));
 }
 
-//Prints move index info
-void Print_Move_Index_Data(SEARCH_INFO_STRUCT *info)
+//Calculates move index info
+void Calc_Move_Index_Data(SEARCH_INFO_STRUCT *info, float *best, float *beta)
 {
 	//Calculate average best move index
 	float best_temp = 0;
@@ -37,5 +37,6 @@ void Print_Move_Index_Data(SEARCH_INFO_STRUCT *info)
 		beta_total += info->beta_cutoff_index[i];
 	}
 
-	printf("Average Indices: Best Move:%f Beta Cutoff:%f\n", best_temp / best_total, beta_temp/beta_total);
+	*best = best_temp / best_total;
+	*beta = beta_temp / beta_total;
 }

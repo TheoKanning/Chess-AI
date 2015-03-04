@@ -25,7 +25,7 @@ void Get_Next_Move(int num, MOVE_LIST_STRUCT *move_list)
 	MOVE_STRUCT temp;
 	Copy_Move(&move_list->list[num], &temp);
 	Copy_Move(&move_list->list[high_index], &move_list->list[num]);
-	Copy_Move(&temp, &move_list->list[high_index]);
+Copy_Move(&temp, &move_list->list[high_index]);
 }
 
 //Finds highest scoring capture move in list, sets its score to -1, then returns its move integer
@@ -106,6 +106,39 @@ int Get_Capture_Moves(MOVE_LIST_STRUCT *move_list)
 	move_list->num = count;
 	if (count == 0) return 0;
 	return 1;
+}
+
+//Assigns a bonus to recapturing the last moved piece with the weakest attacker
+void Find_Best_Recapture(MOVE_LIST_STRUCT *movelist, BOARD_STRUCT *board)
+{
+	//Exit if first move
+	if (board->undo_list.num == 0) return;
+
+	//Target of last move
+	int to = GET_TO_SQ(board->undo_list.list[board->undo_list.num].move_num);
+
+	//Loop through all moves and find weakest attacker targeting to square
+	int move_index = -1;
+	int move_num = 0;
+	int piece_value = piece_values[wK] + 1;
+	for (int i = 0; i < movelist->num; i++)
+	{
+		move_num = movelist->list[i].move;
+		if (to == GET_TO_SQ(move_num) 
+			&& piece_values[GET_PIECE(move_num)] < piece_value
+			&& movelist->list[i].score != PV_SCORE)
+		{
+			move_index = i;
+			piece_value = piece_values[GET_PIECE(move_num)];
+		}
+	}
+
+	if (move_index != -1)
+	{
+		movelist->list[move_index].score += RECAPTURE_BONUS;
+	}
+
+
 }
 
 //Copies move 1 into move 2 pointer
