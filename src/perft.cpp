@@ -45,7 +45,7 @@ int Search(BOARD_STRUCT *board, int depth)
 	}
 
 	//Generate all moves
-	Magic_Generate_Moves(board, &move_list);
+	Generate_Moves(board, &move_list);
 
 	//For each move
 	for (index = 0; index < move_list.num; index++)

@@ -51,6 +51,8 @@ Version Notes:
 	 - Full window search until alpha is raised
 2.00 - Magic bitboard generation
 	 - All 120 index data removed
+	 - Pawn hash added
+	 - Streamlined settings
 
 
 

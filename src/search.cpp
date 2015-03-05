@@ -153,11 +153,11 @@ int Search_Root(int alpha, int beta, int depth, BOARD_STRUCT *board, SEARCH_INFO
 
 	/***** Check hash table *****/
 	info->hash_probes++;
-	int value = Get_Dual_Hash_Entry(board->hash_key, alpha, beta, depth, board->hply, &hash_entry.move);
+	int value = Get_Hash_Entry(board->hash_key, alpha, beta, depth, board->hply, &hash_entry.move);
 	if (hash_entry.move != 0) info->hash_hits++; //Count hash hit as long as a move if found
 
 	/***** Move generation *****/
-	Magic_Generate_Moves(board, &move_list);
+	Generate_Moves(board, &move_list);
 
 	if (!Find_PV_Move(hash_entry.move, &move_list)) //If hash move not found
 	{
@@ -212,7 +212,7 @@ int Search_Root(int alpha, int beta, int depth, BOARD_STRUCT *board, SEARCH_INFO
 		{
 			//Store hash entry
 			Fill_Hash_Entry(info->age, depth, score, HASH_LOWER, board->hash_key, current_move, &hash_entry);
-			Add_Dual_Hash_Entry(&hash_entry, board->hply, info);
+			Store_Hash_Entry(&hash_entry, board->hply, info);
 
 			//Update best move index
 			info->beta_cutoff_index[move]++;
@@ -241,7 +241,7 @@ int Search_Root(int alpha, int beta, int depth, BOARD_STRUCT *board, SEARCH_INFO
 
 	//Store hash entry
 	Fill_Hash_Entry(info->age, depth, best_score, HASH_EXACT, board->hash_key, best_move, &hash_entry);
-	Add_Dual_Hash_Entry(&hash_entry, board->hply, info);
+	Store_Hash_Entry(&hash_entry, board->hply, info);
 	
 	//Update best_index
 	info->best_index[best_move_index]++;
@@ -313,7 +313,7 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 
 	/***** Check hash table *****/
 	info->hash_probes++;
-	int value = Get_Dual_Hash_Entry(board->hash_key, alpha, beta, depth, board->hply, &hash_entry.move);
+	int value = Get_Hash_Entry(board->hash_key, alpha, beta, depth, board->hply, &hash_entry.move);
 	if (hash_entry.move != 0) info->hash_hits++; //Count hash hit as long as a move if found
 	if (value != INVALID) 
 	{
@@ -362,7 +362,7 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 	{
 		info->null_available = 0;
 		Make_Null_Move(board);
-		score = -Alpha_Beta(-beta, -beta + 1, depth - 3, NOT_PV, board, info); //Subtract an additional 2 ply from depth
+		score = -Alpha_Beta(-beta, -beta + 1, depth - 1 - null_move_R, NOT_PV, board, info); //Subtract an additional 2 ply from depth
 		Take_Null_Move(board);
 		info->null_available = 1;
 		if (score >= beta && !IS_MATE(score)) return score;
@@ -370,7 +370,7 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 
 	/***** Futility Pruning *****/
 	/* Here we determine if this node is elegible for futility pruning */
-	if (depth <= 5
+	if (depth <= 2
 		&& use_futility
 		&& !is_pv
 		&& !in_check
@@ -379,7 +379,7 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 		f_prune_allowed = 1;
 
 	/***** Move generation *****/
-	Magic_Generate_Moves(board, &move_list);
+	Generate_Moves(board, &move_list);
 	
 	if (!Find_PV_Move(hash_entry.move, &move_list)) //If hash move not found
 	{
@@ -452,14 +452,14 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 			if (moves_made >= LATE_MOVE_NUM
 				&& use_late_move_reduction
 				&& !in_check
-				&& !is_pv
+				&& (!is_pv || use_lmr_in_pv)
 				&& CAN_REDUCE(current_move)
 				&& depth >= REDUCTION_LIMIT
 				&& !IS_KILLER(move_list.list[move].score)
 				&& !checking_move)
 			{
-				//if (moves_made >= 10 && depth > 2) reduction_depth = 2; //On tenth move and beyond
-				reduction_depth = 1;
+				if (use_extra_lmr && moves_made >= 10 && depth > 2) reduction_depth = 2; //On tenth move and beyond
+				else reduction_depth = 1;
 
 				if (!raised_alpha) //PV search
 				{
@@ -508,7 +508,7 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 		{
 			//Store hash entry
 			Fill_Hash_Entry(info->age, depth, score, HASH_LOWER, board->hash_key, current_move, &hash_entry);
-			Add_Dual_Hash_Entry(&hash_entry, board->hply, info);
+			Store_Hash_Entry(&hash_entry, board->hply, info);
 
 			//Update best move index
 			info->beta_cutoff_index[move]++;
@@ -544,12 +544,12 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 			//Store in table
 			best_score = -MATE_SCORE + board->hply;
 			Fill_Hash_Entry(info->age, depth, best_score, HASH_EXACT, board->hash_key, 0, &hash_entry);
-			Add_Dual_Hash_Entry(&hash_entry, board->hply, info);
+			Store_Hash_Entry(&hash_entry, board->hply, info);
 			return best_score; //Losing checkmate
 		}
 		//Store in table
 		Fill_Hash_Entry(info->age, depth, 0, HASH_EXACT, board->hash_key, 0, &hash_entry);
-		Add_Dual_Hash_Entry(&hash_entry, board->hply, info);
+		Store_Hash_Entry(&hash_entry, board->hply, info);
 		return 0; //Draw
 	}
 
@@ -562,13 +562,13 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 	{
 		//Store hash entry
 		Fill_Hash_Entry(info->age, depth, best_score, HASH_EXACT, board->hash_key, best_move, &hash_entry);
-		Add_Dual_Hash_Entry(&hash_entry, board->hply, info);
+		Store_Hash_Entry(&hash_entry, board->hply, info);
 	}
 	else
 	{
 		//Store hash entry
 		Fill_Hash_Entry(info->age, depth, best_score, HASH_UPPER, board->hash_key, best_move, &hash_entry);
-		Add_Dual_Hash_Entry(&hash_entry, board->hply, info);
+		Store_Hash_Entry(&hash_entry, board->hply, info);
 	}
 
 	//Update best_index
@@ -610,7 +610,7 @@ int Quiescent_Search(int alpha, int beta, BOARD_STRUCT *board, SEARCH_INFO_STRUC
 	if (score > alpha) alpha = score;
 
 
-	Magic_Generate_Capture_Promote_Moves(board, &move_list);
+	Generate_Capture_Promote_Moves(board, &move_list);
 
 	for (move = 0; move < move_list.num; move++) //For all moves in list
 	{

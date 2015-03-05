@@ -77,7 +77,7 @@ int main()
 		else if (!strncmp(line, "see", 3))	{
 			Parse_Fen(SEE_TEST_FEN3, &board);
 			Print_Board(&board);
-			Magic_Generate_Moves(&board, &move_list);
+			Generate_Moves(&board, &move_list);
 			for (int i = 0; i < move_list.num; i++)
 			{
 				if (IS_CAPTURE(move_list.list[i].move))
@@ -105,7 +105,7 @@ int main()
 	Print_Board(&board);
 	while (!done)
 	{
-		Magic_Generate_Moves(&board, &move_list);
+		Generate_Moves(&board, &move_list);
 		Sort_Moves(&move_list);
 		Print_Move_List(&move_list);
 

@@ -185,7 +185,7 @@ int Parse_Move(char *ptrChar, BOARD_STRUCT *board) {
 	ASSERT(ON_BOARD(from) && ON_BOARD(to));
 
 	MOVE_LIST_STRUCT move_list;
-	Magic_Generate_Moves(board, &move_list);
+	Generate_Moves(board, &move_list);
 
 	int index = 0;
 	int move_num = 0;

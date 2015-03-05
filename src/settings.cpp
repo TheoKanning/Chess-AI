@@ -6,10 +6,13 @@
 #include "globals.h"
 
 /***** Settings *****/
-int use_SEE = 1;
+int use_SEE = 0;
 int use_aspiration_window = 0;
 int use_history = 0;
+int use_lmr_in_pv = 0;
+int use_extra_lmr = 0;
 int use_null_window_first = 0;
+int null_move_R = 2; //Amount to reduce null move search
 int use_futility = 1;
 int use_late_move_reduction = 1;
 
@@ -57,7 +60,7 @@ void Set_Option(char * line)
 		int value = 0;
 		sscanf_s(line, "%*s %*s %*s %*s %d", &value);
 		printf("Set SEE to %d\n", value);
-		use_SEE = value * 10;
+		use_SEE = value;
 	}
 	//Aspiration window size
 	else if (!strncmp(line, "setoption name aspiration", 24)) {
@@ -81,5 +84,26 @@ void Set_Option(char * line)
 		sscanf_s(line, "%*s %*s %*s %*s %d", &value);
 		printf("Set history to %d\n", value);
 		use_history = value;
+	}
+	//LMR in pv nodes
+	else if (!strncmp(line, "setoption name lmr_in_pv", 23)) {
+		int value = 0;
+		sscanf_s(line, "%*s %*s %*s %*s %d", &value);
+		printf("Set lmr_in_pv to %d\n", value);
+		use_lmr_in_pv = value;
+	}
+	//Extra lmr after move 10
+	else if (!strncmp(line, "setoption name extra_lmr", 23)) {
+		int value = 0;
+		sscanf_s(line, "%*s %*s %*s %*s %d", &value);
+		printf("Set extra_lmr to %d\n", value);
+		use_extra_lmr = value;
+	}
+	//Null move depth reduction
+	else if (!strncmp(line, "setoption name null_move_R", 25)) {
+		int value = 0;
+		sscanf_s(line, "%*s %*s %*s %*s %d", &value);
+		printf("Set lmr_in_pv to %d\n", value);
+		null_move_R = value;
 	}
 }

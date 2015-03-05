@@ -255,7 +255,6 @@ extern void Add_To_Piecelists(int piece, int square, BOARD_STRUCT *board);
 extern void Remove_From_Piecelists(int piece, int square, BOARD_STRUCT *board);
 extern void Parse_Fen(char *fen, BOARD_STRUCT *board);
 extern void Clear_Undo_List(BOARD_STRUCT *board);
-extern int  Is_Threefold_Repetition(BOARD_STRUCT *board);
 extern int Is_Repetition(BOARD_STRUCT *board);
 extern int Is_Material_Draw(BOARD_STRUCT *board);
 extern void Check_Board(BOARD_STRUCT *board);
@@ -297,8 +296,8 @@ extern void Init_Pawn_Masks(void);
 extern void Init_Hashkeys(void);
 extern void Clear_Hash_Table(void);
 extern void Compute_Hash(BOARD_STRUCT *board);
-extern void Add_Dual_Hash_Entry(HASH_ENTRY_STRUCT *hash_ptr, int ply, SEARCH_INFO_STRUCT *info);
-extern int  Get_Dual_Hash_Entry(U64 hash, int alpha, int beta, int depth, int ply, int * hash_move);
+extern void Store_Hash_Entry(HASH_ENTRY_STRUCT *hash_ptr, int ply, SEARCH_INFO_STRUCT *info);
+extern int  Get_Hash_Entry(U64 hash, int alpha, int beta, int depth, int ply, int * hash_move);
 extern void Fill_Hash_Entry(int age, int depth, int eval, int flag, U64 hash, int move, HASH_ENTRY_STRUCT *hash_ptr);
 
 //history
@@ -335,8 +334,8 @@ extern void Generate_Magic_Moves(void);
 //magic_movegen
 extern U64 Rook_Attacks(U64 occ, int sq);
 extern U64 Bishop_Attacks(U64 occ, int sq);
-extern void Magic_Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *list);
-extern void Magic_Generate_Capture_Promote_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *move_list);
+extern void Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *list);
+extern void Generate_Capture_Promote_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *move_list);
 
 //makemove
 extern int Make_Move(int move_num, BOARD_STRUCT *board);
@@ -396,7 +395,10 @@ extern void Set_Quiescent_SEE_Scores(MOVE_LIST_STRUCT *move_list, BOARD_STRUCT *
 extern int use_SEE;
 extern int use_aspiration_window;
 extern int use_history;
+extern int use_lmr_in_pv;
+extern int use_extra_lmr;
 extern int use_null_window_first;
+extern int null_move_R;
 extern int use_futility;
 extern int use_late_move_reduction;
 extern void Set_Option(char *line);

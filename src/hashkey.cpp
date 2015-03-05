@@ -81,7 +81,7 @@ void Compute_Hash(BOARD_STRUCT *board)
 }
 
 //Adds an entry to the two-tiered hash table
-void Add_Dual_Hash_Entry(HASH_ENTRY_STRUCT *hash_ptr, int ply, SEARCH_INFO_STRUCT *info)
+void Store_Hash_Entry(HASH_ENTRY_STRUCT *hash_ptr, int ply, SEARCH_INFO_STRUCT *info)
 {
 	int hash_index = hash_ptr->hash % DUAL_HASH_SIZE;
 
@@ -101,7 +101,7 @@ void Add_Dual_Hash_Entry(HASH_ENTRY_STRUCT *hash_ptr, int ply, SEARCH_INFO_STRUC
 }
 
 //Returns the value of probing the dual hash table
-int Get_Dual_Hash_Entry(U64 hash, int alpha, int beta, int depth, int ply, int * hash_move)
+int Get_Hash_Entry(U64 hash, int alpha, int beta, int depth, int ply, int * hash_move)
 {
 	//Get hash data
 	HASH_ENTRY_STRUCT *hash_temp = &dual_hash_table[0][hash % DUAL_HASH_SIZE];

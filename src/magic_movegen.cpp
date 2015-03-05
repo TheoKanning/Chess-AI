@@ -28,7 +28,7 @@ void Add_Slider_Piece_Moves(int piece, int from, U64 occ, MOVE_LIST_STRUCT *move
 }
 
 //Generates all moves using magic bitboards
-void Magic_Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *move_list)
+void Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *move_list)
 {
 	int capture, from, to;
 	const int side = board->side; //Store side to move
@@ -553,7 +553,7 @@ void Magic_Generate_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *move_list)
 }
 
 //Generates capture and promote moves using magic bitboards
-void Magic_Generate_Capture_Promote_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *move_list)
+void Generate_Capture_Promote_Moves(BOARD_STRUCT *board, MOVE_LIST_STRUCT *move_list)
 {
 	int capture, from, to;
 	const int side = board->side; //Store side to move
