@@ -8,8 +8,8 @@
 #define START_MATERIAL			8000
 #define START_BIG_MATERIAL		6400
 
-#define ISOLATED_PAWN_SCORE	   -15
-#define DOUBLED_PAWN_SCORE		5	//This is counted once for each pawn
+#define ISOLATED_PAWN_PENALTY  -15
+#define DOUBLED_PAWN_PENALTY   -5	//This is counted once for each pawn
 
 #define PAWN_SHIELD_SCORE		10	//Score for each pawn in front of the king
 
@@ -80,10 +80,6 @@ int Get_Pawn_Eval_Score(BOARD_STRUCT *board)
 	const U64 black_pawns = board->piece_bitboards[bP];
 	const U64 all_pawns = white_pawns | black_pawns;
 
-	//Check hash table for stored score (added later)
-	hash_score = Get_Pawn_Hash_Entry(board->pawn_hash_key);
-	if (hash_score != INVALID)	return hash_score;
-
 	//White pawns
 	U64 temp = white_pawns;
 	while(temp) //loop through all white pawns
@@ -94,10 +90,10 @@ int Get_Pawn_Eval_Score(BOARD_STRUCT *board)
 		if ((black_pawns & white_passed_masks[sq64]) == 0) score += passed_pawn_rank_bonus[GET_RANK(sq64)];
 		
 		//if no white pawns in isolated mask area
-		if ((white_pawns & isolated_masks[sq64]) == 0) score += ISOLATED_PAWN_SCORE;
+		if ((white_pawns & isolated_masks[sq64]) == 0) score += ISOLATED_PAWN_PENALTY;
 
 		//If a white pawn is found in the same file
-		if ((white_pawns & doubled_masks[sq64]) != 0) score -= DOUBLED_PAWN_SCORE;
+		if ((white_pawns & doubled_masks[sq64]) != 0) score += DOUBLED_PAWN_PENALTY;
 	}
 
 
@@ -111,14 +107,11 @@ int Get_Pawn_Eval_Score(BOARD_STRUCT *board)
 		if ((white_pawns & black_passed_masks[sq64]) == 0)	score -= passed_pawn_rank_bonus[RANK_8 - GET_RANK(sq64)];
 		
 		//if no black pawns in isolated mask area
-		if ((black_pawns & isolated_masks[sq64]) == 0) score -= ISOLATED_PAWN_SCORE;
+		if ((black_pawns & isolated_masks[sq64]) == 0) score -= ISOLATED_PAWN_PENALTY;
 
 		//If a black pawn is found in the same file
-		if ((black_pawns & doubled_masks[sq64]) != 0) score += DOUBLED_PAWN_SCORE;
+		if ((black_pawns & doubled_masks[sq64]) != 0) score -= DOUBLED_PAWN_PENALTY;
 	}
-
-	//Store in hash table (added later)
-	Add_Pawn_Hash_Entry(score, board->pawn_hash_key);
 
 	return score;
 }
@@ -248,7 +241,7 @@ int Get_Pawn_And_King_Score(BOARD_STRUCT *board)
 {
 	//Check hash table
 	int hash_score = Get_Pawn_Hash_Entry(board->pawn_hash_key);
-	//if (hash_score != INVALID) return hash_score;
+	if (hash_score != INVALID) return hash_score;
 
 	//Calculate scores and store hash data
 	int score = Get_Pawn_Eval_Score(board);

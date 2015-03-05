@@ -487,7 +487,7 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 					score = -Alpha_Beta(-alpha - 1, -alpha, depth - 1, NOT_PV, board, info); //Null window search
 
 					//If move improves alpha but does not cause a cutoff, and if not in a null search already
-					if (alpha < score && beta > score)
+					if ((is_pv || !only_research_in_pv) && alpha < score && beta > score && (beta - alpha > 1))
 					{
 						score = -Alpha_Beta(-beta, -alpha, depth - 1, PV, board, info);
 					}

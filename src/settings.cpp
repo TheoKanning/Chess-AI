@@ -9,6 +9,7 @@
 int use_SEE = 0;
 int use_aspiration_window = 0;
 int use_history = 0;
+int only_research_in_pv = 0;
 int use_lmr_in_pv = 0;
 int use_extra_lmr = 0;
 int use_null_window_first = 0;
@@ -105,5 +106,12 @@ void Set_Option(char * line)
 		sscanf_s(line, "%*s %*s %*s %*s %d", &value);
 		printf("Set lmr_in_pv to %d\n", value);
 		null_move_R = value;
+	}
+	//Only research after null windows in pv
+	else if (!strncmp(line, "setoption name only_research_in_pv", 38)) {
+		int value = 0;
+		sscanf_s(line, "%*s %*s %*s %*s %d", &value);
+		printf("Set only_research_in_pv to %d\n", value);
+		only_research_in_pv = value;
 	}
 }
