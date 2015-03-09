@@ -360,9 +360,12 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 	&& !in_check 
 	&& (board->big_material[board->side] >= 950))
 	{
-		info->null_available = 0;
+		int R = null_move_R;
+		if(adapt_null_move) R = max(null_move_R, 1 + depth / 3);
+
+		info->null_available = mult_null_move;
 		Make_Null_Move(board);
-		score = -Alpha_Beta(-beta, -beta + 1, depth - 1 - null_move_R, NOT_PV, board, info); //Subtract an additional 2 ply from depth
+		score = -Alpha_Beta(-beta, -beta + 1, depth - 1 - R, NOT_PV, board, info); //Subtract an additional 2 ply from depth
 		Take_Null_Move(board);
 		info->null_available = 1;
 		if (score >= beta && !IS_MATE(score)) return score;

@@ -400,6 +400,8 @@ extern int use_lmr_in_pv;
 extern int use_extra_lmr;
 extern int use_null_window_first;
 extern int null_move_R;
+extern int mult_null_move; 
+extern int adapt_null_move;
 extern int use_futility;
 extern int use_late_move_reduction;
 extern void Set_Option(char *line);

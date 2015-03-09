@@ -14,6 +14,8 @@ int use_lmr_in_pv = 0;
 int use_extra_lmr = 0;
 int use_null_window_first = 1;
 int null_move_R = 2; //Amount to reduce null move search
+int adapt_null_move = 0; //Use adaptive reduction based on depth
+int mult_null_move = 0; //Whether or not to do a null move search within a null move search
 int use_futility = 1;
 int use_late_move_reduction = 1;
 
@@ -104,8 +106,22 @@ void Set_Option(char * line)
 	else if (!strncmp(line, "setoption name null_move_R", 25)) {
 		int value = 0;
 		sscanf_s(line, "%*s %*s %*s %*s %d", &value);
-		printf("Set lmr_in_pv to %d\n", value);
+		printf("Set null_move_R to %d\n", value);
 		null_move_R = value;
+	}
+	//Null move depth reduction based on search depth
+	else if (!strncmp(line, "setoption name adapt_null_move", 29)) {
+		int value = 0;
+		sscanf_s(line, "%*s %*s %*s %*s %d", &value);
+		printf("Set adapt_null_move to %d\n", value);
+		adapt_null_move = value;
+	}
+	//Null move within null move search
+	else if (!strncmp(line, "setoption name mult_null_move", 28)) {
+		int value = 0;
+		sscanf_s(line, "%*s %*s %*s %*s %d", &value);
+		printf("Set mult_null_move to %d\n", value);
+		mult_null_move = value;
 	}
 	//Only research after null windows in pv
 	else if (!strncmp(line, "setoption name only_research_in_pv", 33)) {
