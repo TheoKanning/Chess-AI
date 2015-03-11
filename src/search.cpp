@@ -462,7 +462,7 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 			{
 				if (use_extra_lmr)
 				{
-					reduction = floor(sqrt((depth - 1) / 1.5) + sqrt(move / 8.0));
+					reduction = floor(sqrt(((double)depth) / lmr_depth_mod) + sqrt(((double)move) / lmr_move_mod));
 					if (is_pv) reduction = (reduction * 2) / 3;
 				}
 				else reduction = 1;

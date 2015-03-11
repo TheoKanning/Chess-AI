@@ -14,6 +14,8 @@ int only_research_in_pv = 0;
 /* LMR */
 int use_lmr_in_pv = 1;
 int use_extra_lmr = 1;
+int lmr_depth_mod = 2;
+int lmr_move_mod = 8;
 
 /* Null Move*/
 int null_move_R = 2; //Amount to reduce null move search
@@ -99,6 +101,20 @@ void Set_Option(char * line)
 		sscanf_s(line, "%*s %*s %*s %*s %d", &value);
 		printf("Set extra_lmr to %d\n", value);
 		use_extra_lmr = value;
+	}
+	//LMR depth modifier
+	else if (!strncmp(line, "setoption name lmr_depth_mod", 27)) {
+		int value = 0;
+		sscanf_s(line, "%*s %*s %*s %*s %d", &value);
+		printf("Set lmr_depth_mod to %d\n", value);
+		lmr_depth_mod = value;
+	}
+	//LMR move modifier
+	else if (!strncmp(line, "setoption name lmr_move_mod", 26)) {
+		int value = 0;
+		sscanf_s(line, "%*s %*s %*s %*s %d", &value);
+		printf("Set lmr_move_mod to %d\n", value);
+		lmr_move_mod = value;
 	}
 	//Null move depth reduction
 	else if (!strncmp(line, "setoption name null_move_R", 25)) {
