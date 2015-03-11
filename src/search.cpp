@@ -255,7 +255,6 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 	int move;
 	int moves_searched = 0; //Number of legal moves searched (not futility pruned)
 	int moves_made = 0; //Number of legal moves
-	int raised_alpha = use_null_window_first; 
 	int alpha_orig = alpha;
 	int best_score = -INF;
 	int best_move = 0;
@@ -270,7 +269,7 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 	int valid = 0;
 	int checking_move = 0;
 	int best_move_index = 0;
-	int reduction_depth = 0;
+	int reduction = 0;
 
 	info->nodes++;
 	//Check for timeout
@@ -461,17 +460,17 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 				&& !IS_KILLER(move_list.list[move].score)
 				&& !checking_move)
 			{
-				if (use_extra_lmr && moves_made >= 10 && depth > 2) reduction_depth = 2; //On tenth move and beyond
-				else reduction_depth = 1;
+				if (use_extra_lmr)
+				{
+					reduction = floor(sqrt((depth - 1) / 1.5) + sqrt(move / 8.0));
+					if (is_pv) reduction = (reduction * 2) / 3;
+				}
+				else reduction = 1;
 
-				if (!raised_alpha) //PV search
-				{
-					score = -Alpha_Beta(-alpha, -beta, depth - 1 - reduction_depth, is_pv, board, info);
-				}
-				else //Null Window search
-				{
-					score = -Alpha_Beta(-alpha - 1, -alpha, depth - 1 - reduction_depth, NOT_PV, board, info); 
-				}
+				int new_depth = max(1,depth - reduction - 1);
+
+				//Null Window search
+				score = -Alpha_Beta(-alpha - 1, -alpha, new_depth, NOT_PV, board, info); 
 			}
 			else
 			{
@@ -481,20 +480,15 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 			/***** Principal Variation Search *****/
 			if (score > alpha) //Continue if reduced search is improvement
 			{
-				if (!raised_alpha)
-				{
-					score = -Alpha_Beta(-beta, -alpha, depth - 1, is_pv, board, info); //Full window search
-				}
-				else //Look for refutation in null window
-				{
-					score = -Alpha_Beta(-alpha - 1, -alpha, depth - 1, NOT_PV, board, info); //Null window search
+				//Look for refutation in null window
+				score = -Alpha_Beta(-alpha - 1, -alpha, depth - 1, NOT_PV, board, info); //Null window search
 
-					//If move improves alpha but does not cause a cutoff, and if not in a null search already
-					if ((is_pv || !only_research_in_pv) && alpha < score && beta > score && (beta - alpha > 1))
-					{
-						score = -Alpha_Beta(-beta, -alpha, depth - 1, PV, board, info);
-					}
+				//If move improves alpha but does not cause a cutoff, and if not in a null search already
+				if ((is_pv || !only_research_in_pv) && alpha < score && beta > score && (beta - alpha > 1))
+				{
+					score = -Alpha_Beta(-beta, -alpha, depth - 1, PV, board, info);
 				}
+			
 			}
 		}
 
@@ -530,7 +524,6 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 			//Update alpha
 			if (score > alpha)
 			{
-				raised_alpha = TRUE;
 				alpha = score;
 			}
 			best_score = score;

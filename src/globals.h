@@ -68,7 +68,7 @@
 //Late move reduction macros
 #define CAN_REDUCE(move)			(!IS_CAPTURE(move) && !IS_PROMOTION(move)) //Returns 1 if move is not a promotion or capture
 #define REDUCTION_LIMIT				3 //Minimum depth to consider reductions
-#define LATE_MOVE_NUM				5 //First move number to consider reducing, 6th move = 5
+#define LATE_MOVE_NUM				2 //First move number to consider reducing
 #define LATE_MOVE_REDUCTION			1 //Number of ply to shorten late move searches
 
 
@@ -398,7 +398,6 @@ extern int use_history;
 extern int only_research_in_pv;
 extern int use_lmr_in_pv;
 extern int use_extra_lmr;
-extern int use_null_window_first;
 extern int null_move_R;
 extern int mult_null_move; 
 extern int adapt_null_move;
