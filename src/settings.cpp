@@ -7,6 +7,7 @@
 
 /***** Settings *****/
 int use_SEE = 0;
+int quiescent_SEE = 1; //Use SEE for pruing in quiescence search
 int use_aspiration_window = 0;
 int use_history = 0;
 int only_research_in_pv = 0;
@@ -71,6 +72,13 @@ void Set_Option(char * line)
 		sscanf_s(line, "%*s %*s %*s %*s %d", &value);
 		printf("Set SEE to %d\n", value);
 		use_SEE = value;
+	}
+	//Use SEE in quiescent search
+	else if (!strncmp(line, "setoption name quiescent_SEE", 27)) {
+		int value = 0;
+		sscanf_s(line, "%*s %*s %*s %*s %d", &value);
+		printf("Set quiescent_SEE to %d\n", value);
+		quiescent_SEE = value;
 	}
 	//Aspiration window size
 	else if (!strncmp(line, "setoption name aspiration", 24)) {

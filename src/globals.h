@@ -393,6 +393,7 @@ extern void Set_Quiescent_SEE_Scores(MOVE_LIST_STRUCT *move_list, BOARD_STRUCT *
 
 //settings
 extern int use_SEE;
+extern int quiescent_SEE;
 extern int use_aspiration_window;
 extern int use_history;
 extern int only_research_in_pv;

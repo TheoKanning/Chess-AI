@@ -607,6 +607,7 @@ int Quiescent_Search(int alpha, int beta, BOARD_STRUCT *board, SEARCH_INFO_STRUC
 
 
 	Generate_Capture_Promote_Moves(board, &move_list);
+	if(quiescent_SEE) Set_Quiescent_SEE_Scores(&move_list, board);
 
 	for (move = 0; move < move_list.num; move++) //For all moves in list
 	{

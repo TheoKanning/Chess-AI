@@ -48,11 +48,12 @@ Version Notes:
 1.40 - SEE working
 	 - Fixed futility pruning bug
 	 - Increased mate score to prevent error with 9 queens (never going to happen)
-	 - Full window search until alpha is raised
-2.00 - Magic bitboard generation
+	 - Full window search until alpha is raised (removed in 2.0)
+2.00 - Magic bitboard move generation
 	 - All 120 index data removed
 	 - Pawn hash added
 	 - Streamlined settings
+	 - 
 
 
 
