@@ -7,7 +7,7 @@
 
 /***** Settings *****/
 int use_SEE = 0;
-int quiescent_SEE = 1; //Use SEE for pruing in quiescence search
+int quiescent_SEE = 1; //Use SEE for pruning in quiescence search
 int use_aspiration_window = 0;
 int use_history = 0;
 int only_research_in_pv = 0;
@@ -23,6 +23,9 @@ int null_move_R = 2; //Amount to reduce null move search
 int adapt_null_move = 0; //Use adaptive reduction based on depth
 int mult_null_move = 0; //Whether or not to do a null move search within a null move search
 
+/* Variable Tuning */
+int test[6] = { -15, 15, 10, 50, -20, -20 }; //Can be temporarily used for anything
+
 /* Always on */
 int use_futility = 1;
 int use_late_move_reduction = 1;
@@ -30,6 +33,15 @@ int use_late_move_reduction = 1;
 //Takes a string and parses settings from it
 void Set_Option(char * line)
 {
+	//Test array
+	if (!strncmp(line, "setoption name test", 18)) {
+
+		int value = 0;
+		int index = line[19] - '0';
+		sscanf_s(line, "%*s %*s %*s %*s %d", &value);
+		printf("Set test%d to %d\n", index, value);
+		test[index] = 5 * value;
+	}
 	//King endgame piece-square tables
 	if (!strncmp(line, "setoption name keps", 18)) {
 

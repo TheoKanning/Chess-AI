@@ -404,6 +404,7 @@ extern int lmr_move_mod;
 extern int null_move_R;
 extern int mult_null_move; 
 extern int adapt_null_move;
+extern int test[6];
 extern int use_futility;
 extern int use_late_move_reduction;
 extern void Set_Option(char *line);
