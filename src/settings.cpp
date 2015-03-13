@@ -13,11 +13,11 @@ int use_history = 0;
 int only_research_in_pv = 0;
 
 /* LMR */
-int use_lmr_in_pv = 0;
-int use_extra_lmr = 0;
-double lmr_depth_mod = .5;
-double lmr_move_mod = .125;
-double lmr_pv_mod = .5;
+int use_lmr_in_pv = 1;
+int use_extra_lmr = 1;
+double lmr_depth_mod = .53;
+double lmr_move_mod = .068;
+double lmr_pv_mod = .45;
 
 /* Null Move*/
 int adapt_null_move = 0; //Use adaptive reduction based on depth
