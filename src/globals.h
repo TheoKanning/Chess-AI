@@ -112,6 +112,17 @@ enum CASTLE_ENUM
 	WK_CASTLE = 1, WQ_CASTLE = 2, BK_CASTLE = 4, BQ_CASTLE = 8
 };
 
+
+enum PV_ENUM
+{
+	NOT_PV, PV
+};
+
+enum NULL_ENUM
+{
+	DONT_DO_NULL, DO_NULL
+};
+
 typedef struct
 {
 	int move; //32 bit move stores all necessary data 
@@ -158,7 +169,6 @@ typedef struct
 
 	int depth;
 	int max_depth; //Max depth reached in normal search
-	int null_available;
 
 	int age; //Number of irreversible moves made
 	long hash_probes;
@@ -375,7 +385,7 @@ extern void Get_PV_Line(int depth, PV_LIST_STRUCT *pv_list, BOARD_STRUCT *board)
 
 //search
 extern int Search_Root(int alpha, int beta, int depth, BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info);
-extern int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info);
+extern int Alpha_Beta(int alpha, int beta, int depth, PV_ENUM is_pv, NULL_ENUM do_null, BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info);
 extern int Quiescent_Search(int alpha, int beta, BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info);
 extern int Search_Position(BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info);
 extern void Internal_Iterative_Deepening(int alpha, int beta, int depth, MOVE_LIST_STRUCT *move_list, BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info);
@@ -399,12 +409,12 @@ extern int use_history;
 extern int only_research_in_pv;
 extern int use_lmr_in_pv;
 extern int use_extra_lmr;
-extern float lmr_depth_mod;
-extern float lmr_move_mod;
-extern float lmr_pv_mod;
-extern int null_move_R;
-extern int mult_null_move; 
+extern double lmr_depth_mod;
+extern double lmr_move_mod;
+extern double lmr_pv_mod;
 extern int adapt_null_move;
+extern double null_move_depth_mod;
+extern int null_move_mat;
 extern int test[6];
 extern int use_futility;
 extern int use_late_move_reduction;

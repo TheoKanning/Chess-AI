@@ -9,11 +9,6 @@
 
 using namespace std;
 
-typedef enum
-{
-	NOT_PV,PV
-};
-
 
 //Searches a given position using board and search info 
 int Search_Position(BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info)
@@ -50,7 +45,7 @@ int Search_Position(BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info)
 
 			while (true)
 			{
-				score = Alpha_Beta(prev_score - aspiration_windows[window_low], prev_score + aspiration_windows[window_high], currentDepth, PV, board, info);
+				score = Alpha_Beta(prev_score - aspiration_windows[window_low], prev_score + aspiration_windows[window_high], currentDepth, PV, DO_NULL, board, info);
 				if (score <= prev_score - aspiration_windows[window_low]) //Fail low
 				{
 					window_low++;
@@ -163,8 +158,7 @@ int Search_Root(int alpha, int beta, int depth, BOARD_STRUCT *board, SEARCH_INFO
 	{
 		/***** Internal Iterative Deepening *****/
 		/* This funtion is almost never called, but it's an insurance measure just in case*/
-		if (depth >= 5
-			&& info->null_available)
+		if (depth >= 5)
 		{
 			Internal_Iterative_Deepening(alpha, beta, depth, &move_list, board, info);
 		}
@@ -188,14 +182,14 @@ int Search_Root(int alpha, int beta, int depth, BOARD_STRUCT *board, SEARCH_INFO
 		/***** Principal Variation Search *****/
 		if (move == 0) //If first move, use full window
 		{
-			score = -Alpha_Beta(-beta, -alpha, depth - 1, PV, board, info);
+			score = -Alpha_Beta(-beta, -alpha, depth - 1, PV, DO_NULL, board, info);
 		}
 		else //If not first move
 		{
-			score = -Alpha_Beta(-alpha - 1, -alpha, depth - 1, NOT_PV, board, info); //Full window search
+			score = -Alpha_Beta(-alpha - 1, -alpha, depth - 1, NOT_PV, DO_NULL, board, info); //Full window search
 			if (score > alpha)
 			{
-				score = -Alpha_Beta(-beta, -alpha, depth - 1, PV, board, info);
+				score = -Alpha_Beta(-beta, -alpha, depth - 1, PV, DO_NULL, board, info);
 			}
 		}
 
@@ -250,7 +244,7 @@ int Search_Root(int alpha, int beta, int depth, BOARD_STRUCT *board, SEARCH_INFO
 }
 
 //Alpha beta implementation in negamax search
-int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info)
+int Alpha_Beta(int alpha, int beta, int depth, PV_ENUM is_pv, NULL_ENUM do_null, BOARD_STRUCT *board, SEARCH_INFO_STRUCT *info)
 {
 	int move;
 	int moves_searched = 0; //Number of legal moves searched (not futility pruned)
@@ -353,20 +347,20 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 
 	/***** Null Move *****/
 	if (depth >= 4 
-	&& info->null_available 
+	&& do_null
 	&& !is_pv 
 	&& board->hply 
 	&& !in_check 
-	&& (board->big_material[board->side] >= 950))
+	&& (board->big_material[board->side] >= null_move_mat))
 	{
-		int R = null_move_R;
-		if(adapt_null_move) R = max(null_move_R, 1 + depth / 3);
+		int R = 2;
+		if(adapt_null_move) R = max(2, (int)(null_move_depth_mod * depth));
 
-		info->null_available = mult_null_move;
+
 		Make_Null_Move(board);
-		score = -Alpha_Beta(-beta, -beta + 1, depth - 1 - R, NOT_PV, board, info); //Subtract an additional 2 ply from depth
+		score = -Alpha_Beta(-beta, -beta + 1, depth - 1 - R, NOT_PV, DONT_DO_NULL, board, info); //Subtract an additional 2 ply from depth
 		Take_Null_Move(board);
-		info->null_available = 1;
+
 		if (score >= beta && !IS_MATE(score)) return score;
 	}
 
@@ -389,7 +383,7 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 		/* This funtion is almost never called, but it's an insurance measure just in case*/
 		if (is_pv
 			&& depth >= 5
-			&& info->null_available)
+			&& do_null)
 		{
 			Internal_Iterative_Deepening(alpha, beta, depth, &move_list, board, info);
 		}
@@ -430,7 +424,7 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 			}
 			else //Razoring
 			{
-				score = -Alpha_Beta(-alpha - 1, -alpha, 1, NOT_PV, board, info); //Null window search at depth 1
+				score = -Alpha_Beta(-alpha - 1, -alpha, 1, NOT_PV, DO_NULL, board, info); //Null window search at depth 1
 				if (score <= alpha)
 				{
 					Take_Move(board);
@@ -444,7 +438,7 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 		/***** Principal Variation Search *****/
 		if (move == 0) //If first move, use full window
 		{
-			score = -Alpha_Beta(-beta, -alpha, depth - 1, is_pv, board, info);
+			score = -Alpha_Beta(-beta, -alpha, depth - 1, is_pv, DO_NULL, board, info);
 		}
 		else //If not first move
 		{
@@ -462,16 +456,16 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 			{
 				if (use_extra_lmr)
 				{
-					float reduction_temp = sqrt(depth * lmr_depth_mod) + sqrt(move * lmr_move_mod);
+					double reduction_temp = sqrt(depth * lmr_depth_mod) + sqrt(move * lmr_move_mod);
 					if (is_pv) reduction_temp *= lmr_pv_mod;
-					reduction = floor(reduction_temp);
+					reduction = (int)reduction_temp; //Floor
 				}
 				else reduction = 1;
 
 				int new_depth = max(1,depth - reduction - 1);
 
 				//Null Window search
-				score = -Alpha_Beta(-alpha - 1, -alpha, new_depth, NOT_PV, board, info); 
+				score = -Alpha_Beta(-alpha - 1, -alpha, new_depth, NOT_PV, DO_NULL, board, info); 
 			}
 			else
 			{
@@ -482,12 +476,12 @@ int Alpha_Beta(int alpha, int beta, int depth, int is_pv, BOARD_STRUCT *board, S
 			if (score > alpha) //Continue if reduced search is improvement
 			{
 				//Look for refutation in null window
-				score = -Alpha_Beta(-alpha - 1, -alpha, depth - 1, NOT_PV, board, info); //Null window search
+				score = -Alpha_Beta(-alpha - 1, -alpha, depth - 1, NOT_PV, DO_NULL, board, info); //Null window search
 
 				//If move improves alpha but does not cause a cutoff, and if not in a null search already
 				if ((is_pv || !only_research_in_pv) && alpha < score && beta > score && (beta - alpha > 1))
 				{
-					score = -Alpha_Beta(-beta, -alpha, depth - 1, PV, board, info);
+					score = -Alpha_Beta(-beta, -alpha, depth - 1, PV, DO_NULL, board, info);
 				}
 			
 			}
@@ -652,7 +646,7 @@ void Internal_Iterative_Deepening(int alpha, int beta, int depth, MOVE_LIST_STRU
 		//Make move
 		if (Make_Move(move_list->list[i].move, board))
 		{
-			move_list->list[i].score = -Alpha_Beta(-beta, -alpha, iid_depth, PV, board, info);
+			move_list->list[i].score = -Alpha_Beta(-beta, -alpha, iid_depth, PV, DO_NULL, board, info);
 
 			Take_Move(board);
 		}

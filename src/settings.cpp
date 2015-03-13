@@ -15,17 +15,17 @@ int only_research_in_pv = 0;
 /* LMR */
 int use_lmr_in_pv = 0;
 int use_extra_lmr = 0;
-float lmr_depth_mod = .5;
-float lmr_move_mod = .125;
-float lmr_pv_mod = .5;
+double lmr_depth_mod = .5;
+double lmr_move_mod = .125;
+double lmr_pv_mod = .5;
 
 /* Null Move*/
-int null_move_R = 2; //Amount to reduce null move search
 int adapt_null_move = 0; //Use adaptive reduction based on depth
-int mult_null_move = 0; //Whether or not to do a null move search within a null move search
+double null_move_depth_mod = .33; //Reduction based on depth
+int null_move_mat = 950; //Big material required to do a null move
 
 /* Variable Tuning */
-int test[6] = { -15, 15, 10, 50, -20, -20 }; //Can be temporarily used for anything
+int test[6] = { 0 }; //Can be temporarily used for anything
 
 /* Always on */
 int use_futility = 1;
@@ -144,13 +144,6 @@ void Set_Option(char * line)
 		printf("Set lmr_pv_mod to %f\n", value);
 		lmr_pv_mod = value;
 	}
-	//Null move depth reduction
-	else if (!strncmp(line, "setoption name null_move_R", 25)) {
-		int value = 0;
-		sscanf_s(line, "%*s %*s %*s %*s %d", &value);
-		printf("Set null_move_R to %d\n", value);
-		null_move_R = value;
-	}
 	//Null move depth reduction based on search depth
 	else if (!strncmp(line, "setoption name adapt_null_move", 29)) {
 		int value = 0;
@@ -158,12 +151,19 @@ void Set_Option(char * line)
 		printf("Set adapt_null_move to %d\n", value);
 		adapt_null_move = value;
 	}
-	//Null move within null move search
-	else if (!strncmp(line, "setoption name mult_null_move", 28)) {
+	//Null reduction depth modifier
+	else if (!strncmp(line, "setoption name null_depth_mod", 28)) {
+		float value = 0;
+		sscanf_s(line, "%*s %*s %*s %*s %f", &value);
+		printf("Set null_move_depth_mod to %f\n", value);
+		null_move_depth_mod = value;
+	}
+	//Null move material threshold
+	else if (!strncmp(line, "setoption name null_move_mat", 27)) {
 		int value = 0;
 		sscanf_s(line, "%*s %*s %*s %*s %d", &value);
-		printf("Set mult_null_move to %d\n", value);
-		mult_null_move = value;
+		printf("Set null_move_mat to %d\n", value);
+		null_move_mat = value;
 	}
 	//Only research after null windows in pv
 	else if (!strncmp(line, "setoption name only_research_in_pv", 33)) {

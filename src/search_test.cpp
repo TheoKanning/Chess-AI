@@ -116,7 +116,7 @@ void Search_Test(void)
 		{
 			info.nodes = 0;
 
-			Alpha_Beta(-INF, INF, depth, 1, &board, &info);
+			Alpha_Beta(-INF, INF, depth, PV, DO_NULL, &board, &info);
 
 			if (info.stopped)//Print results if finished
 			{

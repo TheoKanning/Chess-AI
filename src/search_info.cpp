@@ -11,7 +11,6 @@ void Clear_Search_Info(SEARCH_INFO_STRUCT *info)
 	//Reset stop flag
 	info->stopped = 0;
 	info->nodes = 0;
-	info->null_available = 1;
 
 	info->hash_hits = 0;
 	info->hash_probes = 0;
