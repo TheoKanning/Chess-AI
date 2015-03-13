@@ -8,14 +8,14 @@
 #define START_MATERIAL			8000
 #define START_BIG_MATERIAL		6400
 
-#define ISOLATED_PAWN_PENALTY  test[0] //-15
-#define DOUBLED_PAWN_PENALTY   test[1] //-5	//This is counted once for each pawn
+#define ISOLATED_PAWN_PENALTY  -25
+#define DOUBLED_PAWN_PENALTY   -15	//This is counted once for each pawn
 
-#define PAWN_SHIELD_SCORE		test[2] //10	//Score for each pawn in front of the king
+#define PAWN_SHIELD_SCORE		15	//Score for each pawn in front of the king
 
-#define BISHOP_PAIR				test[3] //50	//Bonus in cp for having bishop pair	
-#define KNIGHT_PAIR			   test[4] //-20	//Penalty in cp for having knight pair
-#define ROOK_PAIR			   test[5] //-20	//Penalty in cp for having rook pair
+#define BISHOP_PAIR				60	//Bonus in cp for having bishop pair	
+#define KNIGHT_PAIR			   -10	//Penalty in cp for having knight pair
+#define ROOK_PAIR			   -10	//Penalty in cp for having rook pair
 
 //Pawn evaluation masks
 U64 white_passed_masks[64];

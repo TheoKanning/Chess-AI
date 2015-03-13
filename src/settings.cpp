@@ -7,16 +7,17 @@
 
 /***** Settings *****/
 int use_SEE = 0;
-int quiescent_SEE = 1; //Use SEE for pruning in quiescence search
+int quiescent_SEE = 0; //Use SEE for pruning in quiescence search
 int use_aspiration_window = 0;
 int use_history = 0;
 int only_research_in_pv = 0;
 
 /* LMR */
-int use_lmr_in_pv = 1;
-int use_extra_lmr = 1;
-int lmr_depth_mod = 2;
-int lmr_move_mod = 8;
+int use_lmr_in_pv = 0;
+int use_extra_lmr = 0;
+float lmr_depth_mod = .5;
+float lmr_move_mod = .125;
+float lmr_pv_mod = .5;
 
 /* Null Move*/
 int null_move_R = 2; //Amount to reduce null move search
@@ -124,17 +125,24 @@ void Set_Option(char * line)
 	}
 	//LMR depth modifier
 	else if (!strncmp(line, "setoption name lmr_depth_mod", 27)) {
-		int value = 0;
-		sscanf_s(line, "%*s %*s %*s %*s %d", &value);
-		printf("Set lmr_depth_mod to %d\n", value);
+		float value = 0;
+		sscanf_s(line, "%*s %*s %*s %*s %f", &value);
+		printf("Set lmr_depth_mod to %f\n", value);
 		lmr_depth_mod = value;
 	}
 	//LMR move modifier
 	else if (!strncmp(line, "setoption name lmr_move_mod", 26)) {
-		int value = 0;
-		sscanf_s(line, "%*s %*s %*s %*s %d", &value);
-		printf("Set lmr_move_mod to %d\n", value);
+		float value = 0;
+		sscanf_s(line, "%*s %*s %*s %*s %f", &value);
+		printf("Set lmr_move_mod to %f\n", value);
 		lmr_move_mod = value;
+	}
+	//LMR PV modifier
+	else if (!strncmp(line, "setoption name lmr_pv_mod", 24)) {
+		float value = 0;
+		sscanf_s(line, "%*s %*s %*s %*s %f", &value);
+		printf("Set lmr_pv_mod to %f\n", value);
+		lmr_pv_mod = value;
 	}
 	//Null move depth reduction
 	else if (!strncmp(line, "setoption name null_move_R", 25)) {
