@@ -10,6 +10,7 @@
 
 #define ISOLATED_PAWN_PENALTY  -25
 #define DOUBLED_PAWN_PENALTY   -15	//This is counted once for each pawn
+#define PROTECTED_PASSER_SCORE  20  //Bonus for having the king protecting a passed pawn
 
 #define PAWN_SHIELD_SCORE		15	//Score for each pawn in front of the king
 
@@ -87,7 +88,13 @@ int Get_Pawn_Eval_Score(BOARD_STRUCT *board)
 		sq64 = pop_1st_bit(&temp); //pawn location in 64 square array
 
 		//if no black pawns in passed mask area
-		if ((black_pawns & white_passed_masks[sq64]) == 0) score += passed_pawn_rank_bonus[GET_RANK(sq64)];
+		if ((black_pawns & white_passed_masks[sq64]) == 0)
+		{
+			score += passed_pawn_rank_bonus[GET_RANK(sq64)];
+
+			//If protected by king
+			if (king_attack_masks[sq64] & board->piece_bitboards[wK]) score += PROTECTED_PASSER_SCORE;
+		}
 		
 		//if no white pawns in isolated mask area
 		if ((white_pawns & isolated_masks[sq64]) == 0) score += ISOLATED_PAWN_PENALTY;
@@ -104,7 +111,13 @@ int Get_Pawn_Eval_Score(BOARD_STRUCT *board)
 		sq64 = pop_1st_bit(&temp); //pawn location in 64 square array
 
 		//if no white pawns in passed mask area
-		if ((white_pawns & black_passed_masks[sq64]) == 0)	score -= passed_pawn_rank_bonus[RANK_8 - GET_RANK(sq64)];
+		if ((white_pawns & black_passed_masks[sq64]) == 0)
+		{
+			score -= passed_pawn_rank_bonus[RANK_8 - GET_RANK(sq64)];
+
+			//If protected by king
+			if (king_attack_masks[sq64] & board->piece_bitboards[bK]) score -= PROTECTED_PASSER_SCORE;
+		}
 		
 		//if no black pawns in isolated mask area
 		if ((black_pawns & isolated_masks[sq64]) == 0) score -= ISOLATED_PAWN_PENALTY;
