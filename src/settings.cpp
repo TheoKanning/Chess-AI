@@ -23,6 +23,7 @@ double lmr_pv_mod = .45;
 int adapt_null_move = 0; //Use adaptive reduction based on depth
 double null_move_depth_mod = .33; //Reduction based on depth
 int null_move_mat = 501; //Big material required to do a null move
+const int null_move_material_data[7] = { 0, 300, 500, 600, 700, 900, 1000 };
 
 /* Variable Tuning */
 int test[6] = { 0 }; //Can be temporarily used for anything
@@ -162,8 +163,8 @@ void Set_Option(char * line)
 	else if (!strncmp(line, "setoption name null_move_mat", 27)) {
 		int value = 0;
 		sscanf_s(line, "%*s %*s %*s %*s %d", &value);
-		printf("Set null_move_mat to %d\n", value);
-		null_move_mat = value;
+		printf("Set null_move_mat to %d\n", null_move_material_data[value]);
+		null_move_mat = null_move_material_data[value];
 	}
 	//Only research after null windows in pv
 	else if (!strncmp(line, "setoption name only_research_in_pv", 33)) {
