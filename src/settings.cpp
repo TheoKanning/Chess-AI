@@ -21,8 +21,8 @@ double lmr_pv_mod = .45;
 
 /* Null Move*/
 int adapt_null_move = 0; //Use adaptive reduction based on depth
-double null_move_depth_mod = .33; //Reduction based on depth
-int null_move_mat = 501; //Big material required to do a null move
+double null_move_depth_mod = .42; //Reduction based on depth
+int null_move_mat = 700; //Big material required to do a null move
 const int null_move_material_data[7] = { 0, 300, 500, 600, 700, 900, 1000 };
 
 /* Variable Tuning */
