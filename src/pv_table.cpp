@@ -30,6 +30,11 @@ void Get_PV_Line(int depth, PV_LIST_STRUCT *pv_list, BOARD_STRUCT *board)
 		else {
 			break;
 		}
+
+		//Stop after 3-fold rep, 50 move, or material draw detected
+		if (Is_Threefold_Repetition(board) || board->move_counter >= 100 || Is_Material_Draw(board)) break;
+
+		//Get next hash move
 		move = 0;
 		Get_Hash_Entry(board->hash_key, 0, 0, 0, board->hply, &move);
 		

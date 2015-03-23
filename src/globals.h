@@ -266,6 +266,7 @@ extern void Remove_From_Piecelists(int piece, int square, BOARD_STRUCT *board);
 extern void Parse_Fen(char *fen, BOARD_STRUCT *board);
 extern void Clear_Undo_List(BOARD_STRUCT *board);
 extern int Is_Repetition(BOARD_STRUCT *board);
+extern int Is_Threefold_Repetition(BOARD_STRUCT *board);
 extern int Is_Material_Draw(BOARD_STRUCT *board);
 extern void Check_Board(BOARD_STRUCT *board);
 extern void Print_Board(BOARD_STRUCT *board);

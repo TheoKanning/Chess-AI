@@ -53,6 +53,7 @@ Version Notes:
 	 - All 120 index data removed
 	 - Pawn hash added
 	 - Streamlined settings
+	 - Check for draw in quiescent search
 	 - 
 
 

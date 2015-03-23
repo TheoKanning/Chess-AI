@@ -509,6 +509,7 @@ int Is_Repetition(BOARD_STRUCT *board)
 	return 0;
 }
 
+
 //Returns 1 if the board is a material draw
 int Is_Material_Draw(BOARD_STRUCT *board)
 {
