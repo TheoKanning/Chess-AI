@@ -596,7 +596,7 @@ int Quiescent_Search(int alpha, int beta, BOARD_STRUCT *board, SEARCH_INFO_STRUC
 	}
 
 	/***** Draw Detection *****/
-	if (board->move_counter >= 100 || Is_Material_Draw(board) || (board->hply && Is_Repetition(board)))	return 0;
+	//if (board->move_counter >= 100 || Is_Material_Draw(board) || (board->hply && Is_Repetition(board)))	return 0;
 
 	if (score >= beta) return score;
 	if (score > best_score) best_score = score;
