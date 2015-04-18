@@ -17,6 +17,8 @@ using namespace std;
 #define SEE_TEST_FEN3 "q2k2q1/2nqn2b/1n1P1n1b/2rnr2Q/1NQ1QN1Q/3Q3B/2RQR2B/Q2K2Q1 w - - 0 0"
 
 #define HASH_TEST_FEN "r1b1r1k1/ppq2p1p/3b2pQ/3pn3/8/2P4P/PPBN1PP1/R1B1R1K1 b - - 0 0"
+#define MISSED_MATE_POSITION "position startpos moves e2e4 c7c5 g1f3 b8c6 d2d4 c5d4 f3d4 g8f6 b1c3 d7d6 c1g5 e7e6 d1d2 a7a6 e1c1 h7h6 d4c6 b7c6 g5f4 d6d5 f1d3 f8c5 c3a4 c5d4 c2c3 d4a7 e4e5 f6d7 h1e1 d8h4 f2f3 e8g8 c3c4 c8b7 f4g3 h4d8 f3f4 c6c5 c4d5 e6d5 d2c2 c5c4 d3f5 d7c5 a4c5 a7c5 e5e6 c5b4 e6f7 f8f7 e1e2 f7c7 f5e6 g8h8 f4f5 c7c5 a2a3 c4c3 c1b1 b4a5 b2b4 d8b6 f5f6 g7f6 b1a1 h8g7 e6c8"
+#define MISSED_MATE_POSITION2 "position startpos moves e2e4 c7c5 g1f3 b8c6 d2d4 c5d4 f3d4 g8f6 b1c3 d7d6 c1g5 e7e6 d1d2 a7a6 e1c1 h7h6 d4c6 b7c6 g5f4 d6d5 f1d3 f8c5 c3a4 c5d4 c2c3 d4a7 e4e5 f6d7 h1e1 d8h4 f2f3 e8g8 c3c4 c8b7 f4g3 h4d8 f3f4 c6c5 c4d5 e6d5 d2c2 c5c4 d3f5 d7c5 a4c5 a7c5 e5e6 c5b4 e6f7 f8f7 e1e2 f7c7 f5e6 g8h8 f4f5 c7c5 a2a3 c4c3 c1b1 b4a5 b2b4 d8b6 f5f6 g7f6 b1a1 h8g7 e6c8 c5c8"
 
 BOARD_STRUCT board;
 MOVE_LIST_STRUCT move_list;
@@ -65,8 +67,8 @@ int main()
 			printf("Perft Complete\n");
 		}
 		else if (!strncmp(line, "test", 4))	{
-			Parse_Fen(HASH_TEST_FEN, &board);
-			//Parse_Position(MATE_ERROR_POS, &board);
+			//Parse_Fen(HASH_TEST_FEN, &board);
+			Parse_Position(MISSED_MATE_POSITION, &board);
 			Print_Board(&board);
 			info.stop_time = 100000;
 			info.depth = 25;
